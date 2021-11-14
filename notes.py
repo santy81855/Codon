@@ -4,32 +4,30 @@ from PyQt5.QtGui import QCursor
 from PyQt5.QtCore import QPoint
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QObject
-from PyQt5.QtWidgets import QApplication, QMainWindow
-from PyQt5.QtWidgets import QHBoxLayout
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter
+from PyQt5.QtWidgets import QHBoxLayout, QTextEdit
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QWidget
-
-class MyFilter(QObject):
-    def eventFilter(self, obj, event):
-        print(str((obj, event)))
-        return False
+import textwrap
+from pynput import keyboard
+import string
 
 class MainWindow(QWidget):
 
     def __init__(self):
         super(MainWindow, self).__init__()
         # set the opacity
-        self.setWindowOpacity(1.0)
+        self.setWindowOpacity(0.8)
         self.layout = QVBoxLayout()
         self.layout.addWidget(MyBar(self))
+        self.layout.addWidget(TextField(self))
         self.setLayout(self.layout)
         # make the default size be half the window
         self.setGeometry(startingLocation[0], startingLocation[1], startingLocation[0], startingLocation[1])
         self.layout.setContentsMargins(0,0,0,0)
-        self.layout.addStretch(-1)
-        # the min height will be 100 x 100
+        # the min height will be 600 x 600
         self.setMinimumSize(600, 600)
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.pressing = False
@@ -47,8 +45,12 @@ class MainWindow(QWidget):
         self.bl = False
         self.br = False
         self.setMouseTracking(True)
-        self.installEventFilter(MyFilter())
-    
+        app.focusChanged.connect(self.on_focusChanged)
+
+    def on_focusChanged(self):
+        global focused
+        focused = self.isActiveWindow()
+        
     def mousePressEvent(self, event):
         pos = event.pos()
         # set pressing to true
@@ -76,23 +78,25 @@ class MainWindow(QWidget):
             self.start = event.pos().y()
             self.bottom = True       
   
-#SizeFDiagCursor
+    #SizeFDiagCursor
     def mouseMoveEvent(self, event):
         pos = event.pos()
+        if self.pressing:
+            QApplication.restoreOverrideCursor()
         # bottom left
-        if pos.y() >= self.height() - 8 and pos.x() <= 8 and pos.y() > 8:
+        elif pos.y() >= self.height() - 5 and pos.x() <= 5 and pos.y() > 5:
             QApplication.setOverrideCursor(Qt.SizeBDiagCursor)
         # bottom right
-        elif pos.x() >= self.width() - 8 and pos.y() >= self.height() - 8:
+        elif pos.x() >= self.width() - 5 and pos.y() >= self.height() - 5:
             QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
         # bottom
-        elif pos.x() > 8 and pos.x() < self.width() - 8 and pos.y() >= self.height() - 8:
+        elif pos.x() > 5 and pos.x() < self.width() - 5 and pos.y() >= self.height() - 5:
             QApplication.setOverrideCursor(Qt.SizeVerCursor)
         # left
-        elif pos.x() <= 8 and pos.y() > 8:
+        elif pos.x() <= 5 and pos.y() > 5:
             QApplication.setOverrideCursor(Qt.SizeHorCursor)
         # right
-        elif pos.x() >= self.width() - 8 and pos.y() > 8:
+        elif pos.x() >= self.width() - 5 and pos.y() > 5:
             QApplication.setOverrideCursor(Qt.SizeHorCursor)
         else:
             if self.pressing == False:
@@ -143,6 +147,30 @@ class MainWindow(QWidget):
         self.bl = False
         self.br = False
 
+class TextField(QWidget):
+    def __init__(self, parent):
+        super(TextField, self).__init__()
+        self.parent = parent
+        # need a layout that will allow for vertical numbering on the left
+        self.vertLayout = QVBoxLayout()
+        self.vertLayout.setContentsMargins(0,0,0,0)
+        
+        #for i in range(1, 
+        self.layout = QVBoxLayout()
+        self.layout.setContentsMargins(25,0,0,0)
+        self.layout.setSpacing(0)
+        self.textbox = QTextEdit(self)
+        self.textbox.setStyleSheet("""
+            border: none;
+            font: 14pt "Consolas";
+            color: #D8DEE9;
+                                """)
+        self.textbox.resize(self.parent.width() - 6, self.parent.height() - 44)
+        self.textbox.move(0,0)
+        self.textbox.setLineWrapMode(self.textbox.WidgetWidth)
+        self.layout.addWidget(self.textbox)
+        self.setLayout(self.layout)
+        
 class MyBar(QWidget):
 
     def __init__(self, parent):
@@ -292,20 +320,22 @@ class MyBar(QWidget):
 
     def mouseMoveEvent(self, event):
         pos = event.pos()
+        if self.pressing:
+            QApplication.restoreOverrideCursor()
         # top left
-        if pos.x() <= 8 and pos.y() <= 8:
+        elif pos.x() <= 5 and pos.y() <= 5:
             QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
         # top right
-        elif pos.x() >= self.width() - 8 and pos.y() <= 8:
+        elif pos.x() >= self.width() - 5 and pos.y() <= 5:
             QApplication.setOverrideCursor(Qt.SizeBDiagCursor)
         # top
-        elif pos.y() <= 8 and pos.x() > 8 and pos.x() < self.width() - 8:
+        elif pos.y() <= 5 and pos.x() > 5 and pos.x() < self.width() - 5:
             QApplication.setOverrideCursor(Qt.SizeVerCursor)
         # left
-        elif pos.x() <= 8 and pos.y() > 8:
+        elif pos.x() <= 5 and pos.y() > 5:
             QApplication.setOverrideCursor(Qt.SizeHorCursor)
         # right
-        elif pos.x() >= self.width() - 8 and pos.y() > 8:
+        elif pos.x() >= self.width() - 5 and pos.y() > 5:
             QApplication.setOverrideCursor(Qt.SizeHorCursor)
         else:
             if self.pressing == False:
@@ -371,6 +401,43 @@ class MyBar(QWidget):
         self.right = False
         self.tr = False
 
+def printStack():
+    SHIFT = "Key.shift"
+    ENTER = "Key.enter"
+    SPACE = 'Key.space'
+    
+    for i in range(0, len(stack) - 1):
+        if stack[i][0] == SPACE:
+            print(" ")
+        else:
+            print(stack[i][0])
+
+
+def on_press(key):
+    global stack
+
+    if focused:
+        try:
+            k = key.char # single key
+        except:
+            k = key.name # other keys
+        letter = [key, 0]
+        stack.append(letter)
+
+def on_release(key):
+    global stack
+
+    if focused:
+        try:
+            k = key.char
+        except:
+            k = key.name
+        
+        letter = [str(key), 1]
+        print(letter)
+        #stack.append(letter)
+        if letter == ["Key.enter", 1]:
+            printStack()
 # make the resolution global variables
 screen_resolution = 0
 width = 0
@@ -381,6 +448,8 @@ res["1920x1080"] = [640, 360] # full hd
 res["2560x1440"] = [853, 480] # wqhd
 res["3440x1440"] = [1147, 480] # ultrawide
 res["3840x2160"] = [1160, 720] # 4k
+focused = False # variable to track if the gui is focused so it knows to track typing or not
+stack = []
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -395,4 +464,9 @@ if __name__ == "__main__":
         startingLocation = res[key]
     mw = MainWindow()
     mw.show()
+    # make the textbox be automatically in focus on startup
+    mw.layout.itemAt(1).widget().textbox.setFocus()
+    # get text through python
+    listener = keyboard.Listener(on_press=on_press, on_release=on_release)
+    listener.start()
     sys.exit(app.exec_())
