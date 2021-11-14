@@ -1,0 +1,36 @@
+{
+    "commands":
+    [
+        {
+            "command": 
+            {
+                "action": "copy"
+            },
+            "keys": "ctrl+c"
+        },
+        {
+            "command": 
+            {
+                "action": "newTab"
+            },
+            "keys": "ctrl+t"
+        }
+    ],
+
+    "themes":
+    {
+        "list":
+        [
+            {
+                "name": "default",
+                "title-bar-stylesheet":
+                {
+                    "background-color: rgb(52, 68, 114);",
+                    "color: white;"
+                }
+            }
+        ]
+    },
+
+    "opacity": 1.0
+}
