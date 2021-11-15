@@ -4,9 +4,9 @@ from PyQt5 import QtGui
 from PyQt5.QtGui import QCursor, QMouseEvent, QFont, QKeySequence
 from PyQt5.QtCore import QPoint, pyqtSignal
 from PyQt5.QtCore import Qt
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, QMimeData
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter
-from PyQt5.QtWidgets import QHBoxLayout, QTextEdit
+from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QPlainTextEdit
 from PyQt5.QtWidgets import QLabel
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QVBoxLayout
@@ -156,7 +156,6 @@ class MainWindow(QWidget):
     def keyPressEvent(self, event):
         QApplication.setOverrideCursor(Qt.IBeamCursor)
 
-
 class TextField(QWidget):
     def __init__(self, parent):
         super(TextField, self).__init__()
@@ -169,21 +168,26 @@ class TextField(QWidget):
         self.layout = QVBoxLayout()
         self.layout.setContentsMargins(25,0,0,0)
         self.layout.setSpacing(0)
-        self.textbox = QTextEdit(self)
+        self.textbox = QPlainTextEdit(self)
         self.textbox.setStyleSheet("""
             border: none;
             font: 14pt "Consolas";
             color: #D8DEE9;
+            selection-color: #4C566A;
+            selection-background-color: #D8DEE9;
+            caret-color:red;
                                 """)
         self.textbox.resize(self.parent.width() - 100, self.parent.height() - 100)
         self.textbox.move(0,0)
         #self.textbox.setReadOnly(True)
         #self.textbox.ensureCursorVisible()
         self.textbox.setLineWrapMode(self.textbox.WidgetWidth)
-        self.textbox.acceptRichText()
+        #self.textbox.acceptRichText()
         self.layout.addWidget(self.textbox)
         self.setLayout(self.layout)
         self.setMouseTracking(True)
+        self.textbox.setCursorWidth(3)
+        self.textbox.setTabStopWidth(self.textbox.fontMetrics().width(' ') * TAB_SIZE)
 
     def keyPressEvent(self, event):
         QApplication.setOverrideCursor(Qt.IBeamCursor)
@@ -476,6 +480,8 @@ focused = False # variable to track if the gui is focused so it knows to track t
 stack = []
 # variable to track the margins used on the main layout
 MARGIN = 5
+# tab size
+TAB_SIZE = 4
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
