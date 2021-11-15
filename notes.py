@@ -15,20 +15,101 @@ import textwrap
 from pynput import keyboard
 import string
 
-class MainWindow(QWidget):
+class Tab(QWidget):
+    def __init__(self, parent, fileName, fileLocation):
+        super(Tab, self).__init__()
+        global numEmptyTabs
+        self.parent = parent
+        self.fileName = ""
+        self.fileLocation = ""
+        if fileName == "":
+            self.fileName = "untitled_" + str(numEmptyTabs + 1) + ".txt"
+            numEmptyTabs += 1
+        else:
+            self.fileName = fileName
+        # the file location may be None if it is an empty default file
+        if fileLocation != "":        
+            self.fileLocation = fileLocation
+        # create a layout that can store the tab and its close button
+        self.singleTabLayout = QHBoxLayout()
+        # create a button to represent the file
+        self.tabButton = QPushButton(self.fileName)
+        self.tabButton.setMouseTracking(True)
+        self.tabButton.clicked.connect(self.tabClicked)
+        self.tabButton.setFixedSize(200, 40)
+        self.tabButton.setStyleSheet("""
+            QPushButton
+            {
+            background-color: #D8DEE9;
+            color: #4C566A;
+            font: 14pt "Consolas";
+            border: none;
+            }
+            QPushButton::hover
+            {
+            background-color: #4C566A;
+            color: #D8DEE9;
+            border: none;
+            }
+                                    """)
 
+        # create the textbox
+        
+        self.singleTabLayout.addWidget(self.tabButton)
+        self.setLayout(self.singleTabLayout)
+        # left, top, right, bottom
+        self.singleTabLayout.setContentsMargins(MARGIN,0,0,0)
+
+    def tabClicked(self):
+        # when we click the tab, we want to focus the tab by changing its color to be the same as
+        # the background
+        self.tabButton.setStyleSheet("""
+            QPushButton
+            {
+            background-color: #4C566A;
+            color: #D8DEE9;
+            font: 14pt "Consolas";
+            border: none;
+            }
+            QPushButton::hover
+            {
+            background-color: #D8DEE9;
+            color: #4C566A;
+            border: none;
+            }
+                                    """)
+        # this is where I need to put the code to replace text currently in the textbox with text
+        # from the file on the tab that was clicked
+
+class TabBars(QWidget):
+    def __init__(self, parent):
+        super(TabBars, self).__init__()
+        self.parent = parent
+        self.tabLayout = QHBoxLayout()
+        self.tabLayout.addWidget(Tab(self.parent, "", ""))
+        self.setLayout(self.tabLayout)
+        # left, top, right, bottom
+        # pad the left and right so we can still resize from that location
+        self.tabLayout.setContentsMargins(0,0,0,0)
+        #self.setGeometry(0, 0, 100, 100)
+        #self.tabLayout.setSpacing(0)
+        self.tabLayout.addStretch(-1)        
+
+class MainWindow(QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
         # set the opacity
         self.setWindowOpacity(0.8)
         self.layout = QVBoxLayout()
         self.layout.addWidget(MyBar(self))
+        self.layout.addWidget(TabBars(self))
         self.layout.addWidget(TextField(self))
         #self.layout.addStretch(-1)
         self.setLayout(self.layout)
         # make the default size be half the window
         self.setGeometry(startingLocation[0], startingLocation[1], startingLocation[0], startingLocation[1])
-        self.layout.setContentsMargins(MARGIN,0,MARGIN,MARGIN)
+        #self.layout.setContentsMargins(MARGIN,0,MARGIN,MARGIN)
+        self.layout.setContentsMargins(0,0,0,0)
         # the min height will be 600 x 600
         self.setMinimumSize(600, 600)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -53,8 +134,7 @@ class MainWindow(QWidget):
         global focused
         focused = self.isActiveWindow()
         if focused:
-            self.layout.itemAt(1).widget().textbox.setFocus()
-
+            self.layout.itemAt(textBoxIndex).widget().textbox.setFocus()
 
     def mousePressEvent(self, event):
         pos = event.pos()
@@ -164,9 +244,9 @@ class TextField(QWidget):
         self.vertLayout = QVBoxLayout()
         self.vertLayout.setContentsMargins(0,0,0,0)
         
-        #for i in range(1, 
         self.layout = QVBoxLayout()
-        self.layout.setContentsMargins(25,0,0,0)
+        # left, top, right, bottom
+        self.layout.setContentsMargins(25,0,MARGIN,MARGIN)
         self.layout.setSpacing(0)
         self.textbox = QPlainTextEdit(self)
         self.textbox.setStyleSheet("""
@@ -200,7 +280,8 @@ class MyBar(QWidget):
         self.layout = QHBoxLayout()
         # allow for 8 pixels at the right so we can resize right and top right
         # also 8 margin at the top so that the buttons don't get in the way of resizing
-        self.layout.setContentsMargins(0,8,8,0)
+        # left, top, right, bottom
+        self.layout.setContentsMargins(0,5,0,0)
         self.layout.setSpacing(0)
         self.title = QLabel("test.py" + " - notes app")
         self.title.setMouseTracking(True)
@@ -371,7 +452,7 @@ class MyBar(QWidget):
         if self.pressing and self.movingPosition:
             self.end = self.mapToGlobal(event.pos())
             self.movement = self.end-self.start
-            self.parent.setGeometry(self.mapToGlobal(self.movement).x() - MARGIN,
+            self.parent.setGeometry(self.mapToGlobal(self.movement).x(),
                                 self.mapToGlobal(self.movement).y(),
                                 self.parent.width(),
                                 self.parent.height())
@@ -500,6 +581,10 @@ MARGIN = 5
 TAB_SIZE = 4
 # variable to allow going back to previous size after maximizing
 isMaximized = False
+# variable to track the main textbox index in case I update the layout order
+textBoxIndex = 2
+# variable to track the number of default tabs currently open
+numEmptyTabs = 0
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -515,7 +600,7 @@ if __name__ == "__main__":
     mw = MainWindow()
     mw.show()
     # make the textbox be automatically in focus on startup
-    mw.layout.itemAt(1).widget().textbox.setFocus()
+    mw.layout.itemAt(textBoxIndex).widget().textbox.setFocus()
     # get text through python
     listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     listener.start()
