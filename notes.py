@@ -175,7 +175,6 @@ class TextField(QWidget):
             color: #D8DEE9;
             selection-color: #4C566A;
             selection-background-color: #D8DEE9;
-            caret-color:red;
                                 """)
         self.textbox.resize(self.parent.width() - 100, self.parent.height() - 100)
         self.textbox.move(0,0)
@@ -290,19 +289,25 @@ class MyBar(QWidget):
         self.top = False
         self.tl = False
         self.tr = False
-
-    def resizeEvent(self, QResizeEvent):
-        super(MyBar, self).resizeEvent(QResizeEvent)
-        self.title.setFixedWidth(self.parent.width())
-
+    
     # close the main window when the close button in the menu bar is pressed
     def btn_close_clicked(self):
         self.parent.close()
 
     def btn_max_clicked(self):
-        # if the maximize button is pressed on the menubar, it should call the maximize function of
-        # the parent window. It is a standard function, so it is not written in this code
-        self.parent.showMaximized()
+        global isMaximized
+        # if it is clicked while we are currently maximized, then it means we need to revert to
+        # lastPosition
+        if isMaximized:
+            self.parent.showNormal()
+            isMaximized = False
+        # if it is not maximized
+        else:
+            # if the maximize button is pressed on the menubar, it should call the maximize function of
+            # the parent window. It is a standard function, so it is not written in this code
+            self.parent.showMaximized()
+            # toggle isMax so we know the state
+            isMaximized = True
 
     def btn_min_clicked(self):
         # same with the show minimized
@@ -493,7 +498,8 @@ isAltDown = False
 MARGIN = 5
 # tab size
 TAB_SIZE = 4
-
+# variable to allow going back to previous size after maximizing
+isMaximized = False
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
