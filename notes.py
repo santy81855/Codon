@@ -7,7 +7,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QObject, QMimeData
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter
 from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QPlainTextEdit
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QLabel, QStackedWidget
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QWidget
@@ -85,9 +85,9 @@ def displayTextBox(index):
         mainWin.layout.removeItem(mainWin.layout.itemAt(textBoxIndex))
         mainWin.layout.addWidget(textBoxArr[index])
 
-
 # add a new textbox to go along with this tab making this tab the parent of that textbox
-def addTextBox():    
+def addTextBox():  
+    '''  
     global textBoxArr
     textWidget = TextField(mainWin)
     # if there is no textbox yet (when we are creating the mainwindow for the first time)
@@ -99,6 +99,35 @@ def addTextBox():
     else:
         mainWin.layout.removeItem(mainWin.layout.itemAt(textBoxIndex))
         mainWin.layout.addWidget(textWidget)
+    '''
+    #first create the new textbox widget
+    textbox = QPlainTextEdit(mainWin)
+    textbox.setStyleSheet("""
+        border: none;
+        font: 14pt "Consolas";
+        color: #D8DEE9;
+        selection-color: #4C566A;
+        selection-background-color: #D8DEE9;
+                            """)
+    textbox.resize(mainWin.width() - 100, mainWin.height() - 100)
+    textbox.move(0,0)
+    textbox.setLineWrapMode(textbox.WidgetWidth)
+    textbox.setCursorWidth(3)
+    textbox.setTabStopWidth(textbox.fontMetrics().width(' ') * TAB_SIZE)
+    # check if there is a stack of text boxes yet
+    # if not then there should only be the title adn tab bar
+    if mainWin.layout.count() == 2:
+        # create the stack of textbox widgets
+        stack = QStackedWidget(mainWin)
+        stack.addWidget(textbox)
+        mainWin.layout.addWidget(stack)
+        stack.setContentsMargins(8,0,5,5)
+        stack.setMouseTracking(True)
+    # if the stack is already created then we place the textbox on the stack
+    else:
+        mainWin.layout.itemAt(textBoxIndex).widget().addWidget(textbox)
+    # focus the cursor on the new text box
+    textbox.setFocus()
 
 def newTab(name):
     global tabCount
@@ -109,6 +138,7 @@ def newTab(name):
     tabCount += 1
     addTextBox()
 
+# need to change code to have a stackedwidget instead of just a textbox in the TextField
 class MainWindow(QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -130,15 +160,17 @@ class MainWindow(QWidget):
         self.tabLayout.setContentsMargins(MARGIN,0,MARGIN,0)
         # add the tab bar to the vertical layout
         self.layout.addLayout(self.tabLayout)     
-        # add the initial default tab that will open on launch
-        newTab("")
-        newTab("")
+        
+        
         #self.tabLayout.setSpacing(0)
            
         # add the initial textbox for the default tab
         #addTextBox()        
         #self.layout.addStretch(-1)
         self.setLayout(self.layout)
+        # add the initial default tab that will open on launch
+        newTab("")
+        newTab("")
         # make the default size be half the window
         self.setGeometry(startingLocation[0], startingLocation[1], startingLocation[0], startingLocation[1])
         #self.layout.setContentsMargins(MARGIN,0,MARGIN,MARGIN)
@@ -166,8 +198,8 @@ class MainWindow(QWidget):
     def on_focusChanged(self):
         global focused
         focused = self.isActiveWindow()
-        if focused:
-            self.layout.itemAt(textBoxIndex).widget().textbox.setFocus()
+        #if focused:
+         #   self.layout.itemAt(textBoxIndex).widget().textbox.setFocus()
 
     def mousePressEvent(self, event):
         pos = event.pos()
@@ -642,7 +674,7 @@ if __name__ == "__main__":
     mw = MainWindow()
     mw.show()
     # make the textbox be automatically in focus on startup
-    mw.layout.itemAt(textBoxIndex).widget().textbox.setFocus()
+    #mw.layout.itemAt(textBoxIndex).widget().textbox.setFocus()
     # get text through python
     listener = keyboard.Listener(on_press=on_press, on_release=on_release)
     listener.start()
