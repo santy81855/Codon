@@ -15,31 +15,8 @@ import textwrap
 from pynput import keyboard
 import string
 
-# add a new textbox to go along with this tab making this tab the parent of that textbox
-def addTextBox():    
-    global textBoxArr
-    textWidget = TextField(mainWin)
-    # make this textbox the focused one
-    if len(textBoxArr) > 0:
-        mainWin.layout.removeItem(mainWin.layout.itemAt(textBoxIndex))
-    # add this widget to the array of textboxes
-    textBoxArr.append(textWidget)            
-    mainWin.layout.addWidget(textWidget)
-    mainWin.setLayout(mainWin.layout)
-
-# function to add a new tab
-def addTab(name):
-    # create the new tab
-    print("here")
-    newTab = Tab(name, "")
-    # add it to the horizontal tab layout
-    print(tabWin.tabLayout)
-    tabWin.tabLayout.addWidget(Tab(name, ""))
-    print("here2")
-    addTextBox()
-
 class Tab(QWidget):
-    def __init__(self, fileName, fileLocation):
+    def __init__(self, fileName):
         super(Tab, self).__init__()
         global numEmptyTabs
         self.fileName = ""
@@ -49,9 +26,6 @@ class Tab(QWidget):
             numEmptyTabs += 1
         else:
             self.fileName = fileName
-        # the file location may be None if it is an empty default file
-        if fileLocation != "":        
-            self.fileLocation = fileLocation
         # create a layout that can store the tab and its close button
         self.singleTabLayout = QHBoxLayout()
         # create a button to represent the file
@@ -62,15 +36,15 @@ class Tab(QWidget):
         self.tabButton.setStyleSheet("""
             QPushButton
             {
-            background-color: #D8DEE9;
-            color: #4C566A;
+            background-color: #4C566A;
+            color: #D8DEE9;
             font: 14pt "Consolas";
             border: none;
             }
             QPushButton::hover
             {
-            background-color: #4C566A;
-            color: #D8DEE9;
+            background-color: #D8DEE9;
+            color: #4C566A;
             border: none;
             }
                                     """)
@@ -86,56 +60,83 @@ class Tab(QWidget):
         self.tabButton.setStyleSheet("""
             QPushButton
             {
-            background-color: #4C566A;
-            color: #D8DEE9;
+            background-color: #D8DEE9;
+            color: #4C566A;
             font: 14pt "Consolas";
             border: none;
             }
             QPushButton::hover
             {
-            background-color: #D8DEE9;
-            color: #4C566A;
+            background-color: #4C566A;
+            color: #D8DEE9;
             border: none;
             }-  
                                     """)
         # this is where I need to put the code to replace text currently in the textbox with text
         # from the file on the tab that was clicked
+        for i in range(0, len(tabArr)):
+            # if we find the right tab we know which textbox to display
+            if tabArr[i] == self:
+                displayTextBox(i)
 
-class TabBars(QWidget):
-    def __init__(self, parent):
-        super(TabBars, self).__init__()
-        self.parent = parent
-        self.tabLayout = QHBoxLayout()
-        self.tabLayout.addWidget(Tab("", ""))
-        # the line below properly adds a second tab
-        # self.tabLayout.addWidget(Tab(self, "hi", "hey"))
-        self.setLayout(self.tabLayout)
-        # left, top, right, bottom
-        # pad the left and right so we can still resize from that location
-        self.tabLayout.setContentsMargins(MARGIN,0,0,0)
-        #self.setGeometry(0, 0, 100, 100)
-        self.tabLayout.setSpacing(0)
-        self.tabLayout.addStretch(-1)    
-        self.setMouseTracking(True)
-        global tabWin
-        tabWin = self
+def displayTextBox(index):
+    # if we are not already displaing this tab
+    if mainWin.layout.itemAt(textBoxIndex).widget() != textBoxArr[index]:
+        mainWin.layout.removeItem(mainWin.layout.itemAt(textBoxIndex))
+        mainWin.layout.addWidget(textBoxArr[index])
+
+
+# add a new textbox to go along with this tab making this tab the parent of that textbox
+def addTextBox():    
+    global textBoxArr
+    textWidget = TextField(mainWin)
+    # if there is no textbox yet (when we are creating the mainwindow for the first time)
+    if len(textBoxArr) == 0:
+        mainWin.layout.addWidget(textWidget)
+        # add this widget to the array of textboxes
+        textBoxArr.append(textWidget)            
+    # if there is already a textbox then we remove it and replace it
+    else:
+        mainWin.layout.removeItem(mainWin.layout.itemAt(textBoxIndex))
+        mainWin.layout.addWidget(textWidget)
+
+def newTab(name):
+    global tabCount
+    global tabArr
+    tab = Tab(name)
+    tabArr.append(tab)
+    mainWin.tabLayout.insertWidget(tabCount, tab)
+    tabCount += 1
+    addTextBox()
 
 class MainWindow(QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
-        # set the opacity
-        self.setWindowOpacity(0.8)
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(MyBar(self))
-        self.layout.addWidget(TabBars(self))
         # store the main window widget
         global mainWin
+        global tabCount
         mainWin = self
-        #self.layout.addWidget(TextField(self))
+        # set the opacity
+        self.setWindowOpacity(0.8)
+        # vertical layout
+        self.layout = QVBoxLayout()
+        # add the title bar
+        self.layout.addWidget(MyBar(self))
+        # create a horizontal layout to represent the tab bar
+        self.tabLayout = QHBoxLayout()
+        self.tabLayout.addStretch(-1)
+        # left, top, right, bottom
+        # pad the left and right so we can still resize from that location
+        self.tabLayout.setContentsMargins(MARGIN,0,MARGIN,0)
+        # add the tab bar to the vertical layout
+        self.layout.addLayout(self.tabLayout)     
+        # add the initial default tab that will open on launch
+        newTab("")
+        newTab("")
+        #self.tabLayout.setSpacing(0)
+           
         # add the initial textbox for the default tab
-        addTextBox()
-        #addTextBox()
-        
+        #addTextBox()        
         #self.layout.addStretch(-1)
         self.setLayout(self.layout)
         # make the default size be half the window
@@ -618,9 +619,11 @@ textBoxIndex = 2
 # variable to track the number of default tabs currently open
 numEmptyTabs = 0
 # variable to track the index of the tab so we know the textbox associated with it
-tabIndex = 0
+tabCount = 0
 # array storing the textboxes
 textBoxArr = []
+# arraf storing the tabs
+tabArr = []
 # variables to store the mainwindow and tab bar
 mainWin = 0
 tabWin = 0
