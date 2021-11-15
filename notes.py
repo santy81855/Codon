@@ -1,7 +1,8 @@
 import sys
 from PyQt5 import QtCore
-from PyQt5.QtGui import QCursor
-from PyQt5.QtCore import QPoint
+from PyQt5 import QtGui
+from PyQt5.QtGui import QCursor, QMouseEvent, QFont, QKeySequence
+from PyQt5.QtCore import QPoint, pyqtSignal
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QObject
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter
@@ -23,10 +24,11 @@ class MainWindow(QWidget):
         self.layout = QVBoxLayout()
         self.layout.addWidget(MyBar(self))
         self.layout.addWidget(TextField(self))
+        #self.layout.addStretch(-1)
         self.setLayout(self.layout)
         # make the default size be half the window
         self.setGeometry(startingLocation[0], startingLocation[1], startingLocation[0], startingLocation[1])
-        self.layout.setContentsMargins(0,0,0,0)
+        self.layout.setContentsMargins(MARGIN,0,MARGIN,MARGIN)
         # the min height will be 600 x 600
         self.setMinimumSize(600, 600)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -50,7 +52,10 @@ class MainWindow(QWidget):
     def on_focusChanged(self):
         global focused
         focused = self.isActiveWindow()
-        
+        if focused:
+            self.layout.itemAt(1).widget().textbox.setFocus()
+
+
     def mousePressEvent(self, event):
         pos = event.pos()
         # set pressing to true
@@ -78,11 +83,10 @@ class MainWindow(QWidget):
             self.start = event.pos().y()
             self.bottom = True       
   
-    #SizeFDiagCursor
     def mouseMoveEvent(self, event):
         pos = event.pos()
         if self.pressing:
-            QApplication.restoreOverrideCursor()
+            QApplication.setOverrideCursor(Qt.ArrowCursor)
         # bottom left
         elif pos.y() >= self.height() - 5 and pos.x() <= 5 and pos.y() > 5:
             QApplication.setOverrideCursor(Qt.SizeBDiagCursor)
@@ -100,7 +104,7 @@ class MainWindow(QWidget):
             QApplication.setOverrideCursor(Qt.SizeHorCursor)
         else:
             if self.pressing == False:
-                QApplication.restoreOverrideCursor()
+                QApplication.setOverrideCursor(Qt.ArrowCursor)
         # if they are resizing
         # need to subtract the movement from the width/height 
         # but I also need to account for if they are resizing horizontally from the left or
@@ -137,7 +141,9 @@ class MainWindow(QWidget):
                     self.setGeometry(self.pos().x() + event.pos().x(), self.pos().y(), self.width() - event.pos().x(), self.height())
                 
     # if the mouse button is released then tag pressing as false
-    def mouseReleaseEvent(self, QMouseEvent):
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.RightButton:
+            return
         self.pressing = False
         self.movingPosition = False
         self.resizingWindow = False
@@ -146,6 +152,10 @@ class MainWindow(QWidget):
         self.bottom = False
         self.bl = False
         self.br = False
+    
+    def keyPressEvent(self, event):
+        QApplication.setOverrideCursor(Qt.IBeamCursor)
+
 
 class TextField(QWidget):
     def __init__(self, parent):
@@ -165,14 +175,20 @@ class TextField(QWidget):
             font: 14pt "Consolas";
             color: #D8DEE9;
                                 """)
-        self.textbox.resize(self.parent.width() - 6, self.parent.height() - 44)
+        self.textbox.resize(self.parent.width() - 100, self.parent.height() - 100)
         self.textbox.move(0,0)
+        #self.textbox.setReadOnly(True)
+        #self.textbox.ensureCursorVisible()
         self.textbox.setLineWrapMode(self.textbox.WidgetWidth)
+        self.textbox.acceptRichText()
         self.layout.addWidget(self.textbox)
         self.setLayout(self.layout)
-        
-class MyBar(QWidget):
+        self.setMouseTracking(True)
 
+    def keyPressEvent(self, event):
+        QApplication.setOverrideCursor(Qt.IBeamCursor)
+
+class MyBar(QWidget):
     def __init__(self, parent):
         super(MyBar, self).__init__()
         # make the main window the parent
@@ -289,6 +305,8 @@ class MyBar(QWidget):
         self.parent.showMinimized()
     
     def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            return
         pos = event.pos()
         self.pressing = True
         if pos.x() <= 8 or pos.x() >= self.parent.width() - 8 or pos.y() <= 8:
@@ -321,7 +339,7 @@ class MyBar(QWidget):
     def mouseMoveEvent(self, event):
         pos = event.pos()
         if self.pressing:
-            QApplication.restoreOverrideCursor()
+            QApplication.setOverrideCursor(Qt.ArrowCursor)
         # top left
         elif pos.x() <= 5 and pos.y() <= 5:
             QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
@@ -339,12 +357,12 @@ class MyBar(QWidget):
             QApplication.setOverrideCursor(Qt.SizeHorCursor)
         else:
             if self.pressing == False:
-                QApplication.restoreOverrideCursor()
+                QApplication.setOverrideCursor(Qt.ArrowCursor)
 
         if self.pressing and self.movingPosition:
             self.end = self.mapToGlobal(event.pos())
             self.movement = self.end-self.start
-            self.parent.setGeometry(self.mapToGlobal(self.movement).x(),
+            self.parent.setGeometry(self.mapToGlobal(self.movement).x() - MARGIN,
                                 self.mapToGlobal(self.movement).y(),
                                 self.parent.width(),
                                 self.parent.height())
@@ -392,6 +410,8 @@ class MyBar(QWidget):
 
 
     def mouseReleaseEvent(self, QMouseEvent):
+        if QMouseEvent.button() == Qt.RightButton:
+            return
         self.pressing = False
         self.resizingWindow = False
         self.movingPosition = False
@@ -405,39 +425,43 @@ def printStack():
     SHIFT = "Key.shift"
     ENTER = "Key.enter"
     SPACE = 'Key.space'
-    
+    '''
     for i in range(0, len(stack) - 1):
         if stack[i][0] == SPACE:
             print(" ")
         else:
             print(stack[i][0])
-
+    '''
 
 def on_press(key):
     global stack
-
     if focused:
-        try:
-            k = key.char # single key
-        except:
-            k = key.name # other keys
-        letter = [key, 0]
-        stack.append(letter)
+        # convert keycode to normal string
+        letter = str(key).replace("'", "")
+        letter = letter.replace("Key.", "")
+        if letter == 'o' or "enter" in letter or letter == 'A':
+            print('gottem')
+
+        if focused:
+            try:
+                k = key.char # single key
+            except:
+                k = key.name # other keys
+            stack.append(letter)
+        print(stack)
 
 def on_release(key):
     global stack
-
     if focused:
         try:
             k = key.char
         except:
             k = key.name
         
-        letter = [str(key), 1]
-        print(letter)
+        letter = str(key)
+        #print(letter)
         #stack.append(letter)
-        if letter == ["Key.enter", 1]:
-            printStack()
+
 # make the resolution global variables
 screen_resolution = 0
 width = 0
@@ -450,6 +474,8 @@ res["3440x1440"] = [1147, 480] # ultrawide
 res["3840x2160"] = [1160, 720] # 4k
 focused = False # variable to track if the gui is focused so it knows to track typing or not
 stack = []
+# variable to track the margins used on the main layout
+MARGIN = 5
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
