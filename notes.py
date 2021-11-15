@@ -15,11 +15,33 @@ import textwrap
 from pynput import keyboard
 import string
 
+# add a new textbox to go along with this tab making this tab the parent of that textbox
+def addTextBox():    
+    global textBoxArr
+    textWidget = TextField(mainWin)
+    # make this textbox the focused one
+    if len(textBoxArr) > 0:
+        mainWin.layout.removeItem(mainWin.layout.itemAt(textBoxIndex))
+    # add this widget to the array of textboxes
+    textBoxArr.append(textWidget)            
+    mainWin.layout.addWidget(textWidget)
+    mainWin.setLayout(mainWin.layout)
+
+# function to add a new tab
+def addTab(name):
+    # create the new tab
+    print("here")
+    newTab = Tab(name, "")
+    # add it to the horizontal tab layout
+    print(tabWin.tabLayout)
+    tabWin.tabLayout.addWidget(Tab(name, ""))
+    print("here2")
+    addTextBox()
+
 class Tab(QWidget):
-    def __init__(self, parent, fileName, fileLocation):
+    def __init__(self, fileName, fileLocation):
         super(Tab, self).__init__()
         global numEmptyTabs
-        self.parent = parent
         self.fileName = ""
         self.fileLocation = ""
         if fileName == "":
@@ -52,13 +74,11 @@ class Tab(QWidget):
             border: none;
             }
                                     """)
-
-        # create the textbox
-        
+        self.setMouseTracking(True)
         self.singleTabLayout.addWidget(self.tabButton)
         self.setLayout(self.singleTabLayout)
         # left, top, right, bottom
-        self.singleTabLayout.setContentsMargins(MARGIN,0,0,0)
+        self.singleTabLayout.setContentsMargins(0,0,0,0)        
 
     def tabClicked(self):
         # when we click the tab, we want to focus the tab by changing its color to be the same as
@@ -76,7 +96,7 @@ class Tab(QWidget):
             background-color: #D8DEE9;
             color: #4C566A;
             border: none;
-            }
+            }-  
                                     """)
         # this is where I need to put the code to replace text currently in the textbox with text
         # from the file on the tab that was clicked
@@ -86,14 +106,19 @@ class TabBars(QWidget):
         super(TabBars, self).__init__()
         self.parent = parent
         self.tabLayout = QHBoxLayout()
-        self.tabLayout.addWidget(Tab(self.parent, "", ""))
+        self.tabLayout.addWidget(Tab("", ""))
+        # the line below properly adds a second tab
+        # self.tabLayout.addWidget(Tab(self, "hi", "hey"))
         self.setLayout(self.tabLayout)
         # left, top, right, bottom
         # pad the left and right so we can still resize from that location
-        self.tabLayout.setContentsMargins(0,0,0,0)
+        self.tabLayout.setContentsMargins(MARGIN,0,0,0)
         #self.setGeometry(0, 0, 100, 100)
-        #self.tabLayout.setSpacing(0)
-        self.tabLayout.addStretch(-1)        
+        self.tabLayout.setSpacing(0)
+        self.tabLayout.addStretch(-1)    
+        self.setMouseTracking(True)
+        global tabWin
+        tabWin = self
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -103,7 +128,14 @@ class MainWindow(QWidget):
         self.layout = QVBoxLayout()
         self.layout.addWidget(MyBar(self))
         self.layout.addWidget(TabBars(self))
-        self.layout.addWidget(TextField(self))
+        # store the main window widget
+        global mainWin
+        mainWin = self
+        #self.layout.addWidget(TextField(self))
+        # add the initial textbox for the default tab
+        addTextBox()
+        #addTextBox()
+        
         #self.layout.addStretch(-1)
         self.setLayout(self.layout)
         # make the default size be half the window
@@ -530,8 +562,8 @@ def on_press(key):
         # convert keycode to normal string
         letter = str(key).replace("'", "")
         letter = letter.replace("Key.", "")
-        if letter == 'o' or "enter" in letter or letter == 'A':
-            print('gottem')
+        if "enter" in letter or letter == 'A':
+            addTab("hello")
         if letter == 'ctrl_l' or letter == 'ctrl_r':
             isControlDown = True
         if isControlDown:
@@ -585,6 +617,13 @@ isMaximized = False
 textBoxIndex = 2
 # variable to track the number of default tabs currently open
 numEmptyTabs = 0
+# variable to track the index of the tab so we know the textbox associated with it
+tabIndex = 0
+# array storing the textboxes
+textBoxArr = []
+# variables to store the mainwindow and tab bar
+mainWin = 0
+tabWin = 0
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
