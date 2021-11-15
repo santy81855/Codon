@@ -439,30 +439,37 @@ def printStack():
 
 def on_press(key):
     global stack
+    global isControlDown
     if focused:
         # convert keycode to normal string
         letter = str(key).replace("'", "")
         letter = letter.replace("Key.", "")
         if letter == 'o' or "enter" in letter or letter == 'A':
             print('gottem')
-
-        if focused:
-            try:
-                k = key.char # single key
-            except:
-                k = key.name # other keys
+        if letter == 'ctrl_l' or letter == 'ctrl_r':
+            isControlDown = True
+        if isControlDown:
+            print(letter)
+            if "x13" in letter:
+                print("save instead of storing teh s")
+        else:
             stack.append(letter)
         print(stack)
 
 def on_release(key):
     global stack
+    global isControlDown
     if focused:
+        # convert keycode to normal string
+        letter = str(key).replace("'", "")
+        letter = letter.replace("Key.", "")
+        if letter == "ctrl_l" or letter == "ctrl_r":
+            isControlDown = False
         try:
             k = key.char
         except:
             k = key.name
-        
-        letter = str(key)
+
         #print(letter)
         #stack.append(letter)
 
@@ -478,10 +485,15 @@ res["3440x1440"] = [1147, 480] # ultrawide
 res["3840x2160"] = [1160, 720] # 4k
 focused = False # variable to track if the gui is focused so it knows to track typing or not
 stack = []
+# variables to track if modifiers are currently held down
+isControlDown = False
+isShiftDown = False
+isAltDown = False
 # variable to track the margins used on the main layout
 MARGIN = 5
 # tab size
 TAB_SIZE = 4
+
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
