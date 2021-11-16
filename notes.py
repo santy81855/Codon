@@ -1,13 +1,16 @@
 import sys
 from PyQt5 import QtCore
 from PyQt5 import QtGui
+#
+
+#
 from PyQt5.QtGui import QCursor, QMouseEvent, QFont, QKeySequence
 from PyQt5.QtCore import QPoint, pyqtSignal
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QObject, QMimeData
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter
-from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QPlainTextEdit
-from PyQt5.QtWidgets import QLabel, QStackedWidget
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter, QFileDialog
+from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QPlainTextEdit, QShortcut
+from PyQt5.QtWidgets import QLabel, QStackedWidget, QMessageBox
 from PyQt5.QtWidgets import QPushButton
 from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QWidget
@@ -15,8 +18,12 @@ import textwrap
 from pynput import keyboard
 import string
 
+#-------------------------------------------------------------------------------------------------#
+
+#-------------------------------------------------------------------------------------------------#
+
 class Tab(QWidget):
-    def __init__(self, fileName):
+    def __init__(self, fileName, filePath):
         super(Tab, self).__init__()
         global numEmptyTabs
         self.fileName = ""
@@ -26,13 +33,20 @@ class Tab(QWidget):
             numEmptyTabs += 1
         else:
             self.fileName = fileName
+        # add the file path
+        if filePath == "":
+            self.filePath = ""
+        else:
+            self.filePath = filePath
+        self.isSaved = False
         # create a layout that can store the tab and its close button
         self.singleTabLayout = QHBoxLayout()
         # create a button to represent the file
         self.tabButton = QPushButton(self.fileName)
         self.tabButton.setMouseTracking(True)
         self.tabButton.clicked.connect(self.tabClicked)
-        self.tabButton.setFixedSize(200, 40)
+        self.tabButton.setMinimumSize(200, 40)
+        self.tabButton.adjustSize()
         self.tabButton.setStyleSheet("""
             QPushButton
             {
@@ -40,19 +54,22 @@ class Tab(QWidget):
             color: #D8DEE9;
             font: 14pt "Consolas";
             border: none;
+            padding: 10px;
             }
             QPushButton::hover
             {
-            background-color: #D8DEE9;
-            color: #4C566A;
+            background-color: #ECEFF4;
+            color: #2E3440;
             border: none;
-            }
+            padding: 10px;
+            }-  
                                     """)
         self.setMouseTracking(True)
         self.singleTabLayout.addWidget(self.tabButton)
         self.setLayout(self.singleTabLayout)
         # left, top, right, bottom
         self.singleTabLayout.setContentsMargins(0,0,0,0)        
+        self.tabClicked()
 
     def tabClicked(self):
         # when we click the tab, we want to focus the tab by changing its color to be the same as
@@ -60,84 +77,49 @@ class Tab(QWidget):
         self.tabButton.setStyleSheet("""
             QPushButton
             {
-            background-color: #D8DEE9;
+            background-color: #D8DEE1;
             color: #4C566A;
             font: 14pt "Consolas";
             border: none;
+            padding: 10px;
             }
             QPushButton::hover
             {
-            background-color: #4C566A;
-            color: #D8DEE9;
+            background-color: #ECEFE1;
+            color: #2E3440;
             border: none;
+            padding: 10px;
             }-  
                                     """)
-        # this is where I need to put the code to replace text currently in the textbox with text
-        # from the file on the tab that was clicked
+        # Go to the contents of the tab that was clicked
         for i in range(0, len(tabArr)):
             # if we find the right tab we know which textbox to display
             if tabArr[i] == self:
-                displayTextBox(i)
-
-def displayTextBox(index):
-    # if we are not already displaing this tab
-    if mainWin.layout.itemAt(textBoxIndex).widget() != textBoxArr[index]:
-        mainWin.layout.removeItem(mainWin.layout.itemAt(textBoxIndex))
-        mainWin.layout.addWidget(textBoxArr[index])
-
-# add a new textbox to go along with this tab making this tab the parent of that textbox
-def addTextBox():  
-    '''  
-    global textBoxArr
-    textWidget = TextField(mainWin)
-    # if there is no textbox yet (when we are creating the mainwindow for the first time)
-    if len(textBoxArr) == 0:
-        mainWin.layout.addWidget(textWidget)
-        # add this widget to the array of textboxes
-        textBoxArr.append(textWidget)            
-    # if there is already a textbox then we remove it and replace it
-    else:
-        mainWin.layout.removeItem(mainWin.layout.itemAt(textBoxIndex))
-        mainWin.layout.addWidget(textWidget)
-    '''
-    #first create the new textbox widget
-    textbox = QPlainTextEdit(mainWin)
-    textbox.setStyleSheet("""
-        border: none;
-        font: 14pt "Consolas";
-        color: #D8DEE9;
-        selection-color: #4C566A;
-        selection-background-color: #D8DEE9;
-                            """)
-    textbox.resize(mainWin.width() - 100, mainWin.height() - 100)
-    textbox.move(0,0)
-    textbox.setLineWrapMode(textbox.WidgetWidth)
-    textbox.setCursorWidth(3)
-    textbox.setTabStopWidth(textbox.fontMetrics().width(' ') * TAB_SIZE)
-    # check if there is a stack of text boxes yet
-    # if not then there should only be the title adn tab bar
-    if mainWin.layout.count() == 2:
-        # create the stack of textbox widgets
-        stack = QStackedWidget(mainWin)
-        stack.addWidget(textbox)
-        mainWin.layout.addWidget(stack)
-        stack.setContentsMargins(8,0,5,5)
-        stack.setMouseTracking(True)
-    # if the stack is already created then we place the textbox on the stack
-    else:
-        mainWin.layout.itemAt(textBoxIndex).widget().addWidget(textbox)
-    # focus the cursor on the new text box
-    textbox.setFocus()
-
-def newTab(name):
-    global tabCount
-    global tabArr
-    tab = Tab(name)
-    tabArr.append(tab)
-    mainWin.tabLayout.insertWidget(tabCount, tab)
-    tabCount += 1
-    addTextBox()
-
+                print("here on tab {}".format(i))
+                mainWin.displayTextBox(i)
+            # if it's not the right tab then color it in the unfocused color
+            else:
+                tabArr[i].tabButton.setStyleSheet("""
+            QPushButton
+            {
+            background-color: #4C566A;
+            color: #D8DEE9;
+            font: 14pt "Consolas";
+            border: none;
+            padding: 10px;
+            }
+            QPushButton::hover
+            {
+            background-color: #ECEFF4;
+            color: #2E3440;
+            border: none;
+            padding: 10px;
+            }-  
+                                    """)
+        
+        # change the title of the window to be the tab name
+        titleBar.title.setText(self.fileName)
+        
 # need to change code to have a stackedwidget instead of just a textbox in the TextField
 class MainWindow(QWidget):
     def __init__(self):
@@ -147,7 +129,7 @@ class MainWindow(QWidget):
         global tabCount
         mainWin = self
         # set the opacity
-        self.setWindowOpacity(0.8)
+        self.setWindowOpacity(0.9)
         # vertical layout
         self.layout = QVBoxLayout()
         # add the title bar
@@ -160,17 +142,10 @@ class MainWindow(QWidget):
         self.tabLayout.setContentsMargins(MARGIN,0,MARGIN,0)
         # add the tab bar to the vertical layout
         self.layout.addLayout(self.tabLayout)     
-        
-        
-        #self.tabLayout.setSpacing(0)
-           
-        # add the initial textbox for the default tab
-        #addTextBox()        
-        #self.layout.addStretch(-1)
+        # set the layout
         self.setLayout(self.layout)
         # add the initial default tab that will open on launch
-        newTab("")
-        newTab("")
+        self.newTabEmpty()
         # make the default size be half the window
         self.setGeometry(startingLocation[0], startingLocation[1], startingLocation[0], startingLocation[1])
         #self.layout.setContentsMargins(MARGIN,0,MARGIN,MARGIN)
@@ -195,11 +170,318 @@ class MainWindow(QWidget):
         self.setMouseTracking(True)
         app.focusChanged.connect(self.on_focusChanged)
 
+        self.shortcut_newTab = QShortcut(QKeySequence('Ctrl+t'), self)
+        self.shortcut_newTab.activated.connect(self.newTabEmpty)
+        
+        self.shortcut_prevTab = QShortcut(QKeySequence('Ctrl+PgUp'), self)
+        self.shortcut_prevTab.activated.connect(self.prevTab)
+
+        self.shortcut_nextTab = QShortcut(QKeySequence('Ctrl+PgDown'), self)
+        self.shortcut_nextTab.activated.connect(self.nextTab)
+
+        # not ready to implement new window
+        #self.shortcut_newWindow = QShortcut(QKeySequence('Ctrl+n'), self)
+        #self.shortcut_newWindow.activated.connect(self.newWindow)
+
+        self.shortcut_closeTab = QShortcut(QKeySequence('Ctrl+w'), self)
+        self.shortcut_closeTab.activated.connect(self.closeTab)
+
+        self.shortcut_openFile = QShortcut(QKeySequence('Ctrl+o'), self)
+        self.shortcut_openFile.activated.connect(self.openFile)
+
+        self.shortcut_saveFile = QShortcut(QKeySequence('Ctrl+s'), self)
+        self.shortcut_saveFile.activated.connect(self.saveFile)
+
+        # highlight thecurrent line
+        textBoxArr[currentActiveTextBox].cursorPositionChanged.connect(self.posish)
+    
+    def posish(self):
+        print("hi")
+
+    def setSavedToFalse(self):
+        tabArr[currentActiveTextBox].isSaved = False
+
+    def saveFile(self):
+        global currentActiveTextBox
+        # detect if there was a change in the active text edit, and if so change the corresponding
+        # tab's isSaved to False
+        textBoxArr[currentActiveTextBox].textChanged.connect(self.setSavedToFalse)
+        
+        # only save if there have been no changes
+        if tabArr[currentActiveTextBox].isSaved == False:
+            tabFound = False
+            # if the file I am working on is new then open dialog
+            if tabArr[currentActiveTextBox].filePath == "":
+                aTuple = QFileDialog.getSaveFileName(self, 'Save As: ', '', 'All Files (*)')
+                filePath = aTuple[0]
+                # check if the file being saved is already open in the editor
+                # if it is then just save that tab and mark it as found
+                for tab in tabArr:
+                    if tab.filePath == filePath:
+                        tabFound = True
+                        curTab = tabArr.index(tab)
+
+                # store the filePath
+                tabArr[currentActiveTextBox].filePath = filePath
+            # if the file is not new then the dialog won't pop up because this isn't save as
+            else:
+                filePath = tabArr[currentActiveTextBox].filePath
+            if filePath != '':
+                # get the name of the file
+                name = filePath
+                end = len(name) - 1
+                c = name[end]
+                start = end
+                while c != '/' and c != '"\"':
+                    start -= 1
+                    c = name[start]
+                finalName = ''
+                for i in range(start+1, end +1 ):
+                    finalName = finalName + name[i]
+
+                # this only applies to the default name tabs, since otherwise when you save the name
+                # stays the same
+                if tabArr[currentActiveTextBox].fileName != finalName:
+                    tabArr[currentActiveTextBox].fileName = finalName
+
+                tabArr[currentActiveTextBox].tabButton.setText(finalName)
+
+                f = open(filePath, "w")
+                if tabFound:
+                    # change the contents of the original file
+                    f.write(textBoxArr[curTab].toPlainText())
+                    # set the isSaved indicator to True
+                    tabArr[curTab].isSaved = True
+                    # store the tab we want to land on
+                    tempTab = tabArr[curTab]
+                    # finally close the current active tab
+                    self.closeTab()
+                    # now move to the tab we were on
+                    tempTab.tabClicked()
+                else:
+                    f.write(textBoxArr[currentActiveTextBox].toPlainText())
+                    tabArr[currentActiveTextBox].isSaved = True
+                    # click on it so that the title of the window changes to match the tab
+                    tabArr[currentActiveTextBox].tabClicked()
+                f.close()
+
+    def openFile(self):
+        #QFileDialog.getOpenFileName(self, "Files", "All Files (*)")
+        aTuple = QFileDialog.getOpenFileName(self, 'Open: ', '', 'All Files (*)')
+        if aTuple[0] != '':
+            # read the contents of the file into a variable
+            with open(aTuple[0]) as f:
+            #   lines = f.readlines()
+                content = f.read()
+            f.close()
+
+            tabFound = False
+            # see if you are opening a file that is already open in the editor
+            for tab in tabArr:
+                if tab.filePath == aTuple[0]:
+                    tabFound = True
+                    tab.tabClicked()
+            if tabFound == False:
+                # get the name of the file
+                name = aTuple[0]
+                end = len(name) - 1
+                c = name[end]
+                start = end
+                while c != '/' and c != '"\"':
+                    start -= 1
+                    c = name[start]
+                finalName = ''
+                for i in range(start+1, end +1 ):
+                    finalName = finalName + name[i]
+                print(finalName)
+                # create a new tab with the name of the file that was opened
+                self.newTab(finalName, aTuple[0], content)
+    
+    def popup_clicked(self, i):
+        print("hello")
+
+    def closeTab(self):
+        global currentActiveTextBox
+        # for storing closed tabs to be able to restore them
+        global tabStack
+        okayToClose = False
+        isCancelled = False
+        # check that tab isSaved before deleting it
+        if tabArr[currentActiveTextBox].isSaved == False:
+            msg = QMessageBox()
+            msg.setWindowTitle("Notes")
+            msg.setText("Do you want to save changes before closing?")
+            msg.setStandardButtons(QMessageBox.Save | QMessageBox.No | QMessageBox.Cancel)
+            msg.setDefaultButton(QMessageBox.Save)
+            msg.setIcon(QMessageBox.Question)
+            # cancel = 4194304
+            # no = 65536
+            # else yes lol
+            ans = msg.exec_()
+            # they would not like to save before closing
+            if ans == 65536:
+                okayToClose = True
+            # they would like to cancel
+            elif ans == 4194304:
+                isCancelled = True
+            # if they would like to save
+            else:
+                okayToClose = False
+            
+        if isCancelled == False:    
+            # close tab and textbox at currentactivetextbox
+            if len(tabArr) > 1 and okayToClose:
+                self.layout.itemAt(textBoxIndex).widget().removeWidget(textBoxArr[currentActiveTextBox])
+                # remove the tab from the tab bar
+                self.tabLayout.removeWidget(tabArr[currentActiveTextBox])
+                # remove the tab from the tab array
+                tabArr.remove(tabArr[currentActiveTextBox])
+                # remove the textbox from the array
+                textBoxArr.remove(textBoxArr[currentActiveTextBox])
+
+                # if we removed the last tab close the program
+                if len(tabArr) == 0:
+                    self.close()
+                
+                # if the tab we just removed is the first tab
+                if currentActiveTextBox == 0:
+                    # just shift over to the tab to its right by staying at index 0
+                    tabArr[currentActiveTextBox].tabClicked()
+
+                # if we just removed the last tab
+                elif currentActiveTextBox == len(tabArr):
+                    # we just shift over to the left
+                    print(currentActiveTextBox)
+                    tabArr[currentActiveTextBox - 1].tabClicked()
+                    print(currentActiveTextBox)
+                
+                # finally if we remove any old random tab around the middle
+                else:
+                    # use the tab on the left
+                    tabArr[currentActiveTextBox - 1].tabClicked()
+            
+            # if we press close when there is one tab or 0 tabs we just close the window if it's okay
+            elif len(tabArr) == 1 and okayToClose:
+                self.close()
+            
+            # otherwise they want to save, so we can call on the save function
+            else:
+                self.saveFile()
+
+    def nextTab(self):
+        if tabCycle == True:
+            # if we are on the last text box we cant go out of bounds
+            if currentActiveTextBox < len(tabArr) - 1: 
+                if len(tabArr) > 1:
+                    tabArr[currentActiveTextBox + 1].tabClicked()
+            # if we are on the very last text box
+            else:
+                # and there is more than 1 box
+                if len(tabArr) > 1:
+                    tabArr[0].tabClicked()
+        # if we don't want to cycle we just do the same as above except we do nothing if we are at 0
+        else:
+             # if we are on the first text box we cant go into the negatives so we display the last one
+            if currentActiveTextBox < len(tabArr) - 1: 
+                if len(tabArr) > 1:
+                    tabArr[currentActiveTextBox + 1].tabClicked()
+
+    def prevTab(self):
+        if tabCycle == True:
+            # if we are on the first text box we cant go into the negatives so we display the last one
+            if currentActiveTextBox > 0: 
+                if len(tabArr) > 1:
+                    tabArr[currentActiveTextBox - 1].tabClicked()
+            # if we are on the very first text box
+            else:
+                # and there is more than 1 box
+                if len(tabArr) > 1:
+                    tabArr[len(tabArr) - 1].tabClicked()
+        # if we don't want to cycle we just do the same as above except we do nothing if we are at 0
+        else:
+             # if we are on the first text box we cant go into the negatives so we display the last one
+            if currentActiveTextBox > 0: 
+                if len(tabArr) > 1:
+                    tabArr[currentActiveTextBox - 1].tabClicked()
+
+    def displayTextBox(self, index):
+        # if we are not already displaing this tab
+        #if mainWin.layout.itemAt(textBoxIndex).widget().currentWidget() != textBoxArr[index]:
+        global currentActiveTextBox
+        currentActiveTextBox = index
+        mainWin.layout.itemAt(textBoxIndex).widget().setCurrentWidget(textBoxArr[index])
+        mainWin.layout.itemAt(textBoxIndex).widget().currentWidget().setFocus()
+        print("current active text box = ", currentActiveTextBox)
+
+    # add a new textbox to go along with this tab making this tab the parent of that textbox
+    def addTextBox(self, contents):  
+        global textBoxArr
+        global currentActiveTextBox
+        #first create the new textbox widget
+        textbox = QPlainTextEdit(mainWin)
+        textbox.setStyleSheet("""
+            border: none;
+            font: 14pt "Consolas";
+            color: #D8DEE9;
+            selection-color: #4C566A;
+            selection-background-color: #D8DEE9;
+                                """)
+        textbox.resize(mainWin.width() - 100, mainWin.height() - 100)
+        textbox.move(0,0)
+        textbox.setLineWrapMode(textbox.WidgetWidth)
+        textbox.setCursorWidth(3)
+        textbox.setTabStopWidth(textbox.fontMetrics().width(' ') * TAB_SIZE)
+        #------------------------------------------------------------------------#
+        font = QFont()
+        font.setFamily("Consolas")
+        font.setFixedPitch( True )
+        font.setPointSize( 14 )
+        textbox.setFont( font )
+        #------------------------------------------------------------------------#
+        # add the contents of the file to the textbox
+        textbox.setPlainText(contents)
+        textBoxArr.append(textbox)
+        # check if there is a stack of text boxes yet
+        # if not then there should only be the title adn tab bar
+        if mainWin.layout.count() == 2:
+            # create the stack of textbox widgets
+            stack = QStackedWidget(mainWin)
+            stack.addWidget(textbox)
+            mainWin.layout.addWidget(stack)
+            stack.setContentsMargins(START_INDENT,0,5,5)
+            stack.setMouseTracking(True)
+        # if the stack is already created then we place the textbox on the stack
+        else:
+            mainWin.layout.itemAt(textBoxIndex).widget().addWidget(textbox)
+        # make the textbox we just added the current widget
+        mainWin.layout.itemAt(textBoxIndex).widget().setCurrentWidget(textbox)
+        # save the current active text box
+        currentActiveTextBox = len(textBoxArr) - 1
+        print("current active text box = ", currentActiveTextBox)
+        # focus the cursor on the new text box
+        textbox.setFocus()
+
+    def newTab(self, name, filePath, contents):
+        global tabCount
+        global tabArr
+        tab = Tab(name, filePath)
+        tabArr.append(tab)
+        mainWin.tabLayout.insertWidget(tabCount, tab)
+        tabCount += 1
+        self.addTextBox(contents)
+
+    def newTabEmpty(self):
+        global tabCount
+        global tabArr
+        tab = Tab("", "")
+        tabArr.append(tab)
+        mainWin.tabLayout.insertWidget(tabCount, tab)
+        tabCount += 1
+        self.addTextBox("")
+
     def on_focusChanged(self):
         global focused
         focused = self.isActiveWindow()
-        #if focused:
-         #   self.layout.itemAt(textBoxIndex).widget().textbox.setFocus()
 
     def mousePressEvent(self, event):
         pos = event.pos()
@@ -298,47 +580,15 @@ class MainWindow(QWidget):
         self.bl = False
         self.br = False
     
-    def keyPressEvent(self, event):
-        QApplication.setOverrideCursor(Qt.IBeamCursor)
-
-class TextField(QWidget):
-    def __init__(self, parent):
-        super(TextField, self).__init__()
-        self.parent = parent
-        # need a layout that will allow for vertical numbering on the left
-        self.vertLayout = QVBoxLayout()
-        self.vertLayout.setContentsMargins(0,0,0,0)
-        
-        self.layout = QVBoxLayout()
-        # left, top, right, bottom
-        self.layout.setContentsMargins(25,0,MARGIN,MARGIN)
-        self.layout.setSpacing(0)
-        self.textbox = QPlainTextEdit(self)
-        self.textbox.setStyleSheet("""
-            border: none;
-            font: 14pt "Consolas";
-            color: #D8DEE9;
-            selection-color: #4C566A;
-            selection-background-color: #D8DEE9;
-                                """)
-        self.textbox.resize(self.parent.width() - 100, self.parent.height() - 100)
-        self.textbox.move(0,0)
-        #self.textbox.setReadOnly(True)
-        #self.textbox.ensureCursorVisible()
-        self.textbox.setLineWrapMode(self.textbox.WidgetWidth)
-        #self.textbox.acceptRichText()
-        self.layout.addWidget(self.textbox)
-        self.setLayout(self.layout)
-        self.setMouseTracking(True)
-        self.textbox.setCursorWidth(3)
-        self.textbox.setTabStopWidth(self.textbox.fontMetrics().width(' ') * TAB_SIZE)
-
-    def keyPressEvent(self, event):
-        QApplication.setOverrideCursor(Qt.IBeamCursor)
+    def tabLeft(self):
+        print("here")
+        self.displayTextBox(currentActiveTextBox - 1)
 
 class MyBar(QWidget):
     def __init__(self, parent):
         super(MyBar, self).__init__()
+        global titleBar
+        titleBar = self
         # make the main window the parent
         self.parent = parent
         # create the layout to store the titlebar and buttons horizontally
@@ -350,7 +600,7 @@ class MyBar(QWidget):
         self.layout.setSpacing(0)
         self.title = QLabel("test.py" + " - notes app")
         self.title.setMouseTracking(True)
-
+        
         btn_size = 35
 
         self.btn_close = QPushButton("x")
@@ -576,54 +826,6 @@ class MyBar(QWidget):
         self.right = False
         self.tr = False
 
-def printStack():
-    SHIFT = "Key.shift"
-    ENTER = "Key.enter"
-    SPACE = 'Key.space'
-    '''
-    for i in range(0, len(stack) - 1):
-        if stack[i][0] == SPACE:
-            print(" ")
-        else:
-            print(stack[i][0])
-    '''
-
-def on_press(key):
-    global stack
-    global isControlDown
-    if focused:
-        # convert keycode to normal string
-        letter = str(key).replace("'", "")
-        letter = letter.replace("Key.", "")
-        if "enter" in letter or letter == 'A':
-            addTab("hello")
-        if letter == 'ctrl_l' or letter == 'ctrl_r':
-            isControlDown = True
-        if isControlDown:
-            print(letter)
-            if "x13" in letter:
-                print("save instead of storing teh s")
-        else:
-            stack.append(letter)
-        print(stack)
-
-def on_release(key):
-    global stack
-    global isControlDown
-    if focused:
-        # convert keycode to normal string
-        letter = str(key).replace("'", "")
-        letter = letter.replace("Key.", "")
-        if letter == "ctrl_l" or letter == "ctrl_r":
-            isControlDown = False
-        try:
-            k = key.char
-        except:
-            k = key.name
-
-        #print(letter)
-        #stack.append(letter)
-
 # make the resolution global variables
 screen_resolution = 0
 width = 0
@@ -642,8 +844,10 @@ isShiftDown = False
 isAltDown = False
 # variable to track the margins used on the main layout
 MARGIN = 5
+# variable to make the starting indent on the textbox 
+START_INDENT = 50
 # tab size
-TAB_SIZE = 4
+TAB_SIZE = 8
 # variable to allow going back to previous size after maximizing
 isMaximized = False
 # variable to track the main textbox index in case I update the layout order
@@ -656,9 +860,15 @@ tabCount = 0
 textBoxArr = []
 # arraf storing the tabs
 tabArr = []
-# variables to store the mainwindow and tab bar
+# variables to store the mainwindow and title bar
 mainWin = 0
-tabWin = 0
+titleBar = 0
+# index of current active textbox
+currentActiveTextBox = -1
+# if tabs cycling should wrap around
+tabCycle = True
+# stack to store closed tabs so we can reopen them
+tabStack = []
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
@@ -674,8 +884,6 @@ if __name__ == "__main__":
     mw = MainWindow()
     mw.show()
     # make the textbox be automatically in focus on startup
-    #mw.layout.itemAt(textBoxIndex).widget().textbox.setFocus()
-    # get text through python
-    listener = keyboard.Listener(on_press=on_press, on_release=on_release)
-    listener.start()
+    mainWin.layout.itemAt(textBoxIndex).widget().currentWidget().setFocus()
+
     sys.exit(app.exec_())
