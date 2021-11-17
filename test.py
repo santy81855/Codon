@@ -116,7 +116,7 @@ for i in range(0, 1000):
     usedNums.append(False)
 
 class Tab(QWidget):
-    def __init__(self, fileName, filePath):
+    def __init__(self, fileName, filePath, contents):
         super(Tab, self).__init__()
         global usedNums
         self.fileName = ""
@@ -136,7 +136,10 @@ class Tab(QWidget):
             self.filePath = ""
         else:
             self.filePath = filePath
+        # variable to check if it is up to date
         self.isSaved = False
+        # variable to store the contents of the text box
+        self.contents = contents
         # create a layout that can store the tab and its close button
         self.singleTabLayout = QHBoxLayout()
         # create a button to represent the file
@@ -341,10 +344,12 @@ class MainWindow(QWidget):
         self.textbox.textChanged.connect(self.setSavedToFalse)
 
     def restoreTab(self):
-        print(tabStack)
+        for tab in tabArr:
+            print(tab.contents)
 
     def setSavedToFalse(self):
         global isShortCut
+        global tabArr
         # if the last thing pressed was a shortcut we don't really have to do anything since there
         # are no text differences to store
         if isShortCut:
@@ -353,7 +358,8 @@ class MainWindow(QWidget):
         else:            
             tabArr[currentActiveTextBox].isSaved = False
             # update the values in the textbox array
-            textBoxArr[currentActiveTextBox] = self.textbox.toPlainText()
+            #textBoxArr[currentActiveTextBox] = self.textbox.toPlainText()
+            tabArr[currentActiveTextBox].contents = self.textbox.toPlainText()
 
     def saveFile(self):
         global currentActiveTextBox
@@ -413,7 +419,8 @@ class MainWindow(QWidget):
                     # now move to the tab we were on
                     tempTab.tabClicked()
                 else:
-                    f.write(textBoxArr[currentActiveTextBox])
+                    #f.write(textBoxArr[currentActiveTextBox])
+                    f.write(tabArr[currentActiveTextBox].contents)
                     tabArr[currentActiveTextBox].isSaved = True
                     # click on it so that the title of the window changes to match the tab
                     tabArr[currentActiveTextBox].tabClicked()
@@ -469,7 +476,7 @@ class MainWindow(QWidget):
         okayToClose = True
         isCancelled = False
         # if it is just an untitled empty page, we can set it as saved since nothing is lost
-        if "untitled" in tabArr[currentActiveTextBox].fileName and textBoxArr[currentActiveTextBox] == "":
+        if "untitled" in tabArr[currentActiveTextBox].fileName and tabArr[currentActiveTextBox].contents != "":#textBoxArr[currentActiveTextBox] == "":
             tabArr[currentActiveTextBox].isSaved = True
     
         # check that tab isSaved before deleting it
@@ -521,15 +528,18 @@ class MainWindow(QWidget):
                         #tabStack.append(copy.deepcopy(tabs))
                         tabs.deleteLater()
                 # store the tab and textbox contents
+                '''
                 temp = []
                 temp.append(tabArr[currentActiveTextBox])
                 temp.append(textBoxArr[currentActiveTextBox])
                 tabStack.append(temp)
+                '''
+                tabStack.append(tabArr[currentActiveTextBox])
                 tabArr.remove(tabArr[currentActiveTextBox])
                 tabCount -= 1
                 # get rid of the contents of the tab we are removing since to be here it is either
                 # saved already or they don't care if it gets deleted
-                textBoxArr.remove(textBoxArr[currentActiveTextBox])
+                #textBoxArr.remove(textBoxArr[currentActiveTextBox])
 
                 # if we removed the last tab close the program
                 if len(tabArr) == 0:
@@ -606,7 +616,8 @@ class MainWindow(QWidget):
         # make the tab that was clicked the active one
         currentActiveTextBox = index
         # restore the text that there was on that tab
-        self.textbox.setPlainText(textBoxArr[currentActiveTextBox])
+        #self.textbox.setPlainText(textBoxArr[currentActiveTextBox])
+        self.textbox.setPlainText(tabArr[currentActiveTextBox].contents)
         # put the cursor at the end of the text
         self.textbox.moveCursor(QTextCursor.End)
         # make the textbox the focus
@@ -629,7 +640,7 @@ class MainWindow(QWidget):
         global textBoxArr
         global isShortCut
         isShortCut = True
-        tab = Tab(name, filePath)
+        tab = Tab(name, filePath, contents)
         tabArr.append(tab)
         # add the textbox contents to the list
         textBoxArr.append(contents)
@@ -644,7 +655,7 @@ class MainWindow(QWidget):
         global textBoxArr
         global isShortCut
         isShortCut = True
-        tab = Tab("", "")
+        tab = Tab("", "", "")
         tabArr.append(tab)
         textBoxArr.append("")
         mainWin.tabLayout.insertWidget(tabCount, tab)
@@ -652,8 +663,12 @@ class MainWindow(QWidget):
         self.addTextBox("")
 
     def on_focusChanged(self, old, new):
-        global focused
-        focused = self.isActiveWindow()
+        # set the opacity to 1 if not focused
+        if self.isActiveWindow():
+            self.setWindowOpacity(0.95)
+        else:
+            self.setWindowOpacity(1.0)
+
 
     def mousePressEvent(self, event):
         pos = event.pos()
