@@ -232,7 +232,7 @@ class MainWindow(QWidget):
         #self.tabLayout.setContentsMargins(MARGIN,0,MARGIN,0)
         # add the tab bar to the vertical layout
         self.layout.addLayout(self.tabLayout)   
-        tabBar = self.layout.itemAt(tabRowIndex)
+        tabBar = self.tabLayout
 
         # add the textbox to the vertical layout
         self.textbox = QCodeEditor(self)
@@ -412,9 +412,6 @@ class MainWindow(QWidget):
                 print(finalName)
                 # create a new tab with the name of the file that was opened
                 self.newTab(finalName, aTuple[0], content)
-    
-    def popup_clicked(self, i):
-        print("hello")
 
     def closeTab(self):
         global currentActiveTextBox
@@ -461,7 +458,7 @@ class MainWindow(QWidget):
                 self.tabLayout.removeWidget(tabArr[currentActiveTextBox])
                 # remove the tab from the tab array
                 if "untitled" in tabArr[currentActiveTextBox].fileName:
-                    # get the number 
+                    # get the number of the untitled tab
                     temp = tabArr[currentActiveTextBox].fileName
                     index = temp.index('_')
                     c = temp[index + 1]
@@ -471,12 +468,13 @@ class MainWindow(QWidget):
                         counter += 1
                         curEmptyTab += c
                         c = temp[index + 1 + counter]
+                    # mark this number of unused tab as unused
                     usedNums[int(curEmptyTab)] = False 
+                # find the correct tab to remove
+                for tabs in tabArr:
+                    if tabs == tabArr[currentActiveTextBox]:
+                        tabs.deleteLater()
                 
-                print("current")
-                print(tabBar.count())
-                tabBar.removeWidget(tabArr[currentActiveTextBox])
-                self.setLayout(self.layout)
                 tabArr.remove(tabArr[currentActiveTextBox])
                 tabCount -= 1
                 # get rid of the contents of the tab we are removing since to be here it is either
