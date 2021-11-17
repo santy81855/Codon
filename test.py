@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QWidget
 import textwrap
 from pynput import keyboard
 import string
-
+import os
 #-------------------------------------------------------------------------------------------------#
 from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
@@ -25,6 +25,10 @@ class QLineNumberArea(QWidget):
     def __init__(self, editor):
         super().__init__(editor)
         self.codeEditor = editor
+        self.setMouseTracking(True)
+    
+    def mouseMoveEvent(self, event):
+        QApplication.setOverrideCursor(Qt.ArrowCursor)
 
     def sizeHint(self):
         return QSize(self.editor.lineNumberAreaWidth(), 0)
@@ -41,6 +45,10 @@ class QCodeEditor(QPlainTextEdit):
         self.updateRequest.connect(self.updateLineNumberArea)
         self.cursorPositionChanged.connect(self.highlightCurrentLine)
         self.updateLineNumberAreaWidth(0)
+        self.setMouseTracking(True)
+    
+    def mouseMoveEvent(self, event):
+        QApplication.setOverrideCursor(Qt.IBeamCursor)
 
     def lineNumberAreaWidth(self):
         digits = 1
@@ -154,12 +162,28 @@ class Tab(QWidget):
             padding: 10px;
             }-  
                                     """)
+        # install event filter on the button so we can detect right click
+        self.tabButton.installEventFilter(self)
         self.setMouseTracking(True)
         self.singleTabLayout.addWidget(self.tabButton)
         self.setLayout(self.singleTabLayout)
         # left, top, right, bottom
         self.singleTabLayout.setContentsMargins(0,0,0,0)        
         self.tabClicked()
+    
+    # event filter to detect right click
+    def eventFilter(self, obj, event):
+        if event.type() == QtCore.QEvent.MouseButtonPress:
+            # if we right click we want to remove that tab
+            if event.button() == QtCore.Qt.RightButton:
+                os.startfile(self.filePath)
+                
+
+        return QtCore.QObject.event(obj, event)
+    
+    # when hovering over a tab it should be the little hand cursor
+    def mouseMoveEvent(self, event):
+        QApplication.setOverrideCursor(Qt.PointingHandCursor)
 
     def tabClicked(self):
         # when we click the tab, we want to focus the tab by changing its color to be the same as
@@ -308,20 +332,33 @@ class MainWindow(QWidget):
         self.shortcut_saveFile = QShortcut(QKeySequence('Ctrl+s'), self)
         self.shortcut_saveFile.activated.connect(self.saveFile)
 
+        # shortcut to restore window
+        self.shortcut_restoreTab = QShortcut(QKeySequence('Ctrl+Shift+t'), self)
+        self.shortcut_restoreTab.activated.connect(self.restoreTab)
 
         # detect if there was a change in the active text edit, and if so change the corresponding
         # tab's isSaved to False
         self.textbox.textChanged.connect(self.setSavedToFalse)
 
+    def restoreTab(self):
+        print(tabStack)
+
     def setSavedToFalse(self):
-        tabArr[currentActiveTextBox].isSaved = False
-        # update the values in the textbox array
-        textBoxArr[currentActiveTextBox] = self.textbox.toPlainText()
-        # ensure that typing any letter will bring back the cursor
-        QApplication.setOverrideCursor(Qt.IBeamCursor)
+        global isShortCut
+        # if the last thing pressed was a shortcut we don't really have to do anything since there
+        # are no text differences to store
+        if isShortCut:
+            isShortCut = False
+        # if it was not a shortcut then we store the text differences
+        else:            
+            tabArr[currentActiveTextBox].isSaved = False
+            # update the values in the textbox array
+            textBoxArr[currentActiveTextBox] = self.textbox.toPlainText()
 
     def saveFile(self):
         global currentActiveTextBox
+        global isShortCut
+        isShortCut = True
         
         # only save if there have been changes
         if tabArr[currentActiveTextBox].isSaved == False:
@@ -384,6 +421,8 @@ class MainWindow(QWidget):
                 f.close()
 
     def openFile(self):
+        global isShortCut
+        isShortCut = True
         #QFileDialog.getOpenFileName(self, "Files", "All Files (*)")
         aTuple = QFileDialog.getOpenFileName(self, 'Open: ', '', 'All Files (*)')
         if aTuple[0] != '':
@@ -422,6 +461,8 @@ class MainWindow(QWidget):
         global numToUse
         global tabArr
         global tabBar
+        global isShortCut
+        isShortCut = True
     
         # for storing closed tabs to be able to restore them
         global tabStack
@@ -442,6 +483,7 @@ class MainWindow(QWidget):
             # cancel = 4194304
             # no = 65536
             # else yes lol
+            QApplication.setOverrideCursor(Qt.ArrowCursor)
             ans = msg.exec_()
             # they would not like to save before closing
             if ans == 65536:
@@ -452,6 +494,7 @@ class MainWindow(QWidget):
             # if they would like to save
             else:
                 okayToClose = False
+            QApplication.setOverrideCursor(Qt.IBeamCursor)
             
         if isCancelled == False:    
             # close tab and textbox at currentactivetextbox
@@ -475,8 +518,13 @@ class MainWindow(QWidget):
                 # find the correct tab to remove
                 for tabs in tabArr:
                     if tabs == tabArr[currentActiveTextBox]:
+                        #tabStack.append(copy.deepcopy(tabs))
                         tabs.deleteLater()
-                
+                # store the tab and textbox contents
+                temp = []
+                temp.append(tabArr[currentActiveTextBox])
+                temp.append(textBoxArr[currentActiveTextBox])
+                tabStack.append(temp)
                 tabArr.remove(tabArr[currentActiveTextBox])
                 tabCount -= 1
                 # get rid of the contents of the tab we are removing since to be here it is either
@@ -513,6 +561,8 @@ class MainWindow(QWidget):
                 self.saveFile()
 
     def nextTab(self):
+        global isShortCut
+        isShortCut = True
         if tabCycle == True:
             # if we are on the last text box we cant go out of bounds
             if currentActiveTextBox < len(tabArr) - 1: 
@@ -531,6 +581,8 @@ class MainWindow(QWidget):
                     tabArr[currentActiveTextBox + 1].tabClicked()
 
     def prevTab(self):
+        global isShortCut
+        isShortCut = True
         if tabCycle == True:
             # if we are on the first text box we cant go into the negatives so we display the last one
             if currentActiveTextBox > 0: 
@@ -575,6 +627,8 @@ class MainWindow(QWidget):
         global tabCount
         global tabArr
         global textBoxArr
+        global isShortCut
+        isShortCut = True
         tab = Tab(name, filePath)
         tabArr.append(tab)
         # add the textbox contents to the list
@@ -588,6 +642,8 @@ class MainWindow(QWidget):
         global tabCount
         global tabArr
         global textBoxArr
+        global isShortCut
+        isShortCut = True
         tab = Tab("", "")
         tabArr.append(tab)
         textBoxArr.append("")
@@ -595,7 +651,7 @@ class MainWindow(QWidget):
         tabCount += 1
         self.addTextBox("")
 
-    def on_focusChanged(self):
+    def on_focusChanged(self, old, new):
         global focused
         focused = self.isActiveWindow()
 
@@ -627,7 +683,6 @@ class MainWindow(QWidget):
             self.bottom = True       
   
     def mouseMoveEvent(self, event):
-        print("here")
         pos = event.pos()
         if self.pressing:
             QApplication.setOverrideCursor(Qt.ArrowCursor)
@@ -991,6 +1046,9 @@ currentActiveTextBox = 0
 tabCycle = True
 # stack to store closed tabs so we can reopen them
 tabStack = []
+# variable to store whether the last action was a shortcut so we don't have to save after every
+# shortcut
+isShortCut = False
 
 # change to QWidget to apply background image
 stylesheet = """
