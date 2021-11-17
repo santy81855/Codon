@@ -2,7 +2,7 @@ import sys
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 
-from PyQt5.QtGui import QCursor, QMouseEvent, QFont, QKeySequence, QSyntaxHighlighter, QTextCharFormat, QBrush
+from PyQt5.QtGui import QCursor, QMouseEvent, QFont, QKeySequence, QSyntaxHighlighter, QTextCharFormat, QBrush, QTextCursor
 from PyQt5.QtCore import QPoint, pyqtSignal, QRegExp
 from PyQt5.QtCore import Qt
 from PyQt5.QtCore import QObject, QMimeData
@@ -49,7 +49,7 @@ class QCodeEditor(QPlainTextEdit):
         while max_value >= 10:
             max_value /= 10
             digits += 1
-        space = 3 + self.fontMetrics().width('9') * 4
+        space = self.fontMetrics().width('9') * digits + 50
         return space
 
     def updateLineNumberAreaWidth(self, _):
@@ -94,10 +94,9 @@ class QCodeEditor(QPlainTextEdit):
         height = self.fontMetrics().height()
         while block.isValid() and (top <= event.rect().bottom()):
             if block.isVisible() and (bottom >= event.rect().top()):
-                number = str(blockNumber + 1)
+                number = str(blockNumber + 1) + "\t\t"
                 painter.setPen(QColor("#8FBCBB").lighter(100))
                 painter.drawText(0, top, self.lineNumberArea.width(), height, Qt.AlignRight, number)
-
             block = block.next()
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()
@@ -187,7 +186,6 @@ class Tab(QWidget):
         for i in range(0, len(tabArr)):
             # if we find the right tab we know which textbox to display
             if tabArr[i] == self:
-                print("here on tab {}".format(i))
                 mainWin.displayTextBox(i)
             # if it's not the right tab then color it in the unfocused color
             else:
@@ -208,11 +206,9 @@ class Tab(QWidget):
             padding: 10px;
             }-  
                                     """)
-        
         # change the title of the window to be the tab name
         titleBar.title.setText(self.fileName)
         
-# need to change code to have a stackedwidget instead of just a textbox in the TextField
 class MainWindow(QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -220,6 +216,7 @@ class MainWindow(QWidget):
         # store the main window widget
         global mainWin
         global tabCount
+        global tabBar
         mainWin = self
         # set the opacity
         self.setWindowOpacity(0.9)
@@ -234,8 +231,8 @@ class MainWindow(QWidget):
         # pad the left and right so we can still resize from that location
         #self.tabLayout.setContentsMargins(MARGIN,0,MARGIN,0)
         # add the tab bar to the vertical layout
-        self.layout.addLayout(self.tabLayout)     
-
+        self.layout.addLayout(self.tabLayout)   
+        tabBar = self.layout.itemAt(tabRowIndex)
 
         # add the textbox to the vertical layout
         self.textbox = QCodeEditor(self)
@@ -317,9 +314,6 @@ class MainWindow(QWidget):
         self.textbox.textChanged.connect(self.setSavedToFalse)
 
     def setSavedToFalse(self):
-        if textBoxArr[currentActiveTextBox] != self.textbox.toPlainText():
-            print(textBoxArr[currentActiveTextBox])
-            print(self.textbox.toPlainText())
         tabArr[currentActiveTextBox].isSaved = False
         # update the values in the textbox array
         textBoxArr[currentActiveTextBox] = self.textbox.toPlainText()
@@ -427,7 +421,9 @@ class MainWindow(QWidget):
         global tabCount
         global curEmptyTab
         global numToUse
-        print(currentActiveTextBox)
+        global tabArr
+        global tabBar
+    
         # for storing closed tabs to be able to restore them
         global tabStack
         okayToClose = True
@@ -435,6 +431,7 @@ class MainWindow(QWidget):
         # if it is just an untitled empty page, we can set it as saved since nothing is lost
         if "untitled" in tabArr[currentActiveTextBox].fileName and textBoxArr[currentActiveTextBox] == "":
             tabArr[currentActiveTextBox].isSaved = True
+    
         # check that tab isSaved before deleting it
         if tabArr[currentActiveTextBox].isSaved == False:
             msg = QMessageBox()
@@ -474,8 +471,12 @@ class MainWindow(QWidget):
                         counter += 1
                         curEmptyTab += c
                         c = temp[index + 1 + counter]
-                    usedNums[int(curEmptyTab)] = False
-                    
+                    usedNums[int(curEmptyTab)] = False 
+                
+                print("current")
+                print(tabBar.count())
+                tabBar.removeWidget(tabArr[currentActiveTextBox])
+                self.setLayout(self.layout)
                 tabArr.remove(tabArr[currentActiveTextBox])
                 tabCount -= 1
                 # get rid of the contents of the tab we are removing since to be here it is either
@@ -550,32 +551,23 @@ class MainWindow(QWidget):
     def displayTextBox(self, index):
         global currentActiveTextBox
         global textBoxArr
-        # store the contents of the current active tab
-        #textBoxArr[currentActiveTextBox] = self.textbox.toPlainText()
         # make the tab that was clicked the active one
         currentActiveTextBox = index
-        
-        print("length of arr = {} and currentAI = {}".format(len(textBoxArr), currentActiveTextBox))
-        
-        
         # restore the text that there was on that tab
         self.textbox.setPlainText(textBoxArr[currentActiveTextBox])
+        # put the cursor at the end of the text
+        self.textbox.moveCursor(QTextCursor.End)
         # make the textbox the focus
         self.layout.itemAt(textBoxIndex).widget().setFocus()
-        print("current active text box = ", currentActiveTextBox)
 
     # add a new textbox to go along with this tab making this tab the parent of that textbox
     def addTextBox(self, contents):  
         global textBoxArr
         global currentActiveTextBox
-        # store the contents of the new tab
-        textBoxArr.append(contents)
-        #textBoxArr[currentActiveTextBox] = self.textbox.toPlainText()
+        # update the current active text box
+        currentActiveTextBox = len(textBoxArr) - 1
         # add the contents to the textbox
         self.textbox.setPlainText(contents)
-        # save the current active text box
-        currentActiveTextBox = len(textBoxArr) - 1
-        print("current active text box = ", currentActiveTextBox)
         # focus the cursor on the new text box
         self.textbox.setFocus()
 
@@ -585,6 +577,9 @@ class MainWindow(QWidget):
         global textBoxArr
         tab = Tab(name, filePath)
         tabArr.append(tab)
+        # add the textbox contents to the list
+        textBoxArr.append(contents)
+        
         mainWin.tabLayout.insertWidget(tabCount, tab)
         tabCount += 1
         self.addTextBox(contents)
@@ -595,6 +590,7 @@ class MainWindow(QWidget):
         global textBoxArr
         tab = Tab("", "")
         tabArr.append(tab)
+        textBoxArr.append("")
         mainWin.tabLayout.insertWidget(tabCount, tab)
         tabCount += 1
         self.addTextBox("")
@@ -824,6 +820,8 @@ class MyBar(QWidget):
             self.parent.showMaximized()
             # toggle isMax so we know the state
             isMaximized = True
+        # focus on the textbox
+        self.parent.layout.itemAt(textBoxIndex).widget().setFocus()
 
     def btn_min_clicked(self):
         # same with the show minimized
@@ -972,6 +970,9 @@ TAB_SIZE = 8
 isMaximized = False
 # variable to track the main textbox index in case I update the layout order
 textBoxIndex = 2
+# variable to track the tab bar index
+tabRowIndex = 1
+# variable to track the tabBar so I can access it quickly
 # variable to track the number of default tabs currently open
 curEmptyTab = 1
 # variable to track the index of the tab so we know the textbox associated with it
@@ -984,7 +985,7 @@ tabArr = []
 mainWin = 0
 titleBar = 0
 # index of current active textbox
-currentActiveTextBox = -1
+currentActiveTextBox = 0
 # if tabs cycling should wrap around
 tabCycle = True
 # stack to store closed tabs so we can reopen them
