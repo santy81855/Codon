@@ -1,7 +1,6 @@
 import sys
 from PyQt5 import QtCore
 from PyQt5 import QtGui
-
 from PyQt5.QtGui import QCursor, QMouseEvent, QFont, QKeySequence, QSyntaxHighlighter, QTextCharFormat, QBrush, QTextCursor
 from PyQt5.QtCore import QPoint, pyqtSignal, QRegExp
 from PyQt5.QtCore import Qt
@@ -249,7 +248,6 @@ class MainWindow(QWidget):
         self.textbox.setLineWrapMode(self.textbox.WidgetWidth)
         self.textbox.setCursorWidth(3)
         self.textbox.setTabStopWidth(self.textbox.fontMetrics().width(' ') * TAB_SIZE)
-        
         #------------------------------------------------------------------------#
         font = QFont()
         font.setFamily("Consolas")
@@ -989,8 +987,18 @@ tabCycle = True
 # stack to store closed tabs so we can reopen them
 tabStack = []
 
+stylesheet = """
+    QWidget
+    {
+        background-image: url("background.png"); 
+        background-repeat: no-repeat; 
+        background-position: center;
+    }
+"""
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setStyleSheet(stylesheet)
     screen_resolution = app.desktop().screenGeometry()
     print(screen_resolution)
     width, height = screen_resolution.width(), screen_resolution.height()
