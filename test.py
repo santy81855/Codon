@@ -218,7 +218,7 @@ class MainWindow(QWidget):
         global tabBar
         mainWin = self
         # set the opacity
-        self.setWindowOpacity(0.9)
+        self.setWindowOpacity(0.95)
         # vertical layout
         self.layout = QVBoxLayout()
         # add the title bar
@@ -700,6 +700,7 @@ class MyBar(QWidget):
     def __init__(self, parent):
         super(MyBar, self).__init__()
         global titleBar
+        btn_size = 35
         titleBar = self
         # make the main window the parent
         self.parent = parent
@@ -708,12 +709,11 @@ class MyBar(QWidget):
         # allow for 8 pixels at the right so we can resize right and top right
         # also 8 margin at the top so that the buttons don't get in the way of resizing
         # left, top, right, bottom
-        self.layout.setContentsMargins(0,5,0,0)
+        # add left margin to account for 3 corner buttons so the title is centered
+        self.layout.setContentsMargins(btn_size*3,5,0,0)
         self.layout.setSpacing(0)
         self.title = QLabel("test.py" + " - notes app")
         self.title.setMouseTracking(True)
-        
-        btn_size = 35
 
         self.btn_close = QPushButton("x")
         self.btn_close.clicked.connect(self.btn_close_clicked)
@@ -987,9 +987,9 @@ tabCycle = True
 # stack to store closed tabs so we can reopen them
 tabStack = []
 
+# change to QWidget to apply background image
 stylesheet = """
-    QWidget
-    {
+    QMainWindow {
         background-image: url("background.png"); 
         background-repeat: no-repeat; 
         background-position: center;
