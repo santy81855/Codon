@@ -218,7 +218,7 @@ class MainWindow(QWidget):
         global tabBar
         mainWin = self
         # set the opacity
-        self.setWindowOpacity(0.95)
+        self.setWindowOpacity(1.0)
         # vertical layout
         self.layout = QVBoxLayout()
         # add the title bar
@@ -283,6 +283,7 @@ class MainWindow(QWidget):
         self.bl = False
         self.br = False
         self.setMouseTracking(True)
+        self.textbox.setMouseTracking(True)
         app.focusChanged.connect(self.on_focusChanged)
 
         self.shortcut_newTab = QShortcut(QKeySequence('Ctrl+t'), self)
@@ -307,6 +308,7 @@ class MainWindow(QWidget):
         self.shortcut_saveFile = QShortcut(QKeySequence('Ctrl+s'), self)
         self.shortcut_saveFile.activated.connect(self.saveFile)
 
+
         # detect if there was a change in the active text edit, and if so change the corresponding
         # tab's isSaved to False
         self.textbox.textChanged.connect(self.setSavedToFalse)
@@ -315,6 +317,8 @@ class MainWindow(QWidget):
         tabArr[currentActiveTextBox].isSaved = False
         # update the values in the textbox array
         textBoxArr[currentActiveTextBox] = self.textbox.toPlainText()
+        # ensure that typing any letter will bring back the cursor
+        QApplication.setOverrideCursor(Qt.IBeamCursor)
 
     def saveFile(self):
         global currentActiveTextBox
@@ -623,6 +627,7 @@ class MainWindow(QWidget):
             self.bottom = True       
   
     def mouseMoveEvent(self, event):
+        print("here")
         pos = event.pos()
         if self.pressing:
             QApplication.setOverrideCursor(Qt.ArrowCursor)
