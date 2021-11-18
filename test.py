@@ -354,7 +354,7 @@ class MainWindow(QWidget):
         self.layout.setContentsMargins(MARGIN,MARGIN,MARGIN,MARGIN)
         # the min height will be 600 x 600
         self.setMinimumSize(600, 600)
-        self.setWindowFlags(Qt.Window | Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.FramelessWindowHint)
         self.pressing = False
         self.movingPosition = False
         self.resizingWindow = False
@@ -1117,18 +1117,6 @@ class MyBar(QWidget):
 # this sets the icon as your taskbar icon
 myappid = 'Notes'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
-# The code below makes it so that the widget doesn't get messed up if you scale windows text by 125% or more
-# Query DPI Awareness (Windows 10 and 8)
-awareness = ctypes.c_int()
-errorCode = ctypes.windll.shcore.GetProcessDpiAwareness(0, ctypes.byref(awareness))
-# Set DPI Awareness  (Windows 10 and 8)
-errorCode = ctypes.windll.shcore.SetProcessDpiAwareness(0)
-# the argument is the awareness level, which can be 0, 1 or 2:
-# for 1-to-1 pixel control I seem to need it to be non-zero (I'm using level 2)
-# Set DPI Awareness  (Windows 7 and Vista)
-success = ctypes.windll.user32.SetProcessDPIAware()
-# behaviour on later OSes is undefined, although when I run it on my Windows 10 machine, it seems
-# to work with effects identical to SetProcessDpiAwareness(1)
 
 # make the resolution global variables
 screen_resolution = 0
