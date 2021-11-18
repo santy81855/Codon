@@ -48,6 +48,10 @@ class QCodeEditor(QPlainTextEdit):
         self.cursorPositionChanged.connect(self.highlightCurrentLine)
         self.updateLineNumberAreaWidth(0)
         self.setMouseTracking(True)
+        self.startCursorPosition = 0
+        self.endCursorPosition = 0
+        self.startPosition = 0
+        self.is_first_input = False
     
     def keyPressEvent(self, event):
         tab_char = '\t' # could be anything including spaces
@@ -57,8 +61,8 @@ class QCodeEditor(QPlainTextEdit):
             cur.clearSelection()
  
             # move to begining of line and select text to first word
-            cur.movePosition(QtGui.QTextCursor.StartOfLine)
-            cur.movePosition(QtGui.QTextCursor.NextWord, QtGui.QTextCursor.KeepAnchor)
+            cur.movePosition(QTextCursor.StartOfLine)
+            cur.movePosition(QTextCursor.NextWord, QTextCursor.KeepAnchor)
             sel_text = cur.selectedText()
 
             # if the text starts with the tab_char, replace it
@@ -82,6 +86,7 @@ class QCodeEditor(QPlainTextEdit):
     
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.IBeamCursor)
+            
 
     def lineNumberAreaWidth(self):
         digits = 1
@@ -112,7 +117,7 @@ class QCodeEditor(QPlainTextEdit):
         extraSelections = []
         if not self.isReadOnly():
             selection = QTextEdit.ExtraSelection()
-            lineColor = QColor("#4C566A").lighter(100)
+            lineColor = QColor("#434C5E").lighter(100)
             selection.format.setBackground(lineColor)
             selection.format.setProperty(QTextFormat.FullWidthSelection, True)
             selection.cursor = self.textCursor()
