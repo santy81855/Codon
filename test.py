@@ -212,7 +212,7 @@ class Tab(QWidget):
         # but will turn red if hovered
         self.closeButton = QPushButton("")
         self.closeButton.setMouseTracking(True)
-        self.closeButton.clicked.connect(self.tabClose)
+        #self.closeButton.clicked.connect(self.tabClose)
         self.closeButton.setMinimumSize(20, 40)
         self.closeButton.adjustSize()
         self.closeButton.setStyleSheet("""
@@ -234,9 +234,6 @@ class Tab(QWidget):
         # left, top, right, bottom
         self.singleTabLayout.setContentsMargins(0,0,0,0)        
         self.tabClicked()
-
-    def tabClose(self):
-        print("here")
     
     # event filter to detect right click
     def eventFilter(self, obj, event):
@@ -250,7 +247,6 @@ class Tab(QWidget):
                         tabIndex = tabArr.index(tab)
                         break
                 mainWin.closeTab(tabIndex, currentActiveTextBox)
-
         return QtCore.QObject.event(obj, event)
     
     # when hovering over a tab it should be the little hand cursor
@@ -412,6 +408,28 @@ class MainWindow(QWidget):
         self.shortcut_saveFileAs = QShortcut(QKeySequence('Ctrl+Shift+s'), self)
         self.shortcut_saveFileAs.activated.connect(self.saveFileAs)
 
+        # shortcut to open tab 1 with ctrl+1
+        self.shortcut_tab1 = QShortcut(QKeySequence('Ctrl+1'), self)
+        self.shortcut_tab1.activated.connect(lambda: self.tabJump(1))
+        self.shortcut_tab2 = QShortcut(QKeySequence('Ctrl+2'), self)
+        self.shortcut_tab2.activated.connect(lambda: self.tabJump(2))
+        self.shortcut_tab3 = QShortcut(QKeySequence('Ctrl+3'), self)
+        self.shortcut_tab3.activated.connect(lambda: self.tabJump(3))
+        self.shortcut_tab4 = QShortcut(QKeySequence('Ctrl+4'), self)
+        self.shortcut_tab4.activated.connect(lambda: self.tabJump(4))
+        self.shortcut_tab5 = QShortcut(QKeySequence('Ctrl+5'), self)
+        self.shortcut_tab5.activated.connect(lambda: self.tabJump(5))
+        self.shortcut_tab6 = QShortcut(QKeySequence('Ctrl+6'), self)
+        self.shortcut_tab6.activated.connect(lambda: self.tabJump(6))
+        self.shortcut_tab7 = QShortcut(QKeySequence('Ctrl+7'), self)
+        self.shortcut_tab7.activated.connect(lambda: self.tabJump(7))
+        self.shortcut_tab8 = QShortcut(QKeySequence('Ctrl+8'), self)
+        self.shortcut_tab8.activated.connect(lambda: self.tabJump(8))
+        self.shortcut_tab9 = QShortcut(QKeySequence('Ctrl+9'), self)
+        self.shortcut_tab9.activated.connect(lambda: self.tabJump(9))
+        self.shortcut_tab10 = QShortcut(QKeySequence('Ctrl+0'), self)
+        self.shortcut_tab10.activated.connect(lambda: self.tabJump(10))
+
         # tab backwards
         #self.shortcut_tabBackwards = QShortcut(QKeySequence('Shift+Tab'), self)
         #self.shortcut_tabBackwards.activated.connect(self.tabBackwards)
@@ -419,6 +437,10 @@ class MainWindow(QWidget):
         # detect if there was a change in the active text edit, and if so change the corresponding
         # tab's isSaved to False
         self.textbox.textChanged.connect(self.setSavedToFalse)
+
+    def tabJump(self, index):
+        if len(tabArr) > index-1:
+            tabArr[index-1].tabClicked()
 
     def saveFileAs(self):
         global tabArr
