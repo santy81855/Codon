@@ -87,7 +87,6 @@ class QCodeEditor(QPlainTextEdit):
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.IBeamCursor)
             
-
     def lineNumberAreaWidth(self):
         digits = 1
         max_value = max(1, self.blockCount())
@@ -147,11 +146,6 @@ class QCodeEditor(QPlainTextEdit):
             bottom = top + self.blockBoundingRect(block).height()
             blockNumber += 1
 #-------------------------------------------------------------------------------------------------#
-
-# dictionary to store which numbers have been used for default tabs
-usedNums = []
-for i in range(0, 1000):
-    usedNums.append(False)
 
 class Tab(QWidget):
     def __init__(self, fileName, filePath, contents):
@@ -356,7 +350,7 @@ class MainWindow(QWidget):
         # make the default size be half the window
         self.setGeometry(startingLocation[0], startingLocation[1], startingLocation[0], startingLocation[1])
         #self.layout.setContentsMargins(MARGIN,0,MARGIN,MARGIN)
-        self.layout.setContentsMargins(MARGIN,0,MARGIN * 2,MARGIN)
+        self.layout.setContentsMargins(MARGIN,MARGIN,MARGIN,MARGIN)
         # the min height will be 600 x 600
         self.setMinimumSize(600, 600)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -374,6 +368,9 @@ class MainWindow(QWidget):
         self.top = False
         self.bl = False
         self.br = False
+        self.tl = False
+        self.tr = False
+        self.top = False
         self.setMouseTracking(True)
         self.textbox.setMouseTracking(True)
         app.focusChanged.connect(self.on_focusChanged)
@@ -783,7 +780,6 @@ class MainWindow(QWidget):
         else:
             self.setWindowOpacity(1.0)
 
-
     def mousePressEvent(self, event):
         pos = event.pos()
         # set pressing to true
@@ -791,7 +787,22 @@ class MainWindow(QWidget):
         if isMaximized == False:
             # if they clicked on the edge then we need to change pressing to true and resizingWindow to
             # true and we need to change the cursor shape
-            if pos.y() >= self.height() - 8 and pos.x() <= 8 and pos.y() > 8:
+            # top left
+            if pos.x() <= 8 and pos.y() <= 8:
+                self.resizingWindow = True
+                self.start = event.pos()
+                self.tl = True
+            # top right
+            elif pos.x() >= self.width() - 8 and pos.y() <= 8:
+                self.resizingWindow = True
+                self.start = event.pos()
+                self.tr = True
+            # top
+            elif pos.y() <= 8 and pos.x() > 8 and pos.x() < self.width() - 8:
+                self.resizingWindow = True
+                self.start = event.pos().y()
+                self.top = True     
+            elif pos.y() >= self.height() - 8 and pos.x() <= 8 and pos.y() > 8:
                 self.resizingWindow = True
                 self.start = event.pos()
                 self.bl = True
@@ -814,17 +825,25 @@ class MainWindow(QWidget):
   
     def mouseMoveEvent(self, event):
         pos = event.pos()
-        if self.pressing:
-            QApplication.setOverrideCursor(Qt.ArrowCursor)
+        QApplication.setOverrideCursor(Qt.ArrowCursor)
         if isMaximized == False:
+            # top left
+            if pos.x() <= 5 and pos.y() <= 5:
+                QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
+            # top right
+            elif pos.x() >= self.width() - 5 and pos.y() <= 5:
+                QApplication.setOverrideCursor(Qt.SizeBDiagCursor)
+            # top
+            elif pos.y() <= 5 and pos.x() > 5 and pos.x() < self.width() - 5:
+                QApplication.setOverrideCursor(Qt.SizeVerCursor)
             # bottom left
-            if pos.y() >= self.height() - 5 and pos.x() <= 5 and pos.y() > 5:
+            elif pos.y() >= self.height() - 8 and pos.x() <= 8:
                 QApplication.setOverrideCursor(Qt.SizeBDiagCursor)
             # bottom right
             elif pos.x() >= self.width() - 5 and pos.y() >= self.height() - 5:
                 QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
             # bottom
-            elif pos.x() > 5 and pos.x() < self.width() - 5 and pos.y() >= self.height() - 5:
+            elif pos.x() > 0 and pos.x() < self.width() - 0 and pos.y() >= self.height() - 0:
                 QApplication.setOverrideCursor(Qt.SizeVerCursor)
             # left
             elif pos.x() <= 5 and pos.y() > 5:
@@ -832,43 +851,73 @@ class MainWindow(QWidget):
             # right
             elif pos.x() >= self.width() - 5 and pos.y() > 5:
                 QApplication.setOverrideCursor(Qt.SizeHorCursor)
-        if self.pressing == False:
-            QApplication.setOverrideCursor(Qt.ArrowCursor)
-            # if they are resizing
-            # need to subtract the movement from the width/height 
-            # but I also need to account for if they are resizing horizontally from the left or
-            # vertically from the top because I need to shift the window to the right/down the same amount
-            if self.pressing and self.resizingWindow:
-                # resize from the left to the right
-                if self.left == True:
-                    # resize from the left
-                    if self.width() - event.pos().x() > 600:
-                        self.setGeometry(self.pos().x() + event.pos().x(), self.pos().y(), self.width() - event.pos().x(), self.height())
-                # resize from the right
-                if self.right == True:
-                    pos = event.pos().x()
-                    if self.width() >= 600:
-                        self.setGeometry(self.pos().x(), self.pos().y(), pos, self.height()) 
-                # resize from the bottom
-                if self.bottom == True:
-                    pos = event.pos().y()
-                    if self.height() >= 600:
-                        self.setGeometry(self.pos().x(), self.pos().y(), self.width(), pos) 
-                # resize from the bottom right
-                if self.br == True:
-                    pos = event.pos()
-                    if self.height() >= 600 and self.width() >= 600:
-                        self.setGeometry(self.pos().x(), self.pos().y(), pos.x(), pos.y()) 
-                # resize from the bottom left
-                if self.bl == True:
-                    pos = event.pos().y()
-                    if self.width() - event.pos().x() > 600 and self.height() >= 600:
-                        self.setGeometry(self.pos().x() + event.pos().x(), self.pos().y(), self.width() - event.pos().x(), pos)
-                    elif self.height() >= 600:
-                        self.setGeometry(self.pos().x(), self.pos().y(), self.width(), pos) 
-                    elif self.width() - event.pos().x() > 600:
-                        self.setGeometry(self.pos().x() + event.pos().x(), self.pos().y(), self.width() - event.pos().x(), self.height())
-                
+            else:
+                QApplication.setOverrideCursor(Qt.ArrowCursor)
+        # if they are resizing
+        # need to subtract the movement from the width/height 
+        # but I also need to account for if they are resizing horizontally from the left or
+        # vertically from the top because I need to shift the window to the right/down the same amount
+        if self.pressing and self.resizingWindow:
+            # resize from the top
+            if self.top == True:
+                # resize from the top
+                if self.height() - event.pos().y() >= 600:
+                    self.setGeometry(self.pos().x(), self.pos().y() + event.pos().y(), self.width(), self.height() - event.pos().y())
+            # resize from the top left
+            if self.tl == True:
+                # move both dimensions if both boundaries are okay
+                if self.width() - event.pos().x() >= 600 and self.height() - event.pos().y() >= 600:
+                    self.setGeometry(self.pos().x() + event.pos().x(), self.pos().y() + event.pos().y(), self.width() - event.pos().x(), self.height() - event.pos().y())
+                # move only top if width is already at its smallest
+                elif self.height() - event.pos().y() >= 600:
+                    self.setGeometry(self.pos().x(), self.pos().y() + event.pos().y(), self.width(), self.height() - event.pos().y())
+                # move only left if height is at its smallest
+                elif self.width() - event.pos().x() > 600:
+                    self.setGeometry(self.pos().x() + event.pos().x(), self.pos().y(), self.width() - event.pos().x(), self.height())
+            
+            # resize top right
+            if self.tr == True:
+                pos = event.pos().x() 
+                # top right
+                if self.height() - event.pos().y() >= 600 and self.width() >= 600:
+                    self.setGeometry(self.pos().x(), self.pos().y() + event.pos().y(), pos, self.height() - event.pos().y())
+
+                # resize from the top
+                elif self.height() - event.pos().y() >= 600:
+                    self.setGeometry(self.pos().x(), self.pos().y() + event.pos().y(), self.width(), self.height() - event.pos().y())
+                elif self.width() >= 600:
+                    self.setGeometry(self.pos().x(), self.pos().y(), pos, self.height()) 
+
+            # resize from the left to the right
+            if self.left == True:
+                # resize from the left
+                if self.width() - event.pos().x() > 600:
+                    self.setGeometry(self.pos().x() + event.pos().x(), self.pos().y(), self.width() - event.pos().x(), self.height())
+            # resize from the right
+            if self.right == True:
+                pos = event.pos().x()
+                if self.width() >= 600:
+                    self.setGeometry(self.pos().x(), self.pos().y(), pos, self.height()) 
+            # resize from the bottom
+            if self.bottom == True:
+                pos = event.pos().y()
+                if self.height() >= 600:
+                    self.setGeometry(self.pos().x(), self.pos().y(), self.width(), pos) 
+            # resize from the bottom right
+            if self.br == True:
+                pos = event.pos()
+                if self.height() >= 600 and self.width() >= 600:
+                    self.setGeometry(self.pos().x(), self.pos().y(), pos.x(), pos.y()) 
+            # resize from the bottom left
+            if self.bl == True:
+                pos = event.pos().y()
+                if self.width() - event.pos().x() > 600 and self.height() >= 600:
+                    self.setGeometry(self.pos().x() + event.pos().x(), self.pos().y(), self.width() - event.pos().x(), pos)
+                elif self.height() >= 600:
+                    self.setGeometry(self.pos().x(), self.pos().y(), self.width(), pos) 
+                elif self.width() - event.pos().x() > 600:
+                    self.setGeometry(self.pos().x() + event.pos().x(), self.pos().y(), self.width() - event.pos().x(), self.height())
+            
     # if the mouse button is released then tag pressing as false
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.RightButton:
@@ -881,6 +930,9 @@ class MainWindow(QWidget):
         self.bottom = False
         self.bl = False
         self.br = False
+        self.tr = False
+        self.tl = False
+        self.top = False
 
 class MyBar(QWidget):
     def __init__(self, parent):
@@ -896,7 +948,7 @@ class MyBar(QWidget):
         # also 8 margin at the top so that the buttons don't get in the way of resizing
         # left, top, right, bottom
         # add left margin to account for 3 corner buttons so the title is centered
-        self.layout.setContentsMargins(btn_size*3,5,0,0)
+        self.layout.setContentsMargins(btn_size*3,0,0,0)
         self.layout.setSpacing(0)
         self.title = QLabel("test.py" + " - notes app")
         self.title.setMouseTracking(True)
@@ -1039,118 +1091,27 @@ class MyBar(QWidget):
         pos = event.pos()
         self.pressing = True
         if isMaximized == False:
-            if pos.x() <= 8 or pos.x() >= self.parent.width() - 8 or pos.y() <= 8:
-                self.resizingWindow = True
-                # top left
-                if pos.x() <= 8 and pos.y() <= 8:
-                    self.start = event.pos()
-                    self.tl = True
-                # top right
-                elif pos.x() >= self.width() - 8 and pos.y() <= 8:
-                    self.resizingWindow = True
-                    self.start = event.pos()
-                    self.tr = True
-                # top
-                elif pos.y() <= 8 and pos.x() > 8 and pos.x() < self.width() - 8:
-                    self.start = event.pos().y()
-                    self.top = True     
-                # left
-                elif pos.x() <= 8 and pos.y() > 8:
-                    self.start = event.pos().x()
-                    self.left = True   
-                # right
-                elif pos.x() >= self.width() - 8 and pos.y() > 8:
-                    self.start = event.pos().x()
-                    self.right = True    
-            else:
-                self.movingPosition = True
-                self.start = self.mapToGlobal(event.pos())
+            self.movingPosition = True
+            self.start = self.mapToGlobal(event.pos())
 
     def mouseMoveEvent(self, event):
-        pos = event.pos()
-        if self.pressing:
-            QApplication.setOverrideCursor(Qt.ArrowCursor)
+        QApplication.setOverrideCursor(Qt.ArrowCursor)
         if isMaximized == False:
-            # top left
-            if pos.x() <= 5 and pos.y() <= 5:
-                QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
-            # top right
-            elif pos.x() >= self.width() - 5 and pos.y() <= 5:
-                QApplication.setOverrideCursor(Qt.SizeBDiagCursor)
-            # top
-            elif pos.y() <= 5 and pos.x() > 5 and pos.x() < self.width() - 5:
-                QApplication.setOverrideCursor(Qt.SizeVerCursor)
-            # left
-            elif pos.x() <= 5 and pos.y() > 5:
-                QApplication.setOverrideCursor(Qt.SizeHorCursor)
-            # right
-            elif pos.x() >= self.width() - 5 and pos.y() > 5:
-                QApplication.setOverrideCursor(Qt.SizeHorCursor)
-            else:
-                if self.pressing == False:
-                    QApplication.setOverrideCursor(Qt.ArrowCursor)
-
+            # moving the window
             if self.pressing and self.movingPosition:
                 self.end = self.mapToGlobal(event.pos())
                 self.movement = self.end-self.start
                 self.parent.setGeometry(self.mapToGlobal(self.movement).x() - 5,
-                                    self.mapToGlobal(self.movement).y(),
+                                    self.mapToGlobal(self.movement).y() - 5,
                                     self.parent.width(),
                                     self.parent.height())
                 self.start = self.end
-        
-            elif self.resizingWindow == True and self.pressing == True:
-                # resize from the top
-                if self.top == True:
-                    # resize from the top
-                    if self.parent.height() - event.pos().y() >= 600:
-                        self.parent.setGeometry(self.parent.pos().x(), self.parent.pos().y() + event.pos().y(), self.parent.width(), self.parent.height() - event.pos().y())
-                # resize from the left to the right
-                if self.left == True:
-                    # resize from the left
-                    if self.parent.width() - event.pos().x() >= 600:
-                        self.parent.setGeometry(self.parent.pos().x() + event.pos().x(), self.parent.pos().y(), self.parent.width() - event.pos().x(), self.parent.height())
-                # resize from the top left
-                if self.tl == True:
-                    # move both dimensions if both boundaries are okay
-                    if self.parent.width() - event.pos().x() >= 600 and self.parent.height() - event.pos().y() >= 600:
-                        self.parent.setGeometry(self.parent.pos().x() + event.pos().x(), self.parent.pos().y() + event.pos().y(), self.parent.width() - event.pos().x(), self.parent.height() - event.pos().y())
-                    # move only top if width is already at its smallest
-                    elif self.parent.height() - event.pos().y() >= 600:
-                        self.parent.setGeometry(self.parent.pos().x(), self.parent.pos().y() + event.pos().y(), self.parent.width(), self.parent.height() - event.pos().y())
-                    # move only left if height is at its smallest
-                    elif self.parent.width() - event.pos().x() > 600:
-                        self.parent.setGeometry(self.parent.pos().x() + event.pos().x(), self.parent.pos().y(), self.parent.width() - event.pos().x(), self.parent.height())
-                # resize from the right
-                if self.right == True:
-                    pos = event.pos().x()
-                    if self.parent.width() >= 600:
-                        self.parent.setGeometry(self.parent.pos().x(), self.parent.pos().y(), pos, self.parent.height()) 
-                # resize top right
-                if self.tr == True:
-                    pos = event.pos().x() 
-                    # top right
-                    if self.parent.height() - event.pos().y() >= 600 and self.parent.width() >= 600:
-                        self.parent.setGeometry(self.parent.pos().x(), self.parent.pos().y() + event.pos().y(), pos, self.parent.height() - event.pos().y())
-
-                    # resize from the top
-                    elif self.parent.height() - event.pos().y() >= 600:
-                        self.parent.setGeometry(self.parent.pos().x(), self.parent.pos().y() + event.pos().y(), self.parent.width(), self.parent.height() - event.pos().y())
-                    elif self.parent.width() >= 600:
-                        self.parent.setGeometry(self.parent.pos().x(), self.parent.pos().y(), pos, self.parent.height()) 
-
 
     def mouseReleaseEvent(self, QMouseEvent):
         if QMouseEvent.button() == Qt.RightButton:
             return
         self.pressing = False
-        self.resizingWindow = False
         self.movingPosition = False
-        self.top = False
-        self.left = False
-        self.tl = False
-        self.right = False
-        self.tr = False
 
 # make the resolution global variables
 screen_resolution = 0
@@ -1183,6 +1144,10 @@ tabRowIndex = 1
 # variable to track the tabBar so I can access it quickly
 # variable to track the number of default tabs currently open
 curEmptyTab = 1
+# list to store which numbers have been used for default tabs
+usedNums = []
+for i in range(0, 1000):
+    usedNums.append(False)
 # variable to track the index of the tab so we know the textbox associated with it
 tabCount = 0
 # arraf storing the tabs
