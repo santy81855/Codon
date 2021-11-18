@@ -986,7 +986,27 @@ class MyBar(QWidget):
     
     # close the main window when the close button in the menu bar is pressed
     def btn_close_clicked(self):
-        self.parent.close()
+        # if there are more than 1 tab open
+        if len(tabArr) > 1:
+            msg = QMessageBox()
+            msg.setWindowTitle("Notes")
+            msg.setText("Do you want to close all of the tabs?")
+            msg.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
+            msg.setDefaultButton(QMessageBox.Yes)
+            msg.setIcon(QMessageBox.Question)
+            # cancel = 4194304
+            # else yes
+            QApplication.setOverrideCursor(Qt.ArrowCursor)
+            ans = msg.exec_()
+            # if yes
+            if ans != 4194304:
+                self.parent.close()
+        # if there is 1 tab and it is not saved then just bring up the closeTab dialogue
+        elif len(tabArr) == 1 and tabArr[0].isSaved == False:
+            self.parent.closeTab(0, 0)
+        # otherwise just close
+        else:
+            self.parent.close()
 
     def btn_max_clicked(self):
         global isMaximized
