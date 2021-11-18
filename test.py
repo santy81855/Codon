@@ -11,6 +11,9 @@ from PyQt5.QtWidgets import QLabel, QStackedWidget, QMessageBox
 from PyQt5.QtWidgets import QPushButton, QDesktopWidget
 from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QWidget
+from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
+from PyQt5.QtGui import QColor, QPainter, QTextFormat
 import textwrap
 from pynput import keyboard
 import string
@@ -18,11 +21,6 @@ import os
 import subprocess
 from pathlib import Path
 import ctypes
-#-------------------------------------------------------------------------------------------------#
-from PyQt5.QtCore import Qt, QRect, QSize
-from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
-from PyQt5.QtGui import QColor, QPainter, QTextFormat
-
 
 class QLineNumberArea(QWidget):
     def __init__(self, editor):
