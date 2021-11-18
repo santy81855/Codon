@@ -207,17 +207,49 @@ class Tab(QWidget):
         self.tabButton.installEventFilter(self)
         self.setMouseTracking(True)
         self.singleTabLayout.addWidget(self.tabButton)
+        #------------------------------------------------------------------------------------------------
+        # create a smaller button for closing the tab that is normally the same color as the tab
+        # but will turn red if hovered
+        self.closeButton = QPushButton("")
+        self.closeButton.setMouseTracking(True)
+        self.closeButton.clicked.connect(self.tabClose)
+        self.closeButton.setMinimumSize(20, 40)
+        self.closeButton.adjustSize()
+        self.closeButton.setStyleSheet("""
+            QPushButton
+            {
+            background-color: #3B4252; 
+            border:none;
+            color: #E5E9F0;
+            font: 14pt "Consolas";
+            }
+            QPushButton::hover
+            {
+                background-color : #990000;
+            }
+                                    """)
+        #self.singleTabLayout.addWidget(self.closeButton)
+        #-----------------------------------------------------------------------------------------------
         self.setLayout(self.singleTabLayout)
         # left, top, right, bottom
         self.singleTabLayout.setContentsMargins(0,0,0,0)        
         self.tabClicked()
+
+    def tabClose(self):
+        print("here")
     
     # event filter to detect right click
     def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.MouseButtonPress:
             # if we right click we want to remove that tab
             if event.button() == QtCore.Qt.RightButton:
-                print("need to open file explorer to the directory of the current file")
+                # get the index of the tab we want to close
+                tabIndex = -1
+                for tab in tabArr:
+                    if tab == self:
+                        tabIndex = tabArr.index(tab)
+                        break
+                mainWin.closeTab(tabIndex, currentActiveTextBox)
 
         return QtCore.QObject.event(obj, event)
     
@@ -364,7 +396,7 @@ class MainWindow(QWidget):
         #self.shortcut_newWindow.activated.connect(self.newWindow)
 
         self.shortcut_closeTab = QShortcut(QKeySequence('Ctrl+w'), self)
-        self.shortcut_closeTab.activated.connect(self.closeTab)
+        self.shortcut_closeTab.activated.connect(self.closeTabHelper)
 
         self.shortcut_openFile = QShortcut(QKeySequence('Ctrl+o'), self)
         self.shortcut_openFile.activated.connect(self.openFile)
@@ -517,7 +549,10 @@ class MainWindow(QWidget):
                 # put the cursor at the end of the text
                 self.textbox.moveCursor(QTextCursor.End)
 
-    def closeTab(self):
+    def closeTabHelper(self):
+        self.closeTab(currentActiveTextBox, currentActiveTextBox)
+
+    def closeTab(self, tabToClose, currentActiveTab):
         global currentActiveTextBox
         global tabCount
         global curEmptyTab
@@ -531,6 +566,20 @@ class MainWindow(QWidget):
         global tabStack
         okayToClose = True
         isCancelled = False
+        
+        # if we are closing a tab that is not active we just need to set it to active
+        # and store the index of the tab we want to go back to
+        returnIndex = -1
+        if currentActiveTab != tabToClose:
+            # if the current active tab is greater then its index will decrease by 1 when we remove
+            # the other tab
+            if currentActiveTab > tabToClose:
+                returnIndex = currentActiveTab - 1
+            else:
+                returnIndex = currentActiveTab
+            # change the CATB to be the tab we want to close
+            currentActiveTextBox = tabToClose
+
         # if it is just an untitled empty page, we can set it as saved since nothing is lost
         if "untitled" in tabArr[currentActiveTextBox].fileName and tabArr[currentActiveTextBox].contents == "":
             tabArr[currentActiveTextBox].isSaved = True
@@ -591,7 +640,9 @@ class MainWindow(QWidget):
                 # if we removed the last tab close the program
                 if len(tabArr) == 0:
                     self.close()
-                
+                # if we removed a non active tab then just restore the appropriate tab
+                if returnIndex != -1:
+                    currentActiveTextBox = returnIndex + 1
                 # if the tab we just removed is the first tab
                 if currentActiveTextBox == 0:
                     # just shift over to the tab to its right by staying at index 0
