@@ -1170,12 +1170,16 @@ isShortCut = False
 # variable to set the cursor flash time
 cursorFlashTime = 800
 
-# change to QWidget to apply background image
-stylesheet = """
-    QMainWindow {
+stylesheet2 = """
+    QWidget {
         background-image: url("background.png"); 
         background-repeat: no-repeat; 
         background-position: center;
+    }
+"""
+stylesheet = """
+    QWidget {
+        border-radius:50px;
     }
 """
 
