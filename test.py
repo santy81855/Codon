@@ -11,9 +11,9 @@ from PyQt5.QtWidgets import QLabel, QStackedWidget, QMessageBox
 from PyQt5.QtWidgets import QPushButton, QDesktopWidget
 from PyQt5.QtWidgets import QVBoxLayout
 from PyQt5.QtWidgets import QWidget
-from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
-from PyQt5.QtGui import QColor, QPainter, QTextFormat
+from PyQt5.QtGui import QColor, QPainter, QTextFormat, QLinearGradient
 import textwrap
 from pynput import keyboard
 import string
@@ -358,7 +358,7 @@ class MainWindow(QWidget):
         self.resizingWindow = False
         self.start = QPoint(0, 0)
         self.setStyleSheet("""
-            background-color: #3B4252; 
+            background-color: #3B4252;
                           """)
         # flags for starting location of resizing window
         self.left = False
@@ -433,6 +433,17 @@ class MainWindow(QWidget):
         # detect if there was a change in the active text edit, and if so change the corresponding
         # tab's isSaved to False
         self.textbox.textChanged.connect(self.setSavedToFalse)
+        # to help rounded corners work
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+
+    def paintEvent(self, ev):
+        painter = QPainter(self)
+        painter.setBrush(QColor("#3B4252"))
+        # removes the black border around the window
+        painter.setPen(QColor(0,0,0,0))
+        rect = QRectF(ev.rect())
+        painter.drawRoundedRect(rect, 10, 10)   
 
     def tabJump(self, index):
         if len(tabArr) > index-1:
@@ -1185,7 +1196,7 @@ stylesheet = """
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setStyleSheet(stylesheet)
+    #app.setStyleSheet(stylesheet)
     app.setCursorFlashTime(cursorFlashTime)
     screen_resolution = app.desktop().screenGeometry()
     print(screen_resolution)
