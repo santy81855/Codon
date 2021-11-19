@@ -1089,7 +1089,9 @@ class MyBar(QWidget):
         self.parent.showMinimized()
     
     def mouseDoubleClickEvent(self, event):
-        self.btn_max_clicked()
+        # only a left double click will max and restore
+        if event.button() == 1:
+            self.btn_max_clicked()
     
     def mousePressEvent(self, event):
         if event.button() == Qt.RightButton:
