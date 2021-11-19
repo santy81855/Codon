@@ -194,7 +194,7 @@ class Tab(QWidget):
             color: #D8DEE9;
             border: none;
             padding: 10px;
-            }-  
+            }  
                                     """)
         # install event filter on the button so we can detect right click
         self.tabButton.installEventFilter(self)
@@ -404,7 +404,7 @@ class MainWindow(QWidget):
         self.shortcut_saveFileAs = QShortcut(QKeySequence('Ctrl+Shift+s'), self)
         self.shortcut_saveFileAs.activated.connect(self.saveFileAs)
 
-        # shortcut to open tab 1 with ctrl+1
+        # shortcut to open tabs with ctrl+number
         self.shortcut_tab1 = QShortcut(QKeySequence('Ctrl+1'), self)
         self.shortcut_tab1.activated.connect(lambda: self.tabJump(1))
         self.shortcut_tab2 = QShortcut(QKeySequence('Ctrl+2'), self)
@@ -425,10 +425,6 @@ class MainWindow(QWidget):
         self.shortcut_tab9.activated.connect(lambda: self.tabJump(9))
         self.shortcut_tab10 = QShortcut(QKeySequence('Ctrl+0'), self)
         self.shortcut_tab10.activated.connect(lambda: self.tabJump(10))
-
-        # tab backwards
-        #self.shortcut_tabBackwards = QShortcut(QKeySequence('Shift+Tab'), self)
-        #self.shortcut_tabBackwards.activated.connect(self.tabBackwards)
 
         # detect if there was a change in the active text edit, and if so change the corresponding
         # tab's isSaved to False
@@ -960,7 +956,7 @@ class MyBar(QWidget):
         # add left margin to account for 3 corner buttons so the title is centered
         self.layout.setContentsMargins(btn_size*3,0,0,0)
         self.layout.setSpacing(0)
-        self.title = QLabel("test.py" + " - notes app")
+        self.title = QLabel("notes app")
         self.title.setMouseTracking(True)
 
         self.btn_close = QPushButton("x")
