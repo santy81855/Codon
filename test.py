@@ -5,7 +5,7 @@ from PyQt5.QtGui import QCursor, QMouseEvent, QFont, QKeySequence, QSyntaxHighli
 from PyQt5.QtCore import QPoint, pyqtSignal, QRegExp
 from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QEasingCurve
 from PyQt5.QtCore import QObject, QMimeData
-from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter, QFileDialog
+from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter, QFileDialog, QGraphicsDropShadowEffect
 from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QPlainTextEdit, QShortcut
 from PyQt5.QtWidgets import QLabel, QStackedWidget, QMessageBox
 from PyQt5.QtWidgets import QPushButton, QDesktopWidget
@@ -53,6 +53,7 @@ class QCodeEditor(QPlainTextEdit):
         self.is_first_input = False
     
     def keyPressEvent(self, event):
+        global wordCount
         tab_char = '\t' # could be anything including spaces
         # no matter what we want to update the preview pane
         mainWin.layout.itemAt(textBoxIndex).itemAt(1).widget().setPlainText(mainWin.layout.itemAt(textBoxIndex).itemAt(0).widget().toPlainText())
@@ -82,6 +83,11 @@ class QCodeEditor(QPlainTextEdit):
 
             cur.insertText('\t')
             cur.insertText(sel_text)
+        elif event.key() == QtCore.Qt.Key_Space:
+            tabArr[currentActiveTextBox].wordCount += 1
+            # update the value of the word count button
+            mainWin.infobarlayout.itemAt(wordCountIndex).widget().setText(str(tabArr[currentActiveTextBox].wordCount))
+            return QPlainTextEdit.keyPressEvent(self, event)
         else:
             return QPlainTextEdit.keyPressEvent(self, event)
     
@@ -121,7 +127,7 @@ class QCodeEditor(QPlainTextEdit):
         extraSelections = []
         if not self.isReadOnly():
             selection = QTextEdit.ExtraSelection()
-            lineColor = QColor("#434C5E").lighter(100)
+            lineColor = QColor("#3B4252").lighter(100)
             selection.format.setBackground(lineColor)
             selection.format.setProperty(QTextFormat.FullWidthSelection, True)
             selection.cursor = self.textCursor()
@@ -177,6 +183,8 @@ class Tab(QWidget):
         self.isSaved = False
         # variable to store the contents of the text box
         self.contents = contents
+        # variable to store the word count of the document
+        self.wordCount = 0
         # create a layout that can store the tab and its close button
         self.singleTabLayout = QHBoxLayout()
         # create a button to represent the file
@@ -188,7 +196,7 @@ class Tab(QWidget):
         self.tabButton.setStyleSheet("""
             QPushButton
             {
-            background-color: #3B4252;
+            background-color: #2E3440;
             color: #D8DEE9;
             font: 14pt "Consolas";
             border: none;
@@ -217,7 +225,7 @@ class Tab(QWidget):
         self.closeButton.setStyleSheet("""
             QPushButton
             {
-            background-color: #3B4252; 
+            background-color: #2E3440; 
             border:none;
             color: #E5E9F0;
             font: 14pt "Consolas";
@@ -259,7 +267,7 @@ class Tab(QWidget):
             QPushButton
             {
             background-color: #8FBCBB;
-            color: #3B4252;
+            color: #2E3440;
             font: 14pt "Consolas";
             border: none;
             padding: 10px;
@@ -282,7 +290,7 @@ class Tab(QWidget):
                 tabArr[i].tabButton.setStyleSheet("""
             QPushButton
             {
-            background-color: #3B4252;
+            background-color: #2E3440;
             color: #D8DEE9;
             font: 14pt "Consolas";
             border: none;
@@ -307,6 +315,34 @@ class TextPreview(QPlainTextEdit):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setWordWrapMode(0)
+    
+class WordCountButton(QPushButton):
+    def __init__(self, parent):
+        super(WordCountButton, self).__init__()
+        self.parent = parent
+        self.setText("wc:113")
+        self.clicked.connect(self.wordCountClicked)
+        #self.setFixedSize(20, 20)
+        self.adjustSize()
+        #self.setMaximumSize(100, 20)
+        self.setStyleSheet("""
+            QPushButton
+            {
+            background-color: #2E3440; 
+            border:none;
+            color: #8FBCBB;
+            font: 12pt "Consolas";
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-top: 5px;
+            padding-bottom: 5px;
+            }
+                                """)
+                                
+        self.setMouseTracking(True)
+    
+    def wordCountClicked(self):
+        print("here")
         
 class MainWindow(QWidget):
     def __init__(self):
@@ -321,6 +357,7 @@ class MainWindow(QWidget):
         self.setWindowOpacity(1.0)
         # vertical layout
         self.layout = QVBoxLayout()
+        self.layout.setSpacing(0)
         # add the title bar
         self.layout.addWidget(MyBar(self))
         # create a horizontal layout to represent the tab bar
@@ -331,6 +368,22 @@ class MainWindow(QWidget):
         #self.tabLayout.setContentsMargins(MARGIN,0,MARGIN,0)
         # add the tab bar to the vertical layout
         self.layout.addLayout(self.tabLayout)   
+        # add drop shadow
+        self.shadow = QGraphicsDropShadowEffect()
+        self.shadow.setBlurRadius(6)
+        self.shadow.setXOffset(0)
+        self.shadow.setYOffset(2)
+        self.shadow.setColor(QColor(0, 0, 0, 200))
+        # add a drop shadow before the next thing
+        self.dropShadow = QLabel("")
+        self.dropShadow.setStyleSheet("""
+        background-color: #2E3440;
+        border: none;
+        
+                                        """)
+        self.dropShadow.setFixedHeight(1)
+        self.dropShadow.setGraphicsEffect(self.shadow)
+        self.layout.addWidget(self.dropShadow)
         tabBar = self.tabLayout
         # add the textbox to the vertical layout
         self.textbox = QCodeEditor(self)
@@ -339,8 +392,7 @@ class MainWindow(QWidget):
             border: none;
             font: 14pt "Consolas";
             color: #D8DEE9;
-            selection-color: #3B4252;
-            selection-background-color: #D8DEE9;
+            selection-background-color: #4C566A;
                                 """)
         self.textbox.resize(mainWin.width() - 100, mainWin.height() - 100)
         self.textbox.move(0,0)
@@ -357,6 +409,8 @@ class MainWindow(QWidget):
         # code for inserting a preview pane on the main window
         # create horizontal layout so we can have 2 plaintextboxes
         self.textlayout = QHBoxLayout()
+        # left, top, right, bottom
+        self.textlayout.setContentsMargins(0, 10, 0, 0)
         # add the textbox to the horizontal layout to take 80% of the screen
         self.textlayout.addWidget(self.textbox, 80)
         self.previewbox = TextPreview(self)
@@ -364,7 +418,7 @@ class MainWindow(QWidget):
             border: none;
             font: 3pt "Consolas";
             color: #D8DEE9;
-            selection-color: #3B4252;
+            selection-color: #2E3440;
             selection-background-color: #D8DEE9;
             padding-left: 20px;
                                 """)
@@ -386,11 +440,34 @@ class MainWindow(QWidget):
         self.textlayout.addWidget(self.previewbox, 20)
         # add the horizontal box layout to the main vertical layout
         self.layout.addLayout(self.textlayout)
-        self.previewbox.setPlainText("hello")
+        # create a drop shadow
+        self.shadow2 = QGraphicsDropShadowEffect()
+        self.shadow2.setBlurRadius(8)
+        self.shadow2.setXOffset(0)
+        self.shadow2.setYOffset(8)
+        self.shadow2.setColor(QColor(0, 0, 0, 200))
+        # add a drop shadow before the next thing
+        self.dropShadow2 = QLabel("")
+        self.dropShadow2.setStyleSheet("""
+        background-color: #2E3440;
+        border: none;
+                                        """)
+        self.dropShadow2.setFixedHeight(1)
+        self.dropShadow2.setGraphicsEffect(self.shadow2)
+        self.layout.addWidget(self.dropShadow2)
         #------------------------------------------------------------------------#
+        # add the infobar at the bottom
+        self.infobarlayout = QHBoxLayout()
+        # add a stretch so we start the buttons on the right
+        self.infobarlayout.addStretch(1)
+        # start the display from the right
+        #self.infobarlayout.addStretch(1)
+        # left, top, right, bottom
+        self.infobarlayout.setContentsMargins(0, 12, 10, 0)
+        self.infobarlayout.setSpacing(0)
+        self.infobarlayout.addWidget(WordCountButton(self))
+        self.layout.addLayout(self.infobarlayout)
         #------------------------------------------------------------------------#
-        # add the textbox to the main window
-        #self.layout.addWidget(self.textbox)
         # set the layout
         self.setLayout(self.layout)
         # add the initial default tab that will open on launch
@@ -408,7 +485,7 @@ class MainWindow(QWidget):
         self.resizingWindow = False
         self.start = QPoint(0, 0)
         self.setStyleSheet("""
-            background-color: #3B4252;
+            background-color: #2E3440;
                           """)
         # flags for starting location of resizing window
         self.left = False
@@ -485,7 +562,7 @@ class MainWindow(QWidget):
 
     def paintEvent(self, ev):
         painter = QPainter(self)
-        painter.setBrush(QColor("#3B4252"))
+        painter.setBrush(QColor("#2E3440"))
         # removes the black border around the window
         painter.setPen(QColor(0,0,0,0))
         rect = QRectF(ev.rect())
@@ -889,10 +966,10 @@ class MainWindow(QWidget):
         QApplication.setOverrideCursor(Qt.ArrowCursor)
         if isMaximized == False:
             # top left
-            if pos.x() <= 5 and pos.y() <= 5:
+            if pos.x() <= 10 and pos.y() <= 10:
                 QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
             # top right
-            elif pos.x() >= self.width() - 5 and pos.y() <= 5:
+            elif pos.x() >= self.width() - 8 and pos.y() <= 8:
                 QApplication.setOverrideCursor(Qt.SizeBDiagCursor)
             # top
             elif pos.y() <= 5 and pos.x() > 5 and pos.x() < self.width() - 5:
@@ -901,10 +978,10 @@ class MainWindow(QWidget):
             elif pos.y() >= self.height() - 8 and pos.x() <= 8:
                 QApplication.setOverrideCursor(Qt.SizeBDiagCursor)
             # bottom right
-            elif pos.x() >= self.width() - 5 and pos.y() >= self.height() - 5:
+            elif pos.x() >= self.width() - 8 and pos.y() >= self.height() - 8:
                 QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
             # bottom
-            elif pos.x() > 0 and pos.x() < self.width() - 0 and pos.y() >= self.height() - 0:
+            elif pos.x() > 0 and pos.x() < self.width() - 8 and pos.y() >= self.height() - 8:
                 QApplication.setOverrideCursor(Qt.SizeVerCursor)
             # left
             elif pos.x() <= 5 and pos.y() > 5:
@@ -1021,7 +1098,7 @@ class MyBar(QWidget):
         self.btn_close.setStyleSheet("""
             QPushButton
             {
-            background-color: #3B4252; 
+            background-color: #2E3440; 
             border:none;
             color: #E5E9F0;
             font: 14pt "Consolas";
@@ -1039,7 +1116,7 @@ class MyBar(QWidget):
         self.btn_min.setStyleSheet("""
             QPushButton
             {
-            background-color: #3B4252; 
+            background-color: #2E3440; 
             border:none;
             color: #E5E9F0;
             font: 14pt "Consolas";
@@ -1047,7 +1124,7 @@ class MyBar(QWidget):
             QPushButton::hover
             {
                 background-color : #D8DEE9;
-                color: #3B4252;
+                color: #2E3440;
             }
                                 """)
         self.btn_min.setMouseTracking(True)
@@ -1057,7 +1134,7 @@ class MyBar(QWidget):
         self.btn_max.setStyleSheet("""
             QPushButton
             {
-            background-color: #3B4252; 
+            background-color: #2E3440; 
             border:none;
             color: #E5E9F0;
             font: 14pt "Consolas";
@@ -1065,7 +1142,7 @@ class MyBar(QWidget):
             QPushButton::hover
             {
                 background-color : #D8DEE9;
-                color: #3B4252;
+                color: #2E3440;
             }
                                 """)
         self.btn_max.setMouseTracking(True)
@@ -1078,8 +1155,8 @@ class MyBar(QWidget):
         self.layout.addWidget(self.btn_close)
 
         self.title.setStyleSheet("""
-            background-color: #3B4252;
-            color: #E5E9F0;
+            background-color: #2E3440;
+            color: #8FBCBB;
             font: 14pt "Consolas";
             """)
         self.setLayout(self.layout)
@@ -1159,7 +1236,13 @@ class MyBar(QWidget):
             self.start = self.mapToGlobal(event.pos())
 
     def mouseMoveEvent(self, event):
-        QApplication.setOverrideCursor(Qt.ArrowCursor)
+        pos = event.pos()
+        # top left
+        if pos.x() <= 3 and pos.y() <= 3:
+            QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
+        
+        else:
+            QApplication.setOverrideCursor(Qt.ArrowCursor)
         if isMaximized == False:
             # moving the window
             if self.pressing and self.movingPosition:
@@ -1205,10 +1288,14 @@ START_INDENT = 50
 TAB_SIZE = 8
 # variable to allow going back to previous size after maximizing
 isMaximized = False
-# variable to track the main textbox index in case I update the layout order
-textBoxIndex = 2
 # variable to track the tab bar index
 tabRowIndex = 1
+# variable to track the main textbox index in case I update the layout order
+textBoxIndex = 3
+# word count index
+infoBarIndex = 4
+# word count index
+wordCountIndex = 1
 # variable to track the tabBar so I can access it quickly
 # variable to track the number of default tabs currently open
 curEmptyTab = 1
