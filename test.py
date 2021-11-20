@@ -353,10 +353,11 @@ class MainWindow(QWidget):
         self.previewbox = TextPreview(self)
         self.previewbox.setStyleSheet("""
             border: none;
-            font: 4pt "Consolas";
+            font: 3pt "Consolas";
             color: #D8DEE9;
             selection-color: #3B4252;
             selection-background-color: #D8DEE9;
+            padding-left: 20px;
                                 """)
         previewFont = QFont()
         previewFont.setFamily("Consolas")
@@ -364,7 +365,12 @@ class MainWindow(QWidget):
         previewFont.setPointSize( 4 )
         self.previewbox.setFont( previewFont )
         #self.previewbox.resize(mainWin.width() / 3, mainWin.height() - 100)
+        # you cannot type on it
         self.previewbox.setReadOnly(True)
+        # don't be able to select it
+        self.previewbox.setTextInteractionFlags(Qt.NoTextInteraction)    
+        # it can't get bigger than a certain width
+        self.previewbox.setMaximumWidth(150)
         # add the preview pane to take 20% of the screen
         self.textlayout.addWidget(self.previewbox, 20)
         # add the horizontal box layout to the main vertical layout
@@ -1116,7 +1122,8 @@ class MyBar(QWidget):
             # toggle isMax so we know the state
             isMaximized = True
         # focus on the textbox
-        self.parent.layout.itemAt(textBoxIndex).widget().setFocus()
+        #self.parent.layout.itemAt(textBoxIndex).widget().setFocus()
+        self.parent.layout.itemAt(textBoxIndex).itemAt(0).widget().setFocus()
 
     def btn_min_clicked(self):
         # same with the show minimized
