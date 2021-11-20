@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter, QF
 from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QPlainTextEdit, QShortcut
 from PyQt5.QtWidgets import QLabel, QStackedWidget, QMessageBox
 from PyQt5.QtWidgets import QPushButton, QDesktopWidget
-from PyQt5.QtWidgets import QVBoxLayout
+from PyQt5.QtWidgets import QVBoxLayout, QScrollBar
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
@@ -54,6 +54,8 @@ class QCodeEditor(QPlainTextEdit):
     
     def keyPressEvent(self, event):
         tab_char = '\t' # could be anything including spaces
+        # no matter what we want to update the preview pane
+        mainWin.layout.itemAt(textBoxIndex).itemAt(1).widget().setPlainText(mainWin.layout.itemAt(textBoxIndex).itemAt(0).widget().toPlainText())
         if event.key() == QtCore.Qt.Key_Backtab:
             # get current cursor
             cur = self.textCursor()
@@ -87,6 +89,10 @@ class QCodeEditor(QPlainTextEdit):
         QApplication.setOverrideCursor(Qt.IBeamCursor)
             
     def lineNumberAreaWidth(self):
+        # since we just added a new line we need to place an enter key on the previewtextbox
+        if mainWin.layout.itemAt(textBoxIndex) is not None:
+            text = mainWin.layout.itemAt(textBoxIndex).itemAt(1).widget().toPlainText()
+            mainWin.layout.itemAt(textBoxIndex).itemAt(1).widget().setPlainText(text + '\n')
         digits = 1
         max_value = max(1, self.blockCount())
         while max_value >= 10:
@@ -298,6 +304,9 @@ class TextPreview(QPlainTextEdit):
         super(TextPreview, self).__init__()
         self.parent = parent
         self.setMouseTracking(True)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setWordWrapMode(0)
         
 class MainWindow(QWidget):
     def __init__(self):
@@ -371,6 +380,8 @@ class MainWindow(QWidget):
         self.previewbox.setTextInteractionFlags(Qt.NoTextInteraction)    
         # it can't get bigger than a certain width
         self.previewbox.setMaximumWidth(150)
+        # set the tab size to be really small
+        self.previewbox.setTabStopWidth(4)
         # add the preview pane to take 20% of the screen
         self.textlayout.addWidget(self.previewbox, 20)
         # add the horizontal box layout to the main vertical layout
@@ -512,6 +523,8 @@ class MainWindow(QWidget):
             tabArr[currentActiveTextBox].isSaved = False
             # update the values in the textbox array
             tabArr[currentActiveTextBox].contents = self.textbox.toPlainText()
+        # update the values in the preview box
+        self.previewbox.setPlainText(self.textbox.toPlainText())
 
     def saveFile(self):
         global currentActiveTextBox
@@ -792,6 +805,8 @@ class MainWindow(QWidget):
         currentActiveTextBox = len(tabArr) - 1
         # add the contents to the textbox
         self.textbox.setPlainText(contents)
+        # add the contents to the preview pane
+        self.previewbox.setPlainText(contents)
         # focus the cursor on the new text box
         self.textbox.setFocus()
 
