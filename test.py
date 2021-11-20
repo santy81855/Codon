@@ -89,9 +89,18 @@ class QCodeEditor(QPlainTextEdit):
             # get the text of this tabs textbox
             # add the current key as well to account for the first letter being pressed
             text = str(event.text()) + tabArr[currentActiveTextBox].contents
+            # if we just pasted then we want to get the most updated contents of the textbox
+            if event.matches(QKeySequence.Paste):
+                text = text + QApplication.clipboard().text()
             # remove the last letter of the text if it is a backspace
             if event.key() == QtCore.Qt.Key_Backspace:
-                text = text[:-1]
+                # in case we are deleting more than a single character through selection
+                cur = self.textCursor()
+                if cur.hasSelection() == True:
+                    selectedText = cur.selectedText()
+                    text = text.replace(selectedText, "")
+                else:
+                    text = text[:-1]
             # use regex to split it into a list of words
             text = re.findall('[\w\-]+', text)
             # update the variable storing the wordcount of the tab to be the length of the list we
@@ -195,6 +204,15 @@ class Tab(QWidget):
         self.contents = contents
         # variable to store the word count of the document
         self.wordCount = 0
+        # set the word count on the button if there is any content to this file
+        if contents != "":
+            # use regex to split it into a list of words
+            text = re.findall('[\w\-]+', contents)
+            # update the variable storing the wordcount of the tab to be the length of the list we
+            # just got
+            self.wordCount = len(text)
+            # update the value of the word count button
+            #mainWin.infobarlayout.itemAt(wordCountIndex).widget().setText(str(self.wordCount))
         # create a layout that can store the tab and its close button
         self.singleTabLayout = QHBoxLayout()
         # create a button to represent the file
