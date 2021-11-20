@@ -1371,7 +1371,7 @@ stylesheet = """
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    #app.setStyleSheet(stylesheet)
+    #app.setStyleSheet(stylesheet2)
     app.setCursorFlashTime(cursorFlashTime)
     screen_resolution = app.desktop().screenGeometry()
     print(screen_resolution)
