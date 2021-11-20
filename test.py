@@ -21,6 +21,7 @@ import os
 import subprocess
 from pathlib import Path
 import ctypes
+import re
 
 class QLineNumberArea(QWidget):
     def __init__(self, editor):
@@ -83,12 +84,21 @@ class QCodeEditor(QPlainTextEdit):
 
             cur.insertText('\t')
             cur.insertText(sel_text)
-        elif event.key() == QtCore.Qt.Key_Space:
-            tabArr[currentActiveTextBox].wordCount += 1
+        else:
+            # any time we type a letter update the word count (this probably does not scale well)
+            # get the text of this tabs textbox
+            # add the current key as well to account for the first letter being pressed
+            text = str(event.text()) + tabArr[currentActiveTextBox].contents
+            # remove the last letter of the text if it is a backspace
+            if event.key() == QtCore.Qt.Key_Backspace:
+                text = text[:-1]
+            # use regex to split it into a list of words
+            text = re.findall('[\w\-]+', text)
+            # update the variable storing the wordcount of the tab to be the length of the list we
+            # just got
+            tabArr[currentActiveTextBox].wordCount = len(text)
             # update the value of the word count button
             mainWin.infobarlayout.itemAt(wordCountIndex).widget().setText(str(tabArr[currentActiveTextBox].wordCount))
-            return QPlainTextEdit.keyPressEvent(self, event)
-        else:
             return QPlainTextEdit.keyPressEvent(self, event)
     
     def mouseMoveEvent(self, event):
@@ -602,6 +612,8 @@ class MainWindow(QWidget):
             tabArr[currentActiveTextBox].contents = self.textbox.toPlainText()
         # update the values in the preview box
         self.previewbox.setPlainText(self.textbox.toPlainText())
+        # update the value of the word count
+        mainWin.infobarlayout.itemAt(wordCountIndex).widget().setText(str(tabArr[currentActiveTextBox].wordCount))
 
     def saveFile(self):
         global currentActiveTextBox
@@ -868,6 +880,8 @@ class MainWindow(QWidget):
         currentActiveTextBox = index
         # restore the text that there was on that tab
         self.textbox.setPlainText(tabArr[currentActiveTextBox].contents)
+        # restore the correct word count
+        self.infobarlayout.itemAt(wordCountIndex).widget().setText(str(tabArr[currentActiveTextBox].wordCount))
         # put the cursor at the end of the text
         self.textbox.moveCursor(QTextCursor.End)
         # make the textbox the focus
@@ -884,6 +898,8 @@ class MainWindow(QWidget):
         self.textbox.setPlainText(contents)
         # add the contents to the preview pane
         self.previewbox.setPlainText(contents)
+        # add the correct wordcount for the tab (will be 0 if new tab)
+        self.infobarlayout.itemAt(wordCountIndex).widget().setText(str(tabArr[currentActiveTextBox].wordCount))
         # focus the cursor on the new text box
         self.textbox.setFocus()
 
