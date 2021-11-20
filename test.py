@@ -948,7 +948,7 @@ class MainWindow(QWidget):
     def on_focusChanged(self, old, new):
         # set the opacity to 1 if not focused
         if self.isActiveWindow():
-            self.setWindowOpacity(0.95)
+            self.setWindowOpacity(0.98)
         else:
             self.setWindowOpacity(1.0)
 
