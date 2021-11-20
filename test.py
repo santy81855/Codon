@@ -292,6 +292,12 @@ class Tab(QWidget):
                                     """)
         # change the title of the window to be the tab name
         titleBar.title.setText(self.fileName)
+
+class TextPreview(QPlainTextEdit):
+    def __init__(self, parent):
+        super(TextPreview, self).__init__()
+        self.parent = parent
+        self.setMouseTracking(True)
         
 class MainWindow(QWidget):
     def __init__(self):
@@ -317,7 +323,6 @@ class MainWindow(QWidget):
         # add the tab bar to the vertical layout
         self.layout.addLayout(self.tabLayout)   
         tabBar = self.tabLayout
-
         # add the textbox to the vertical layout
         self.textbox = QCodeEditor(self)
         #first create the new textbox widget
@@ -340,8 +345,35 @@ class MainWindow(QWidget):
         font.setPointSize( 14 )
         self.textbox.setFont( font )
         #------------------------------------------------------------------------#
+        # code for inserting a preview pane on the main window
+        # create horizontal layout so we can have 2 plaintextboxes
+        self.textlayout = QHBoxLayout()
+        # add the textbox to the horizontal layout to take 80% of the screen
+        self.textlayout.addWidget(self.textbox, 80)
+        self.previewbox = TextPreview(self)
+        self.previewbox.setStyleSheet("""
+            border: none;
+            font: 4pt "Consolas";
+            color: #D8DEE9;
+            selection-color: #3B4252;
+            selection-background-color: #D8DEE9;
+                                """)
+        previewFont = QFont()
+        previewFont.setFamily("Consolas")
+        previewFont.setFixedPitch( True )
+        previewFont.setPointSize( 4 )
+        self.previewbox.setFont( previewFont )
+        #self.previewbox.resize(mainWin.width() / 3, mainWin.height() - 100)
+        self.previewbox.setReadOnly(True)
+        # add the preview pane to take 20% of the screen
+        self.textlayout.addWidget(self.previewbox, 20)
+        # add the horizontal box layout to the main vertical layout
+        self.layout.addLayout(self.textlayout)
+        self.previewbox.setPlainText("hello")
+        #------------------------------------------------------------------------#
+        #------------------------------------------------------------------------#
         # add the textbox to the main window
-        self.layout.addWidget(self.textbox)
+        #self.layout.addWidget(self.textbox)
         # set the layout
         self.setLayout(self.layout)
         # add the initial default tab that will open on launch
@@ -349,6 +381,7 @@ class MainWindow(QWidget):
         # make the default size be half the window
         self.setGeometry(startingLocation[0], startingLocation[1], startingLocation[0], startingLocation[1])
         #self.layout.setContentsMargins(MARGIN,0,MARGIN,MARGIN)
+        # right has no margin because that is where the other widget will be(preview pane)
         self.layout.setContentsMargins(MARGIN,MARGIN,MARGIN,MARGIN)
         # the min height will be 600 x 600
         self.setMinimumSize(600, 600)
@@ -742,7 +775,8 @@ class MainWindow(QWidget):
         # put the cursor at the end of the text
         self.textbox.moveCursor(QTextCursor.End)
         # make the textbox the focus
-        self.layout.itemAt(textBoxIndex).widget().setFocus()
+        #self.layout.itemAt(textBoxIndex).widget().setFocus()
+        self.layout.itemAt(textBoxIndex).itemAt(0).widget().setFocus()
 
     # add a new textbox to go along with this tab making this tab the parent of that textbox
     def addTextBox(self, contents):  
@@ -1208,6 +1242,7 @@ if __name__ == "__main__":
     mw = MainWindow()
     mw.show()
     # make the textbox be automatically in focus on startup
-    mainWin.layout.itemAt(textBoxIndex).widget().setFocus()
+    #mainWin.layout.itemAt(textBoxIndex).widget().setFocus()
+    mainWin.layout.itemAt(textBoxIndex).itemAt(0).widget().setFocus()
 
     sys.exit(app.exec_())
