@@ -607,14 +607,36 @@ class MainWindow(QWidget):
         global leftDown
         global upDown
         global downDown
+        global isMaximized
+        # start with this so that we can maximize and restore over and over with the up button
+        self.showNormal()
+        isMaximized = False
         # get the current working resolution to account for things like the taskbar
         monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
         working_resolution = monitor_info.get("Work")
         workingWidth = working_resolution[2]
         workingHeight = working_resolution[3]
-
+        
+        # middle window from right
+        if direction == "left" and rightDown == True:
+            self.setGeometry(workingWidth/4, 0, workingWidth/2, workingHeight)
+            # set the m all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
+        
+        # middle window from left
+        elif direction == "right" and leftDown == True:
+            self.setGeometry(workingWidth/4, 0, workingWidth/2, workingHeight)
+            # set the m all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
+        
         # snap the window left
-        if direction == "right" and downDown == False and upDown == False:
+        elif direction == "right" and downDown == False and upDown == False:
             self.setGeometry(workingWidth/2, 0, workingWidth/2, workingHeight)
             # set the right to true and the others to false
             rightDown = True
@@ -702,6 +724,16 @@ class MainWindow(QWidget):
             rightDown = False
             downDown = False
             upDown = False
+        
+        # maximize
+        elif direction == "top" and upDown == True:
+            # click the max button
+            self.layout.itemAt(0).widget().btn_max_clicked()
+            # set all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
 
         # snap up
         elif direction == "top" and leftDown == False and rightDown == False:
@@ -712,6 +744,16 @@ class MainWindow(QWidget):
             rightDown = False
             downDown = False
         
+        # minimize
+        elif direction == "bottom" and downDown == True:
+            # click the min button
+            self.layout.itemAt(0).widget().btn_min_clicked()
+            # set all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
+
         # snap down
         elif direction == "bottom" and leftDown == False and rightDown == False:
             self.setGeometry(0, workingHeight / 2, workingWidth, workingHeight / 2)
