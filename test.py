@@ -88,14 +88,13 @@ class QCodeEditor(QPlainTextEdit):
                     if lines.index(line) == 0:
                         if '\t' in line: 
                             line = line[1:]
-                            offset = 1
+                            offset = 1 # only add the offset if we had to remove tab in 1st line
                         cur.insertText(line) 
                     else:
                         if '\t' not in line:
                             line = '\n' + line
                         else:
                             line = '\n' + line[1:]
-                            offset = 1
                         cur.insertText(line)
                         
                 # reselect the same text that was selected to begin with
@@ -191,6 +190,7 @@ class QCodeEditor(QPlainTextEdit):
                     newAnchor = cur.position()
                     newPos = oldPos
                 cur.setPosition(newAnchor, QTextCursor.MoveAnchor)
+                # +1 to account for the tab on the first line
                 cur.setPosition(newPos + 1, QTextCursor.KeepAnchor)
                 self.setTextCursor(cur)
                 
