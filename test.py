@@ -22,6 +22,8 @@ import subprocess
 from pathlib import Path
 import ctypes
 import re
+# to get the working monitor size
+from win32api import GetMonitorInfo, MonitorFromPoint
 
 class QLineNumberArea(QWidget):
     def __init__(self, editor):
@@ -461,7 +463,10 @@ class MainWindow(QWidget):
         # don't be able to select it
         self.previewbox.setTextInteractionFlags(Qt.NoTextInteraction)    
         # it can't get bigger than a certain width
-        self.previewbox.setMaximumWidth(150)
+        # make the width of the preview pane constant and about the same width as the min/max/close
+        # corner buttons
+        self.previewbox.setMaximumWidth(175)
+        self.previewbox.setMinimumWidth(175)
         # set the tab size to be really small
         self.previewbox.setTabStopWidth(4)
         # add the preview pane to take 20% of the screen
@@ -581,12 +586,136 @@ class MainWindow(QWidget):
         self.shortcut_tab10 = QShortcut(QKeySequence('Ctrl+0'), self)
         self.shortcut_tab10.activated.connect(lambda: self.tabJump(10))
 
+        # shortcut to snap the window to left, right, up, down, and corners
+        self.shortcut_snapLeft = QShortcut(QKeySequence('Ctrl+Alt+Left'), self)
+        self.shortcut_snapLeft.activated.connect(lambda: self.snapWin("left"))
+        self.shortcut_snapRight = QShortcut(QKeySequence('Ctrl+Alt+Right'), self)
+        self.shortcut_snapRight.activated.connect(lambda: self.snapWin("right"))
+        self.shortcut_snapTop = QShortcut(QKeySequence('Ctrl+Alt+Up'), self)
+        self.shortcut_snapTop.activated.connect(lambda: self.snapWin("top"))
+        self.shortcut_snapBottom = QShortcut(QKeySequence('Ctrl+Alt+Down'), self)
+        self.shortcut_snapBottom.activated.connect(lambda: self.snapWin("bottom"))
+
         # detect if there was a change in the active text edit, and if so change the corresponding
         # tab's isSaved to False
         self.textbox.textChanged.connect(self.setSavedToFalse)
         # to help rounded corners work
         self.setAttribute(Qt.WA_TranslucentBackground)
+    
+    def snapWin(self, direction):
+        global rightDown
+        global leftDown
+        global upDown
+        global downDown
 
+        # snap the window left
+        if direction == "right" and downDown == False and upDown == False:
+            self.setGeometry(workingWidth/2, 0, workingWidth/2, workingHeight)
+            # set the right to true and the others to false
+            rightDown = True
+            leftDown = False
+            downDown = False
+            upDown = False
+        
+        # snap bottom right from bottom
+        elif direction == "right" and downDown == True and upDown == False:
+            self.setGeometry(workingWidth/2, workingHeight/2, workingWidth/2, workingHeight/2)
+            # set all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
+        
+        # snap bottom right from right
+        elif direction == "bottom" and leftDown == False and rightDown == True:
+            self.setGeometry(workingWidth/2, workingHeight/2, workingWidth/2, workingHeight/2)
+            # set all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
+
+        # snap bottom left from bottom
+        elif direction == "left" and downDown == True and upDown == False:
+            self.setGeometry(0, workingHeight/2, workingWidth/2, workingHeight/2)
+            # set all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
+        
+        # snap bottom left from left
+        elif direction == "bottom" and leftDown == True and rightDown == False:
+            self.setGeometry(0, workingHeight/2, workingWidth/2, workingHeight/2)
+            # set all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
+        
+        # snap top left from top
+        elif direction == "left" and downDown == False and upDown == True:
+            self.setGeometry(0, 0, workingWidth/2, workingHeight/2)
+            # set all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
+        
+        # snap top left from left
+        elif direction == "top" and leftDown == True and rightDown == False:
+            self.setGeometry(0, 0, workingWidth/2, workingHeight/2)
+            # set all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
+        
+        # snap top right from top
+        elif direction == "right" and downDown == False and upDown == True:
+            self.setGeometry(workingWidth/2, 0, workingWidth/2, workingHeight/2)
+            # set all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
+        
+        # snap top right from right
+        elif direction == "top" and leftDown == False and rightDown == True:
+            self.setGeometry(workingWidth/2, 0, workingWidth/2, workingHeight/2)
+            # set all to false
+            rightDown = False
+            leftDown = False
+            downDown = False
+            upDown = False
+
+        # snap left
+        elif direction == "left" and downDown == False and upDown == False:
+            self.setGeometry(0, 0, workingWidth/2, workingHeight)
+            # set left to true and others to false
+            leftDown = True
+            rightDown = False
+            downDown = False
+            upDown = False
+
+        # snap up
+        elif direction == "top" and leftDown == False and rightDown == False:
+            self.setGeometry(0, 0, workingWidth, workingHeight / 2)
+            # set up to True and all others to false
+            upDown = True
+            leftDown = False
+            rightDown = False
+            downDown = False
+        
+        # snap down
+        elif direction == "bottom" and leftDown == False and rightDown == False:
+            self.setGeometry(0, workingHeight / 2, workingWidth, workingHeight / 2)
+            # set Down to True and all others to false
+            downDown = True
+            upDown = False
+            leftDown = False
+            rightDown = False
+            
 
     def paintEvent(self, ev):
         painter = QPainter(self)
@@ -1302,6 +1431,9 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 screen_resolution = 0
 width = 0
 height = 0
+# working resolution variables
+workingWidth = 0
+workingHeight = 0
 key = ''
 res = {}
 res["1920x1080"] = [640, 360] # full hd
@@ -1355,6 +1487,11 @@ tabStack = []
 isShortCut = False
 # variable to set the cursor flash time
 cursorFlashTime = 800
+# variable to be able to snap to sides and corners
+leftDown = False
+upDown = False
+downDown = False
+rightDown = False
 
 stylesheet2 = """
     QWidget {
@@ -1373,6 +1510,13 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     #app.setStyleSheet(stylesheet2)
     app.setCursorFlashTime(cursorFlashTime)
+
+    monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
+    working_resolution = monitor_info.get("Work")
+    print("The work area size is {}x{}.".format(working_resolution[2], working_resolution[3]))
+    workingWidth = working_resolution[2]
+    workingHeight = working_resolution[3]
+    
     screen_resolution = app.desktop().screenGeometry()
     print(screen_resolution)
     width, height = screen_resolution.width(), screen_resolution.height()
