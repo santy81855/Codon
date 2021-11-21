@@ -607,6 +607,11 @@ class MainWindow(QWidget):
         global leftDown
         global upDown
         global downDown
+        # get the current working resolution to account for things like the taskbar
+        monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
+        working_resolution = monitor_info.get("Work")
+        workingWidth = working_resolution[2]
+        workingHeight = working_resolution[3]
 
         # snap the window left
         if direction == "right" and downDown == False and upDown == False:
@@ -1431,9 +1436,6 @@ ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 screen_resolution = 0
 width = 0
 height = 0
-# working resolution variables
-workingWidth = 0
-workingHeight = 0
 key = ''
 res = {}
 res["1920x1080"] = [640, 360] # full hd
@@ -1510,12 +1512,6 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     #app.setStyleSheet(stylesheet2)
     app.setCursorFlashTime(cursorFlashTime)
-
-    monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
-    working_resolution = monitor_info.get("Work")
-    print("The work area size is {}x{}.".format(working_resolution[2], working_resolution[3]))
-    workingWidth = working_resolution[2]
-    workingHeight = working_resolution[3]
     
     screen_resolution = app.desktop().screenGeometry()
     print(screen_resolution)
