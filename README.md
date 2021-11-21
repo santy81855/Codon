@@ -19,6 +19,7 @@
 * Resize Window
 * Slight Transparency effect
 * Dynamic Line Numbering
+* Window Snapping to the left, right, middle, top, bottom, and all 4 corners using Ctrl+Alt+ArrowKeys
 
 ## Future Features List:
 * Scroll through main text field using the preview pane
