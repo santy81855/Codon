@@ -728,7 +728,9 @@ class MainWindow(QWidget):
         # maximize
         elif direction == "top" and upDown == True:
             # click the max button
-            self.layout.itemAt(0).widget().btn_max_clicked()
+            self.setGeometry(0, 0, workingWidth, workingHeight)
+            isMaximized = True
+            #self.layout.itemAt(0).widget().btn_max_clicked()
             # set all to false
             rightDown = False
             leftDown = False
