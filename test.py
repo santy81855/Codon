@@ -52,40 +52,128 @@ class QCodeEditor(QPlainTextEdit):
         self.setMouseTracking(True)
         self.startCursorPosition = 0
         self.endCursorPosition = 0
-        self.startPosition = 0
+        self.oldPosition = 0
         self.is_first_input = False
     
     def keyPressEvent(self, event):
         global wordCount
-        tab_char = '\t' # could be anything including spaces
+        
         # no matter what we want to update the preview pane
         mainWin.layout.itemAt(textBoxIndex).itemAt(1).widget().setPlainText(mainWin.layout.itemAt(textBoxIndex).itemAt(0).widget().toPlainText())
+        # if we press back tab (shift + tab)
         if event.key() == QtCore.Qt.Key_Backtab:
             # get current cursor
             cur = self.textCursor()
-            cur.clearSelection()
- 
-            # move to begining of line and select text to first word
-            cur.movePosition(QTextCursor.StartOfLine)
-            cur.movePosition(QTextCursor.NextWord, QTextCursor.KeepAnchor)
-            sel_text = cur.selectedText()
-
-            # if the text starts with the tab_char, replace it
-            if sel_text.startswith(tab_char):
-                text = sel_text.replace(tab_char, '', 1)
-                cur.insertText(text)
+            # check if there is anything selected
+            if cur.hasSelection() == True:
+                # store the anchor and position of the cursor
+                oldAnchor = cur.anchor()
+                oldPos = cur.position()
+                cur.movePosition(QTextCursor.StartOfLine)
+                startofline = cur.position()
+                
+                # move the cursor so that it is selecting from the beginning of the first line
+                # move it to the start of the line before you clear the selection
+                cur.clearSelection()
+                cur.setPosition(oldAnchor, QTextCursor.MoveAnchor)
+                cur.setPosition(startofline, QTextCursor.KeepAnchor)
+                # store the selected text with the new info
+                text = cur.selection().toPlainText()
+                # split the text up into lines at every new line
+                lines = text.split('\n')
+                # add a newline and a tab at the front of each line since we removed the newlines
+                # with the split command above
+                # offset just tracks if we removed any tabs or not
+                offset = 0
+                for line in lines:
+                    if lines.index(line) == 0:
+                        if '\t' in line: 
+                            line = line[1:]
+                            offset = 1
+                        cur.insertText(line) 
+                    else:
+                        if '\t' not in line:
+                            line = '\n' + line
+                        else:
+                            line = '\n' + line[1:]
+                            offset = 1
+                        cur.insertText(line)
+                        
+                # reselect the same text that was selected to begin with
+                if oldAnchor < oldPos:
+                    newAnchor = oldAnchor
+                    newPos = cur.position()
+                else:
+                    newAnchor = cur.position()
+                    newPos = oldPos
+                cur.setPosition(newAnchor, QTextCursor.MoveAnchor)
+                cur.setPosition(newPos - offset, QTextCursor.KeepAnchor)
+                self.setTextCursor(cur)
+            # if nothing is selected we just want to backtab the current line
+            else:
+                # store the position of the cursor
+                position = cur.position()
+                # move it to the front of the line
+                cur.movePosition(QTextCursor.StartOfLine)
+                # select the very first character in the line
+                cur.setPosition(cur.position(), QTextCursor.MoveAnchor)
+                cur.setPosition(cur.position() + 1, QTextCursor.KeepAnchor)
+                # if the first character is a tab then we want to remove that tab
+                if cur.selectedText() == '\t':
+                    cur.removeSelectedText()
+                # and move the cursor back to where it was
+                cur.movePosition(position)
+        
+        # when we press tab 
         elif event.key() == QtCore.Qt.Key_Tab:
             # get current cursor
             cur = self.textCursor()
-            cur.clearSelection()
- 
-            # move to begining of line and select text to first word
-            cur.movePosition(QtGui.QTextCursor.StartOfLine)
-            cur.movePosition(QtGui.QTextCursor.NextWord, QtGui.QTextCursor.KeepAnchor)
-            sel_text = cur.selectedText()
-
-            cur.insertText('\t')
-            cur.insertText(sel_text)
+            # check if there is anything selected
+            if cur.hasSelection() == True:
+                # store the anchor and position of the cursor
+                oldAnchor = cur.anchor()
+                oldPos = cur.position()
+                cur.movePosition(QTextCursor.StartOfLine)
+                startofline = cur.position()
+                
+                # move the cursor so that it is selecting from the beginning of the first line
+                # move it to the start of the line before you clear the selection
+                #cur.movePosition(oldAnchor)
+                cur.clearSelection()
+                cur.setPosition(oldAnchor, QTextCursor.MoveAnchor)
+                cur.setPosition(startofline, QTextCursor.KeepAnchor)
+                # store the selected text with the new info
+                text = cur.selection().toPlainText()
+                # split the text up into lines at every new line
+                lines = text.split('\n')
+                # add a newline and a tab at the front of each line since we removed the newlines
+                # with the split command above
+                for line in lines:
+                    if lines.index(line) > 0:
+                        line = '\n\t' + line
+                    else:
+                        line = '\t' + line
+                    cur.insertText(line)
+                # reselect the same text that was selected to begin with
+                if oldAnchor < oldPos:
+                    newAnchor = oldAnchor
+                    newPos = cur.position()
+                else:
+                    newAnchor = cur.position()
+                    newPos = oldPos
+                cur.setPosition(newAnchor, QTextCursor.MoveAnchor)
+                cur.setPosition(newPos + 1, QTextCursor.KeepAnchor)
+                self.setTextCursor(cur)
+                
+            else:
+                # store the position of the cursor
+                position = cur.position()
+                # move it to the front of the line
+                cur.movePosition(QTextCursor.StartOfLine)
+                # insert the tab
+                cur.insertText('\t')
+                # and move it back to where it was
+                cur.movePosition(position)
         else:
             # any time we type a letter update the word count (this probably does not scale well)
             # get the text of this tabs textbox
@@ -426,7 +514,8 @@ class MainWindow(QWidget):
                                 """)
         self.textbox.resize(mainWin.width() - 100, mainWin.height() - 100)
         self.textbox.move(0,0)
-        self.textbox.setLineWrapMode(self.textbox.WidgetWidth)
+        #self.textbox.setLineWrapMode(self.textbox.WidgetWidth)
+        self.textbox.setLineWrapMode(0)
         self.textbox.setCursorWidth(3)
         self.textbox.setTabStopWidth(self.textbox.fontMetrics().width(' ') * TAB_SIZE)
         #------------------------------------------------------------------------#
