@@ -57,7 +57,6 @@ class QCodeEditor(QPlainTextEdit):
     
     def keyPressEvent(self, event):
         global wordCount
-        
         # no matter what we want to update the preview pane
         mainWin.layout.itemAt(textBoxIndex).itemAt(1).widget().setPlainText(mainWin.layout.itemAt(textBoxIndex).itemAt(0).widget().toPlainText())
         # if we press back tab (shift + tab)
@@ -123,6 +122,36 @@ class QCodeEditor(QPlainTextEdit):
                     cur.removeSelectedText()
                 # and move the cursor back to where it was
                 cur.movePosition(position)
+        # if we press enter
+        elif event.key() == 16777220:
+            # get current cursor
+            cur = self.textCursor()
+            initialposition = cur.position()
+            # select the character right before the text cursor
+            char = 'f'
+            if cur.position() > 0:
+                cur.setPosition(cur.position(), QTextCursor.MoveAnchor)
+                cur.setPosition(cur.position() - 1, QTextCursor.KeepAnchor)
+                char = cur.selectedText()
+            # if the selected character is an opening curly bracket then we insert a newline and
+            # 1 more tab than the line we were just on
+            if char == '{':
+                cur.clearSelection()
+                cur.setPosition(initialposition, QTextCursor.MoveAnchor)
+                cur.insertText('\n' + '\t')
+                initialposition += 2
+                # now check if the item to the right of the cursor is a closing bracket
+                cur.setPosition(cur.position(), QTextCursor.MoveAnchor)
+                cur.setPosition(cur.position() + 1, QTextCursor.KeepAnchor)
+                if cur.selectedText() == '}':
+                    # we just want to move it to the next line
+                    cur.setPosition(initialposition, QTextCursor.MoveAnchor)
+                    newposition = cur.position()
+                    cur.insertText('\n')
+                    cur.movePosition(newposition - 1)
+                    self.setTextCursor(cur)
+            else:
+                return QPlainTextEdit.keyPressEvent(self, event)
         
         # when we press tab 
         elif event.key() == QtCore.Qt.Key_Tab:
@@ -202,6 +231,8 @@ class QCodeEditor(QPlainTextEdit):
     
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.IBeamCursor)
+        # call the normal mousemoveevent function so that we don't lose functionality
+        QPlainTextEdit.mouseMoveEvent(self, event)
             
     def lineNumberAreaWidth(self):
         # since we just added a new line we need to place an enter key on the previewtextbox
@@ -461,7 +492,7 @@ class WordCountButton(QPushButton):
     
     def wordCountClicked(self):
         print("here")
-        
+
 class MainWindow(QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -504,7 +535,8 @@ class MainWindow(QWidget):
         self.layout.addWidget(self.dropShadow)
         tabBar = self.tabLayout
         # add the textbox to the vertical layout
-        self.textbox = QCodeEditor(self)
+        self.textbox = QCodeEditor()
+        #self.textbox = Editor()
         #first create the new textbox widget
         self.textbox.setStyleSheet("""
             border: none;
