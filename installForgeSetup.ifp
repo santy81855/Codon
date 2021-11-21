@@ -1,0 +1,359 @@
+﻿
+[Header]
+ProjectFileVersion = 1.1
+[General]
+Program name = CodeName
+Program version = 0.1
+Windows 2000 = 0
+Windows XP = 0
+Windows Server 2003 = 0
+Windows Vista = 0
+Windows Server 2008 = 0
+Windows 7 = 1
+Windows 8 = 1
+Windows 10 = 1
+Windows Server 2016 = 0
+DoNotCheckOS = 0
+Company name = Santy
+Website = 
+SFA = 1
+DFA = 1
+Comp = 1
+[Graphics]
+Wizard image = <main>
+Header image = <main>
+Show Label = 1
+VisualStylesEnabled = 1
+[Files]
+Installation path = <ProgramFiles>\<Company>\<AppName>\
+Autcip = 1
+[Uninstall]
+Vwau = 0
+Website = https://
+Include uninstaller = 1
+Uninstaller filename = Uninstall
+UseCustomDisplayIcon = 0
+CustomDisplayIcon = <InstallPath>\
+[Licence]
+Licence dialog = 0
+[Finish]
+Sart program = 1
+Reboot computer = 0
+Program = <InstallPath>\CodeName.exe
+ProgramArguments = 
+[Shortcuts]
+Allowtc = 0
+Shortcut path = <Company>\<AppName>\
+[Serialoptions]
+Allows = 0
+Number = 1000
+Mask = #####-#####-#####-#####
+[SplashScreen]
+Image = 
+Sound = 
+Time = 2
+PlaySound = 0
+Allow = 0
+[Build]
+File = C:\Users\mynam\Documents\GitHub_Repositories\NotePad\installer.exe
+SetupIconPath = C:\Users\mynam\Documents\NoteTest\logo.ico
+UninstallIconPath = C:\Users\mynam\Documents\NoteTest\logo.ico
+CompressionMethod = 0
+CompressionLevel = 2
+[Updater]
+Allow = 0
+1 = <AppName>
+2 = <AppVersion>
+3 = http://
+4 = http://
+5 = http://
+6 = Update
+Language = 0
+RunProg = 
+RunProgs = 0
+Execdlls = 0
+[Languages]
+[Files/Dirs]
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\PyQt5\
+N/A
+[Folder]
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_asyncio.pyd
+55 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_bz2.pyd
+75 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_ctypes.pyd
+114 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_decimal.pyd
+255 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_hashlib.pyd
+37.5 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_lzma.pyd
+152 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_multiprocessing.pyd
+21.5 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_overlapped.pyd
+37.5 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_queue.pyd
+20.5 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_socket.pyd
+69.5 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_ssl.pyd
+141.5 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\_win32sysloader.pyd
+10.5 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-console-l1-1-0.dll
+18.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-datetime-l1-1-0.dll
+18.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-debug-l1-1-0.dll
+18.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-errorhandling-l1-1-0.dll
+18.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-file-l1-1-0.dll
+21.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-file-l1-2-0.dll
+18.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-file-l2-1-0.dll
+18.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-handle-l1-1-0.dll
+18.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-heap-l1-1-0.dll
+18.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-interlocked-l1-1-0.dll
+18.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-libraryloader-l1-1-0.dll
+19.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-localization-l1-2-0.dll
+20.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-memory-l1-1-0.dll
+18.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-namedpipe-l1-1-0.dll
+18.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-processenvironment-l1-1-0.dll
+19.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-processthreads-l1-1-0.dll
+20.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-processthreads-l1-1-1.dll
+18.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-profile-l1-1-0.dll
+17.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-rtlsupport-l1-1-0.dll
+18.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-string-l1-1-0.dll
+18.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-synch-l1-1-0.dll
+20.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-synch-l1-2-0.dll
+18.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-sysinfo-l1-1-0.dll
+19.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-timezone-l1-1-0.dll
+18.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-core-util-l1-1-0.dll
+18.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-conio-l1-1-0.dll
+19.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-convert-l1-1-0.dll
+22.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-environment-l1-1-0.dll
+18.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-filesystem-l1-1-0.dll
+20.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-heap-l1-1-0.dll
+19.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-locale-l1-1-0.dll
+18.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-math-l1-1-0.dll
+27.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-process-l1-1-0.dll
+19.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-runtime-l1-1-0.dll
+22.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-stdio-l1-1-0.dll
+24.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-string-l1-1-0.dll
+24.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-time-l1-1-0.dll
+20.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\api-ms-win-crt-utility-l1-1-0.dll
+18.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\base_library.zip
+777.2 KB
+zip
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\CodeName.exe
+2.3 MB
+exe
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\CodeName.exe.manifest
+1.5 KB
+manifest
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\d3dcompiler_47.dll
+4 MB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\libcrypto-1_1-x64.dll
+3.1 MB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\libEGL.dll
+24.5 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\libffi-7.dll
+32 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\libGLESv2.dll
+3.2 MB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\libssl-1_1-x64.dll
+665.5 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\logo.ico
+161.8 KB
+ico
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\MSVCP140.dll
+576.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\MSVCP140_1.dll
+31 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\opengl32sw.dll
+20 MB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\pyexpat.pyd
+178 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\python3.dll
+50.5 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\python38.dll
+4 MB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\pywintypes38.dll
+139 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\Qt5Core.dll
+5.7 MB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\Qt5DBus.dll
+426.5 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\Qt5Gui.dll
+6.7 MB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\Qt5Network.dll
+1.3 MB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\Qt5Qml.dll
+3.4 MB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\Qt5QmlModels.dll
+428.5 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\Qt5Quick.dll
+4 MB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\Qt5Svg.dll
+323 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\Qt5WebSockets.dll
+146 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\Qt5Widgets.dll
+5.2 MB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\select.pyd
+19.5 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\sip.pyd
+105 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\ucrtbase.dll
+992.8 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\unicodedata.pyd
+1 MB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\VCRUNTIME140.dll
+99.3 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\VCRUNTIME140_1.dll
+43.5 KB
+dll
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\win32api.pyd
+131 KB
+pyd
+C:\Users\mynam\Documents\NoteTest\dist\CodeName\win32evtlog.pyd
+67 KB
+pyd
+[Licence_Begin]
+114
+{\rtf1\ansi\ansicpg1252\deff0\deflang1033{\fonttbl{\f0\fnil\fcharset0 Arial;}}
+\viewkind4\uc1\pard\fs20\par
+}
+ [Licence_End]
+[Registry]
+[Variables]
+[SCs]
+Startmenu
+CodeName
+<InstallPath>\CodeName.exe
+
+<InstallPath>\logo.ico
+0
+Desktop
+CodeName
+<InstallPath>\CodeName.exe
+
+<InstallPath>\logo.ico
+0
+[IFP_End]
+[Serials]
+[Serials_End]
+[Commands]

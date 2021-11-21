@@ -1471,7 +1471,7 @@ class MyBar(QWidget):
         self.movingPosition = False
 
 # this sets the icon as your taskbar icon
-myappid = 'Notes'
+myappid = 'Codap'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
 # make the resolution global variables
