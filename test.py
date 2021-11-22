@@ -182,6 +182,32 @@ class QCodeEditor(QPlainTextEdit):
                         # place the cursor back to be at the end of the line above
                         cur.setPosition(temp, QTextCursor.MoveAnchor)
                         self.setTextCursor(cur)
+                    # if we didn't have a closing bracket we want to add one
+                    else:
+                        cur.clearSelection()
+                        # place it right before the closing bracket
+                        cur.setPosition(temp, QTextCursor.MoveAnchor)
+                        # store the line in front of the closing bracket so we can get how many
+                        # indentations to place
+                        # get the number of tabs on the line with teh opening bracket
+                        cur.select(QTextCursor.LineUnderCursor)
+                        # get the number of tabs on the line so we can add an extra one
+                        text = cur.selection().toPlainText()
+                        # clear te selection so we don't overwrite
+                        cur.clearSelection()
+                        # move the cursor back to be in front of the closing bracket
+                        cur.setPosition(temp, QTextCursor.MoveAnchor)
+                        # insert the new line
+                        cur.insertText('\n')
+                        for c in text:
+                            # insert a tab for each tab on the line 
+                            if c == '\t':
+                                cur.insertText('\t')
+                        # remove one of the tabs since we have one too many
+                        cur.deletePreviousChar()
+                        cur.insertText('}')
+                        cur.setPosition(temp, QTextCursor.MoveAnchor)
+                        self.setTextCursor(cur)
                 # if the character is not a bracket or there is no character we still want to return at the same indentation
                 else:
                     # move the cursor where it originally was
