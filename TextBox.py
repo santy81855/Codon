@@ -70,6 +70,8 @@ class Editor(QsciScintilla):
         self.setCaretLineBackgroundColor(QColor(config.curLineColor))
         # remove horizontal scroll bar
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
+        # auto indent
+        self.setAutoIndent(True)
     
     def getLexer(self):
         # get the file types

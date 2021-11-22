@@ -38,6 +38,8 @@ class TextPreview(QsciScintilla):
         self.setMarginsBackgroundColor(QColor(config.backgroundColor))
         self.setReadOnly(True)
         self.setColor(QColor(config.textColor))
+        # we want this one to not be selectable
+        self.setSelectionBackgroundColor(QColor(config.backgroundColor))
     
     def getLexer(self):
         # get the file types
