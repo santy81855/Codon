@@ -125,30 +125,81 @@ class QCodeEditor(QPlainTextEdit):
         elif event.key() == 16777220:
             # get current cursor
             cur = self.textCursor()
-            initialposition = cur.position()
-            # select the character right before the text cursor
-            char = 'f'
-            if cur.position() > 0:
-                cur.setPosition(cur.position(), QTextCursor.MoveAnchor)
-                cur.setPosition(cur.position() - 1, QTextCursor.KeepAnchor)
-                char = cur.selectedText()
-            # if the selected character is an opening curly bracket then we insert a newline and
-            # 1 more tab than the line we were just on
-            if char == '{':
-                cur.clearSelection()
-                cur.setPosition(initialposition, QTextCursor.MoveAnchor)
-                cur.insertText('\n' + '\t')
-                initialposition += 2
-                # now check if the item to the right of the cursor is a closing bracket
-                cur.setPosition(cur.position(), QTextCursor.MoveAnchor)
-                cur.setPosition(cur.position() + 1, QTextCursor.KeepAnchor)
-                if cur.selectedText() == '}':
-                    # we just want to move it to the next line
+            if cur.hasSelection() == False:
+                initialposition = cur.position()
+                # select the character right before the text cursor
+                char = 'f'
+                if cur.position() > 0:
+                    cur.setPosition(cur.position(), QTextCursor.MoveAnchor)
+                    cur.setPosition(cur.position() - 1, QTextCursor.KeepAnchor)
+                    char = cur.selectedText()
+                # if the selected character is an opening curly bracket then we insert a newline and
+                # 1 more tab than the line we were just on
+                if char == '{':
+                    cur.clearSelection()
+                    # get the number of tabs on the line with teh opening bracket
+                    cur.select(QTextCursor.LineUnderCursor)
+                    # get the number of tabs on the line so we can add an extra one
+                    text = cur.selection().toPlainText()
+                    # clear te selection so we don't overwrite
+                    cur.clearSelection()
+                    # move the cursor to the original position (to the right of the opening bracket)
                     cur.setPosition(initialposition, QTextCursor.MoveAnchor)
-                    newposition = cur.position()
+                    # insert the new line
                     cur.insertText('\n')
-                    cur.movePosition(newposition - 1)
-                    self.setTextCursor(cur)
+                    for c in text:
+                        # insert a tab for each tab on the line
+                        if c == '\t':
+                            cur.insertText('\t')
+                    # finally add an extra one since we want to indent one more
+                    cur.insertText('\t')
+                    # store the position of right before the closing bracket
+                    temp = cur.position()
+                    # now check if the item to the right of the cursor is a closing bracket
+                    cur.setPosition(cur.position() + 1, QTextCursor.KeepAnchor)
+                    if cur.selectedText() == '}':
+                        cur.clearSelection()
+                        # place it right before the closing bracket
+                        cur.setPosition(temp, QTextCursor.MoveAnchor)
+                        # store the line in front of the closing bracket so we can get how many
+                        # indentations to place
+                        # get the number of tabs on the line with teh opening bracket
+                        cur.select(QTextCursor.LineUnderCursor)
+                        # get the number of tabs on the line so we can add an extra one
+                        text = cur.selection().toPlainText()
+                        # clear te selection so we don't overwrite
+                        cur.clearSelection()
+                        # move the cursor back to be in front of the closing bracket
+                        cur.setPosition(temp, QTextCursor.MoveAnchor)
+                        # insert the new line
+                        cur.insertText('\n')
+                        for c in text:
+                            # insert a tab for each tab on the line 
+                            if c == '\t':
+                                cur.insertText('\t')
+                        # remove one of the tabs since we have one too many
+                        cur.deletePreviousChar()
+                        # place the cursor back to be at the end of the line above
+                        cur.setPosition(temp, QTextCursor.MoveAnchor)
+                        self.setTextCursor(cur)
+                # if the character is not a bracket or there is no character we still want to return at the same indentation
+                else:
+                    # move the cursor where it originally was
+                    cur.setPosition(initialposition, QTextCursor.MoveAnchor)
+                    # select the line
+                    cur.select(QTextCursor.LineUnderCursor)
+                    # count how many tabs are in that line
+                    text = cur.selection().toPlainText()
+                    # clear te selection so we don't overwrite
+                    cur.clearSelection()
+                    # insert the new line
+                    cur.insertText('\n')
+                    for c in text:
+                        # insert a tab for each tab on the line
+                        if c == '\t':
+                            cur.insertText('\t')
+
+            # if there is selection we just return a normal enter
             else:
                 return QPlainTextEdit.keyPressEvent(self, event)
         
