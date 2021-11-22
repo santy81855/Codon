@@ -60,7 +60,8 @@ class SimplePythonEditor(QsciScintilla):
         # courier.
         #
 
-        lexer = QsciLexerPython()
+        lexer = QSciLexerPython()
+        lexer.setPaper(QColor(config.backgroundColor))
         lexer.setDefaultFont(font)
         self.setLexer(lexer)
 

@@ -36,6 +36,7 @@ class TextPreview(QsciScintilla):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setPaper(QColor(config.backgroundColor))
         self.setMarginsBackgroundColor(QColor(config.backgroundColor))
+        self.setReadOnly(True)
     
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)

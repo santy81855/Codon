@@ -46,6 +46,7 @@ class MainWindow(QWidget):
         self.layout.addWidget(TitleBar.MyBar(self))
         # create a horizontal layout to represent the tab bar
         self.tabLayout = QHBoxLayout()
+
         #self.tabLayout.addStretch(-1)
         # left, top, right, bottom
         # pad the left and right so we can still resize from that location
