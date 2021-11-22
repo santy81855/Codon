@@ -57,8 +57,26 @@ class QCodeEditor(QPlainTextEdit):
     
     def keyPressEvent(self, event):
         global wordCount
+        global singleLineComment
         # no matter what we want to update the preview pane
         mainWin.layout.itemAt(textBoxIndex).itemAt(1).widget().setPlainText(mainWin.layout.itemAt(textBoxIndex).itemAt(0).widget().toPlainText())
+        # start by checking if the tab is a code file
+        cur = self.textCursor()
+        position = cur.position()
+        fileType = tabArr[currentActiveTextBox].getFileType()
+        singleLineComment = False
+        if fileType in commentChar:
+            # if it is then get the line of text
+            cur.select(QTextCursor.LineUnderCursor)
+            line = cur.selection().toPlainText()
+            # check if the single line comment character for this language is present in this line
+            char = commentChar[fileType][0]
+            # if it is then we have to toggle singleLineComment on
+            if char in line:
+                singleLineComment = True           
+        # put the cursor where it was
+        cur.setPosition(position, QTextCursor.MoveAnchor)
+        
         # if we press back tab (shift + tab)
         if event.key() == QtCore.Qt.Key_Backtab:
             # get current cursor
@@ -121,10 +139,12 @@ class QCodeEditor(QPlainTextEdit):
                     cur.removeSelectedText()
                 # and move the cursor back to where it was
                 cur.movePosition(position)
+
         # if we press enter
         elif event.key() == 16777220:
             # get current cursor
             cur = self.textCursor()
+            enterEvent = QtGui.QKeyEvent(QtCore.QEvent.KeyPress, 16777220, QtCore.Qt.NoModifier)
             if cur.hasSelection() == False:
                 initialposition = cur.position()
                 # select the character right before the text cursor
@@ -146,7 +166,7 @@ class QCodeEditor(QPlainTextEdit):
                     # move the cursor to the original position (to the right of the opening bracket)
                     cur.setPosition(initialposition, QTextCursor.MoveAnchor)
                     # insert the new line
-                    cur.insertText('\n')
+                    QPlainTextEdit.keyPressEvent(self, event)
                     for c in text:
                         # insert a tab for each tab on the line
                         if c == '\t':
@@ -172,7 +192,7 @@ class QCodeEditor(QPlainTextEdit):
                         # move the cursor back to be in front of the closing bracket
                         cur.setPosition(temp, QTextCursor.MoveAnchor)
                         # insert the new line
-                        cur.insertText('\n')
+                        QPlainTextEdit.keyPressEvent(self, event)
                         for c in text:
                             # insert a tab for each tab on the line 
                             if c == '\t':
@@ -198,16 +218,19 @@ class QCodeEditor(QPlainTextEdit):
                         # move the cursor back to be in front of the closing bracket
                         cur.setPosition(temp, QTextCursor.MoveAnchor)
                         # insert the new line
-                        cur.insertText('\n')
+                        QPlainTextEdit.keyPressEvent(self, event)
                         for c in text:
                             # insert a tab for each tab on the line 
                             if c == '\t':
                                 cur.insertText('\t')
                         # remove one of the tabs since we have one too many
                         cur.deletePreviousChar()
-                        cur.insertText('}')
+                        # insert the bracket using the color green
+                        closingBracket = "<span style=\" font-size:14pt; font-weight:300; color:" + bracketColor + ";\" >}</span>"
+                        cur.insertHtml(closingBracket)
                         cur.setPosition(temp, QTextCursor.MoveAnchor)
                         self.setTextCursor(cur)
+
                 # if the character is not a bracket or there is no character we still want to return at the same indentation
                 else:
                     # move the cursor where it originally was
@@ -219,16 +242,202 @@ class QCodeEditor(QPlainTextEdit):
                     # clear te selection so we don't overwrite
                     cur.clearSelection()
                     # insert the new line
-                    cur.insertText('\n')
+                    QPlainTextEdit.keyPressEvent(self, event)
                     for c in text:
                         # insert a tab for each tab on the line
                         if c == '\t':
                             cur.insertText('\t')
-
+                    
             # if there is selection we just return a normal enter
             else:
                 return QPlainTextEdit.keyPressEvent(self, event)
         
+        # detect comment characters
+        elif event.text() == '#' and tabArr[currentActiveTextBox].getFileType() == "py":
+            print("here")
+            # if we are in a python file this will be colored differently
+            # insert the bracket using the bracketcolor
+            comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >#</span>"
+            cur.insertHtml(comment)
+        
+        # detect other comment characters
+        elif event.text() == '/' and tabArr[currentActiveTextBox].getFileType() in commentChar and tabArr[currentActiveTextBox].getFileType() != "py":
+            # check if this is the second slash
+            cur = self.textCursor()
+            position = cur.position()
+            if position > 0:
+                cur.setPosition(position, QTextCursor.MoveAnchor)
+                cur.setPosition(position - 1, QTextCursor.KeepAnchor)
+                char = cur.selection().toPlainText()
+                # if the character before this one is a slash then we know it's comment time so we
+                # replace the selection with 2 slashes
+                if char == '/':
+                    # 
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >//</span>"
+                    cur.insertHtml(comment)      
+                else:
+                    if singleLineComment == False:
+                        cur.clearSelection()
+                        cur.setPosition(position, QTextCursor.MoveAnchor)
+                        comment = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ";\" >/</span>"
+                        cur.insertHtml(comment)
+                    else:      
+                        cur.clearSelection()
+                        cur.setPosition(position, QTextCursor.MoveAnchor)
+                        comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >/</span>"
+                        cur.insertHtml(comment)
+            else:
+                if singleLineComment == False:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ";\" >/</span>"
+                    cur.insertHtml(comment)             
+                else:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >/</span>"
+                    cur.insertHtml(comment)             
+            
+        elif event.text() == '{':
+            cur = self.textCursor()
+            word = self.getLastWord(cur)
+            # get the file type
+            fileType = tabArr[currentActiveTextBox].getFileType()
+            
+            if fileType in keywords:
+                # if this is not a comment line we color it like normal
+                if singleLineComment == False:
+                    # insert the bracket using the bracketcolor
+                    openingBracket = "<span style=\" font-size:14pt; font-weight:300; color:" + bracketColor + ";\" >{</span>"
+                    cur.insertHtml(openingBracket)
+                # otherwise we color it like a comment
+                else:
+                    # insert the bracket using the commentColor
+                    openingBracket = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >{</span>"
+                    cur.insertHtml(openingBracket)
+            else:
+                return QPlainTextEdit.keyPressEvent(self, event)
+        
+        elif event.text() == '}':
+            cur = self.textCursor()
+            word = self.getLastWord(cur)
+            # get the file type
+            fileType = tabArr[currentActiveTextBox].getFileType()
+            
+            if fileType in keywords:
+                if singleLineComment == False:
+                    # insert the bracket using the bracketColor
+                    closingBracket = "<span style=\" font-size:14pt; font-weight:300; color:" + bracketColor + ";\" >}</span>"
+                    cur.insertHtml(closingBracket)
+                else:
+                    # insert the bracket using the commentcolor
+                    closingBracket = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >}</span>"
+                    cur.insertHtml(closingBracket)
+            else:
+                return QPlainTextEdit.keyPressEvent(self, event)
+
+        elif event.key() == QtCore.Qt.Key_Space:
+            # everytime we press space we want to check if we just wrote a reserved word
+            cur = self.textCursor()
+            word = self.getLastWord(cur)
+            # check the filetype of the current tab
+            fileType = tabArr[currentActiveTextBox].getFileType()
+            # filetype will be None for any types not supported
+            if fileType in keywords:
+                listOfKeyWords = keywords[fileType]
+                # if the word we just typed is in the list of keywords we need to color it
+                if word in listOfKeyWords:
+                    if singleLineComment == False:
+                        # highlight it 
+                        cur.select(QTextCursor.WordUnderCursor)
+                        newWord = "<span style=\" font-size:14pt; font-weight:300; color:" + keywordColor + ";\" >" + word + "</span>"
+                        cur.insertHtml(newWord)
+                        cur.clearSelection()
+                    else:
+                        # highlight it 
+                        cur.select(QTextCursor.WordUnderCursor)
+                        newWord = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >" + word + "</span>"
+                        cur.insertHtml(newWord)
+                        cur.clearSelection()
+            return QPlainTextEdit.keyPressEvent(self, event)
+
+        elif event.text() == '(':
+            cur = self.textCursor()
+            # color the word before this functionColor if it is in any of the dictionaries
+            word = self.getLastWord(cur)
+            # get the file type
+            fileType = tabArr[currentActiveTextBox].getFileType()
+            # if it is then we just color it the default function color
+            if fileType in keywords:
+                if singleLineComment == False:
+                    # highlight it 
+                    cur.select(QTextCursor.WordUnderCursor)
+                    newWord = "<span style=\" font-size:14pt; font-weight:300; color:" + functionColor + ";\" >" + word + "</span>"
+                    cur.insertHtml(newWord)
+                    cur.clearSelection()
+                    # insert the bracket using the color green
+                    openParen = "<span style=\" font-size:14pt; font-weight:300; color:" + parenColor + ";\" >(</span>"
+                    cur.insertHtml(openParen)
+                else:
+                    # highlight it 
+                    cur.select(QTextCursor.WordUnderCursor)
+                    newWord = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >" + word + "</span>"
+                    cur.insertHtml(newWord)
+                    cur.clearSelection()
+                    # insert the bracket using the color green
+                    openParen = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >(</span>"
+                    cur.insertHtml(openParen)
+            else:
+                return QPlainTextEdit.keyPressEvent(self, event)
+        
+        elif event.text() == ')':
+            cur = self.textCursor()
+            word = self.getLastWord(cur)
+            # get the file type
+            fileType = tabArr[currentActiveTextBox].getFileType()
+            
+            if fileType in keywords:
+                if singleLineComment == False:
+                    # insert the bracket using the color green
+                    closingParen = "<span style=\" font-size:14pt; font-weight:300; color:" + parenColor + ";\" >)</span>"
+                    cur.insertHtml(closingParen)
+                else:
+                    # insert the bracket using the color green
+                    closingParen = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >)</span>"
+                    cur.insertHtml(closingParen)
+            else:
+                return QPlainTextEdit.keyPressEvent(self, event)
+        
+        elif event.text() == '[':
+            cur = self.textCursor()
+            word = self.getLastWord(cur)
+            # get the file type
+            fileType = tabArr[currentActiveTextBox].getFileType()
+            if fileType in keywords:
+                if singleLineComment == False:
+                    # insert the bracket using the color green
+                    openBrace = "<span style=\" font-size:14pt; font-weight:300; color:" + braceColor + ";\" >[</span>"
+                    cur.insertHtml(openBrace)
+                else:
+                    # insert the bracket using the color green
+                    openBrace = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >[</span>"
+                    cur.insertHtml(openBrace)
+            else:
+                return QPlainTextEdit.keyPressEvent(self, event)
+        
+        elif event.text() == ']':
+            cur = self.textCursor()
+            word = self.getLastWord(cur)
+            # get the file type
+            fileType = tabArr[currentActiveTextBox].getFileType()
+            if fileType in keywords:
+                if singleLineComment == False:
+                    # insert the bracket using the color green
+                    closeBrace = "<span style=\" font-size:14pt; font-weight:300; color:" + braceColor + ";\" >]</span>"
+                    cur.insertHtml(closeBrace)
+                else:
+                    # insert the bracket using the color green
+                    closeBrace = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >]</span>"
+                    cur.insertHtml(closeBrace)
+            else:
+                return QPlainTextEdit.keyPressEvent(self, event)
+
         # when we press tab 
         elif event.key() == QtCore.Qt.Key_Tab:
             # get current cursor
@@ -280,7 +489,9 @@ class QCodeEditor(QPlainTextEdit):
                 cur.insertText('\t')
                 # and move it back to where it was
                 cur.movePosition(position)
+        
         else:
+            cur = self.textCursor()
             # any time we type a letter update the word count (this probably does not scale well)
             # get the text of this tabs textbox
             # add the current key as well to account for the first letter being pressed
@@ -304,7 +515,32 @@ class QCodeEditor(QPlainTextEdit):
             tabArr[currentActiveTextBox].wordCount = len(text)
             # update the value of the word count button
             mainWin.infobarlayout.itemAt(wordCountIndex).widget().setText(str(tabArr[currentActiveTextBox].wordCount))
-            return QPlainTextEdit.keyPressEvent(self, event)
+            # add the key if it is not backspace, space, delete, home, end, etc
+            if self.normalKey(event) == True or event.text().isalnum():
+                if singleLineComment == False:
+                    key = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ";\" >" + event.text() + "</span>"
+                    cur.insertHtml(key)
+                else:
+                    key = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >" + event.text() + "</span>"
+                    cur.insertHtml(key)
+            else:
+                # appply the key
+                QPlainTextEdit.keyPressEvent(self, event)
+    
+    def getLastWord(self, cur):
+        # store the position of the cursor
+        position = cur.position()
+        # select the word under the cursor
+        cur.select(QTextCursor.WordUnderCursor)
+        word = cur.selection().toPlainText()
+        cur.clearSelection()
+        cur.setPosition(position, QTextCursor.MoveAnchor)
+        return word
+    
+    def normalKey(self, event):
+        # check if it is enter
+        if any(c in special_characters for c in event.text()):
+            return True
     
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.IBeamCursor)
@@ -368,7 +604,7 @@ class QCodeEditor(QPlainTextEdit):
             if block.isVisible() and (bottom >= event.rect().top()):
                 number = str(blockNumber + 1) + "\t\t"
                 painter.setPen(QColor("#8FBCBB").lighter(100))
-                painter.drawText(0, top, self.lineNumberArea.width(), height, Qt.AlignRight, number)
+                painter.drawText(0, top, self.lineNumberArea.width(), height, Qt.AlignLeft, number)
             block = block.next()
             top = bottom
             bottom = top + self.blockBoundingRect(block).height()
@@ -467,6 +703,24 @@ class Tab(QWidget):
         # left, top, right, bottom
         self.singleTabLayout.setContentsMargins(0,0,0,0)        
         self.tabClicked()
+    
+    # function to get the filetype of the current tab
+    def getFileType(self):
+        name = self.fileName
+        if ".py" in name:
+            return "py"
+        elif ".c" in name:
+            return "c"
+        elif ".java" in name:
+            return "java"
+        elif ".cpp" in name:
+            return "cpp"
+        elif ".js" in name:
+            return "js"
+        elif ".cs" in name:
+            return "cs"
+        elif ".json" in name:
+            return "json"
     
     # event filter to detect right click
     def eventFilter(self, obj, event):
@@ -638,7 +892,7 @@ class MainWindow(QWidget):
         # create horizontal layout so we can have 2 plaintextboxes
         self.textlayout = QHBoxLayout()
         # left, top, right, bottom
-        self.textlayout.setContentsMargins(0, 10, 0, 0)
+        self.textlayout.setContentsMargins(30, 10, 0, 0)
         # add the textbox to the horizontal layout to take 80% of the screen
         self.textlayout.addWidget(self.textbox, 80)
         self.previewbox = TextPreview(self)
@@ -1284,7 +1538,6 @@ class MainWindow(QWidget):
 
     # add a new textbox to go along with this tab making this tab the parent of that textbox
     def addTextBox(self, contents):  
-        
         global currentActiveTextBox
         # update the current active text box
         currentActiveTextBox = len(tabArr) - 1
@@ -1736,17 +1989,53 @@ leftDown = False
 upDown = False
 downDown = False
 rightDown = False
+# list of special characters
+special_characters = "!@#$%^&*()-+?_=.:;,<>/\"'}{~`[]"
+# list of python keywords
+python_keywords = ['False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield']
+c_keywords = ['auto', 'double', 'int', 'struct', 'break', 'else', 'long', 'switch', 'case', 'enum', 'register', 'typedef', 'const', 'extern', 'return', 'union', 'char', 'float', 'short', 'unsinged', 'continue', 'for', 'signed', 'volatile', 'default', 'goto', 'sizeof', 'void', 'do', 'if', 'static', 'while']
+java_keywords = [
+'abstract', 'continue', 'for', 'new', 'switch', 'assert', 'default', 'goto', 'package', 'synchronized', 'boolean', 'do', 'if', 'private', 'this', 'break', 'double', 'implements', 'protected', 'throw', 'byte', 'else', 'import', 'public', 'throws', 'case', 'enum', 'instanceof', 'return', 'transient', 'catch', 'extends', 'int', 'short', 'try', 'char', 'final', 'interface', 'static', 'void', 'class', 'finally', 'long', 'strictfp', 'volatile', 'const', 'float', 'native', 'super', 'while'] 
+js_keywords = ['abstract', 'arguments', 'await', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'enum', 'eval', 'export', 'extends', 'false', 'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements', 'import', 'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null', 'package', 'private', 'protected', 'public', 'return', 'short', 'static', 'super', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield']
+cs_keywords = ['abstract','as','base','bool','break','byte','case','catch','char','checked','class','const','continue','decimal','default','delegate','do','double','else','enum','','event','explicit','extern','false','finally','fixed','float','for','foreach','goto','if','implicit','in','int','interface','internal','is','lock','long','','namespace','new','null','object','operator','out','override','params','private','protected','public','readonly','ref','return','sbyte','sealed','short','sizeof','stackalloc','','static','string','struct','switch','this','throw','true','try','typeof','uint','ulong','unchecked','unsafe','ushort','using','virtual','void','volatile','while']
+
+# variables for color settings
+bracketColor = "#D08770"
+keywordColor = "#A3BE8C"
+parenColor = "#EBCB8B"
+braceColor = "#D08770"
+functionColor = "#88C0D0"
+commentColor = "#B48EAD"
+textColor = "#D8DEE9"
+
+# create a dictionary with the colors used for different languages syntax highlighting
+keywords = {}
+keywords["py"] = python_keywords
+keywords["c"] = c_keywords
+keywords["cpp"] = c_keywords
+keywords["java"] = java_keywords
+keywords["js"] = js_keywords
+keywords["cs"] = cs_keywords
+
+# global variables to track comments
+singleLineComment = False
+multiLineComment = False
+
+# create dictionary for the character to represent comments for each language
+commentChar = {}
+commentChar["py"] = ["#", "'''", "'''"]
+commentChar["c"] = ["//", "/*", "*/"]
+commentChar["cpp"] = ["//", "/*", "*/"]
+commentChar["cs"] = ["//", "/*", "*/"]
+commentChar["java"] = ["//", "/*", "*/"]
+commentChar["js"] = ["//", "/*", "*/"]
+
 
 stylesheet2 = """
     QWidget {
         background-image: url("background.png"); 
         background-repeat: no-repeat; 
         background-position: center;
-    }
-"""
-stylesheet = """
-    QWidget {
-        border-radius:50px;
     }
 """
 
