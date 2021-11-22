@@ -24,6 +24,8 @@ import ctypes
 import re
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
+import TitleBar, Tab, WordCount, PreviewPane, TextBox, main
+import config
 
 class MyBar(QWidget):
     def __init__(self, parent):
@@ -130,7 +132,7 @@ class MyBar(QWidget):
     # close the main window when the close button in the menu bar is pressed
     def btn_close_clicked(self):
         # if there are more than 1 tab open
-        if len(tabArr) > 1:
+        if len(config.tabArr) > 1:
             msg = QMessageBox()
             msg.setWindowTitle("Notes")
             msg.setText("Do you want to close all of the tabs?")
@@ -145,7 +147,7 @@ class MyBar(QWidget):
             if ans != 4194304:
                 self.parent.close()
         # if there is 1 tab and it is not saved then just bring up the closeTab dialogue
-        elif len(tabArr) == 1 and tabArr[0].isSaved == False:
+        elif len(config.tabArr) == 1 and config.tabArr[0].isSaved == False:
             self.parent.closeTab(0, 0)
         # otherwise just close
         else:
@@ -156,19 +158,19 @@ class MyBar(QWidget):
 
         # if it is clicked while we are currently maximized, then it means we need to revert to
         # lastPosition
-        if isMaximized:
+        if config.isMaximized:
             self.parent.showNormal()
-            isMaximized = False
+            config.isMaximized = False
         # if it is not maximized
         else:
             # if the maximize button is pressed on the menubar, it should call the maximize function of
             # the parent window. It is a standard function, so it is not written in this code
             self.parent.showMaximized()
             # toggle isMax so we know the state
-            isMaximized = True
+            config.isMaximized = True
         # focus on the textbox
         #self.parent.layout.itemAt(textBoxIndex).widget().setFocus()
-        self.parent.layout.itemAt(textBoxIndex).itemAt(0).widget().setFocus()
+        self.parent.layout.itemAt(config.textBoxIndex).itemAt(0).widget().setFocus()
 
     def btn_min_clicked(self):
         # same with the show minimized
@@ -184,7 +186,7 @@ class MyBar(QWidget):
             return
         pos = event.pos()
         self.pressing = True
-        if isMaximized == False:
+        if config.isMaximized == False:
             self.movingPosition = True
             self.start = self.mapToGlobal(event.pos())
 
@@ -196,7 +198,7 @@ class MyBar(QWidget):
         
         else:
             QApplication.setOverrideCursor(Qt.ArrowCursor)
-        if isMaximized == False:
+        if config.isMaximized == False:
             # moving the window
             if self.pressing and self.movingPosition:
                 self.end = self.mapToGlobal(event.pos())

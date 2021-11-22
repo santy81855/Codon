@@ -3,7 +3,6 @@ import sys
 from win32api import GetMonitorInfo, MonitorFromPoint
 import TitleBar, Tab, WordCount, PreviewPane, TextBox
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
-
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5.QtGui import QCursor, QMouseEvent, QFont, QKeySequence, QSyntaxHighlighter, QTextCharFormat, QBrush, QTextCursor
@@ -11,7 +10,7 @@ from PyQt5.QtCore import QPoint, pyqtSignal, QRegExp
 from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QEasingCurve
 from PyQt5.QtCore import QObject, QMimeData
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter, QFileDialog, QGraphicsDropShadowEffect
-from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QPlainTextEdit, QShortcut
+from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QPlainTextEdit, QShortcut, QScrollArea
 from PyQt5.QtWidgets import QLabel, QStackedWidget, QMessageBox
 from PyQt5.QtWidgets import QPushButton, QDesktopWidget
 from PyQt5.QtWidgets import QVBoxLayout, QScrollBar
@@ -27,7 +26,7 @@ import subprocess
 from pathlib import Path
 import ctypes
 import re
-
+import config
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -37,7 +36,7 @@ class MainWindow(QWidget):
         global mainWin
         global tabCount
         global tabBar
-        mainWin = self
+        config.mainWin = self
         # set the opacity
         self.setWindowOpacity(1.0)
         # vertical layout
@@ -47,7 +46,7 @@ class MainWindow(QWidget):
         self.layout.addWidget(TitleBar.MyBar(self))
         # create a horizontal layout to represent the tab bar
         self.tabLayout = QHBoxLayout()
-        self.tabLayout.addStretch(-1)
+        #self.tabLayout.addStretch(-1)
         # left, top, right, bottom
         # pad the left and right so we can still resize from that location
         #self.tabLayout.setContentsMargins(MARGIN,0,MARGIN,0)
@@ -74,40 +73,30 @@ class MainWindow(QWidget):
         self.textbox = TextBox.Editor()
         #self.textbox = Editor()
         #first create the new textbox widget
-        self.textbox.setStyleSheet("""
-            border: none;
-            font: 14pt "Consolas";
-            color: #D8DEE9;
-            selection-background-color: #4C566A;
-                                """)
-        self.textbox.resize(mainWin.width() - 100, mainWin.height() - 100)
+        #elf.textbox.resize(mainWin.width() - 100, mainWin.height() - 100)
         self.textbox.move(0,0)
         #self.textbox.setLineWrapMode(self.textbox.WidgetWidth)
-        self.textbox.setLineWrapMode(0)
-        self.textbox.setCursorWidth(3)
-        self.textbox.setTabStopWidth(self.textbox.fontMetrics().width(' ') * TAB_SIZE)
+        #self.textbox.setLineWrapMode(0)
+        #self.textbox.setCursorWidth(3)
+        #self.textbox.setTabStopWidth(self.textbox.fontMetrics().width(' ') * TAB_SIZE)
         #------------------------------------------------------------------------#
         font = QFont()
         font.setFamily("Consolas")
         font.setFixedPitch( True )
         font.setPointSize( 14 )
         self.textbox.setFont( font )
+        self.textbox.setStyleSheet("border: none;")
         #------------------------------------------------------------------------#
         # code for inserting a preview pane on the main window
         # create horizontal layout so we can have 2 plaintextboxes
         self.textlayout = QHBoxLayout()
         # left, top, right, bottom
-        self.textlayout.setContentsMargins(30, 10, 0, 0)
+        self.textlayout.setContentsMargins(0, 10, 0, 0)
         # add the textbox to the horizontal layout to take 80% of the screen
         self.textlayout.addWidget(self.textbox, 80)
         self.previewbox = PreviewPane.TextPreview(self)
         self.previewbox.setStyleSheet("""
             border: none;
-            font: 3pt "Consolas";
-            color: #D8DEE9;
-            selection-color: #2E3440;
-            selection-background-color: #D8DEE9;
-            padding-left: 20px;
                                 """)
         previewFont = QFont()
         previewFont.setFamily("Consolas")
@@ -118,16 +107,16 @@ class MainWindow(QWidget):
         # you cannot type on it
         self.previewbox.setReadOnly(True)
         # don't be able to select it
-        self.previewbox.setTextInteractionFlags(Qt.NoTextInteraction)    
+        #self.previewbox.setTextInteractionFlags(Qt.NoTextInteraction)    
         # it can't get bigger than a certain width
         # make the width of the preview pane constant and about the same width as the min/max/close
         # corner buttons
         self.previewbox.setMaximumWidth(175)
         self.previewbox.setMinimumWidth(175)
         # set the tab size to be really small
-        self.previewbox.setTabStopWidth(4)
+        #self.previewbox.setTabStopWidth(4)
         # add the preview pane to take 20% of the screen
-        self.textlayout.addWidget(self.previewbox, 20)
+        self.textlayout.addWidget(self.previewbox)
         # add the horizontal box layout to the main vertical layout
         self.layout.addLayout(self.textlayout)
         # create a drop shadow
@@ -155,7 +144,7 @@ class MainWindow(QWidget):
         # left, top, right, bottom
         self.infobarlayout.setContentsMargins(0, 12, 10, 0)
         self.infobarlayout.setSpacing(0)
-        self.infobarlayout.addWidget(WordCountButton(self))
+        self.infobarlayout.addWidget(WordCount.WordCountButton(self))
         self.layout.addLayout(self.infobarlayout)
         #------------------------------------------------------------------------#
         # set the layout
@@ -166,7 +155,7 @@ class MainWindow(QWidget):
         self.setGeometry(startingLocation[0], startingLocation[1], startingLocation[0], startingLocation[1])
         #self.layout.setContentsMargins(MARGIN,0,MARGIN,MARGIN)
         # right has no margin because that is where the other widget will be(preview pane)
-        self.layout.setContentsMargins(MARGIN,MARGIN,MARGIN,MARGIN)
+        self.layout.setContentsMargins(config.MARGIN,config.MARGIN,config.MARGIN,config.MARGIN)
         # the min height will be 600 x 600
         self.setMinimumSize(600, 600)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -275,152 +264,152 @@ class MainWindow(QWidget):
         workingHeight = working_resolution[3]
         
         # middle window from right
-        if direction == "left" and rightDown == True:
+        if direction == "left" and config.rightDown == True:
             self.setGeometry(workingWidth/4, 0, workingWidth/2, workingHeight)
             # set the m all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
         
         # middle window from left
-        elif direction == "right" and leftDown == True:
+        elif direction == "right" and config.leftDown == True:
             self.setGeometry(workingWidth/4, 0, workingWidth/2, workingHeight)
             # set the m all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
         
         # snap the window left
-        elif direction == "right" and downDown == False and upDown == False:
+        elif direction == "right" and config.downDown == False and config.upDown == False:
             self.setGeometry(workingWidth/2, 0, workingWidth/2, workingHeight)
             # set the right to true and the others to false
-            rightDown = True
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = True
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
         
         # snap bottom right from bottom
-        elif direction == "right" and downDown == True and upDown == False:
+        elif direction == "right" and config.downDown == True and config.upDown == False:
             self.setGeometry(workingWidth/2, workingHeight/2, workingWidth/2, workingHeight/2)
             # set all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
         
         # snap bottom right from right
-        elif direction == "bottom" and leftDown == False and rightDown == True:
+        elif direction == "bottom" and config.leftDown == False and config.rightDown == True:
             self.setGeometry(workingWidth/2, workingHeight/2, workingWidth/2, workingHeight/2)
             # set all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
 
         # snap bottom left from bottom
-        elif direction == "left" and downDown == True and upDown == False:
+        elif direction == "left" and config.downDown == True and config.upDown == False:
             self.setGeometry(0, workingHeight/2, workingWidth/2, workingHeight/2)
             # set all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
         
         # snap bottom left from left
-        elif direction == "bottom" and leftDown == True and rightDown == False:
+        elif direction == "bottom" and config.leftDown == True and config.rightDown == False:
             self.setGeometry(0, workingHeight/2, workingWidth/2, workingHeight/2)
             # set all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
         
         # snap top left from top
-        elif direction == "left" and downDown == False and upDown == True:
+        elif direction == "left" and config.downDown == False and config.upDown == True:
             self.setGeometry(0, 0, workingWidth/2, workingHeight/2)
             # set all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
         
         # snap top left from left
-        elif direction == "top" and leftDown == True and rightDown == False:
+        elif direction == "top" and config.leftDown == True and config.rightDown == False:
             self.setGeometry(0, 0, workingWidth/2, workingHeight/2)
             # set all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
         
         # snap top right from top
-        elif direction == "right" and downDown == False and upDown == True:
+        elif direction == "right" and config.downDown == False and config.upDown == True:
             self.setGeometry(workingWidth/2, 0, workingWidth/2, workingHeight/2)
             # set all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
         
         # snap top right from right
-        elif direction == "top" and leftDown == False and rightDown == True:
+        elif direction == "top" and config.leftDown == False and config.rightDown == True:
             self.setGeometry(workingWidth/2, 0, workingWidth/2, workingHeight/2)
             # set all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
 
         # snap left
-        elif direction == "left" and downDown == False and upDown == False:
+        elif direction == "left" and config.downDown == False and config.upDown == False:
             self.setGeometry(0, 0, workingWidth/2, workingHeight)
             # set left to true and others to false
-            leftDown = True
-            rightDown = False
-            downDown = False
-            upDown = False
+            config.leftDown = True
+            config.rightDown = False
+            config.downDown = False
+            config.upDown = False
         
         # maximize
-        elif direction == "top" and upDown == True:
+        elif direction == "top" and config.upDown == True:
             # click the max button
             self.setGeometry(0, 0, workingWidth, workingHeight)
             isMaximized = True
             #self.layout.itemAt(0).widget().btn_max_clicked()
             # set all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
 
         # snap up
-        elif direction == "top" and leftDown == False and rightDown == False:
+        elif direction == "top" and config.leftDown == False and config.rightDown == False:
             self.setGeometry(0, 0, workingWidth, workingHeight / 2)
             # set up to True and all others to false
-            upDown = True
-            leftDown = False
-            rightDown = False
-            downDown = False
+            config.upDown = True
+            config.leftDown = False
+            config.rightDown = False
+            config.downDown = False
         
         # minimize
-        elif direction == "bottom" and downDown == True:
+        elif direction == "bottom" and config.downDown == True:
             # click the min button
             self.layout.itemAt(0).widget().btn_min_clicked()
             # set all to false
-            rightDown = False
-            leftDown = False
-            downDown = False
-            upDown = False
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
 
         # snap down
-        elif direction == "bottom" and leftDown == False and rightDown == False:
+        elif direction == "bottom" and config.leftDown == False and config.rightDown == False:
             self.setGeometry(0, workingHeight / 2, workingWidth, workingHeight / 2)
             # set Down to True and all others to false
-            downDown = True
-            upDown = False
-            leftDown = False
-            rightDown = False     
+            config.downDown = True
+            config.upDown = False
+            config.leftDown = False
+            config.rightDown = False     
 
     def paintEvent(self, ev):
         painter = QPainter(self)
@@ -431,23 +420,23 @@ class MainWindow(QWidget):
         painter.drawRoundedRect(rect, 10, 10)   
 
     def tabJump(self, index):
-        if len(tabArr) > index-1:
-            tabArr[index-1].tabClicked()
+        if len(config.tabArr) > index-1:
+            config.tabArr[index-1].tabClicked()
 
     def saveFileAs(self):
         global tabArr
         global isShortCut
-        isShortCut = True
-        tabArr[currentActiveTextBox].isSaved = False
-        tabArr[currentActiveTextBox].filePath = ""
+        config.isShortCut = True
+        config.tabArr[config.currentActiveTextBox].isSaved = False
+        config.tabArr[config.currentActiveTextBox].filePath = ""
         self.saveFile()
 
     def restoreTab(self):
         global tabStack
         global isShortCut 
-        isShortCut = True
-        if len(tabStack) > 0:            
-            oldTab = tabStack.pop()
+        config.isShortCut = True
+        if len(config.tabStack) > 0:            
+            oldTab = config.tabStack.pop()
             self.newTab(oldTab.fileName, oldTab.filePath, oldTab.contents)
 
     def setSavedToFalse(self):
@@ -455,44 +444,44 @@ class MainWindow(QWidget):
         global tabArr
         # if the last thing pressed was a shortcut we don't really have to do anything since there
         # are no text differences to store
-        if isShortCut:
-            isShortCut = False
+        if config.isShortCut:
+            config.isShortCut = False
         # if it was not a shortcut then we store the text differences
         else:            
-            tabArr[currentActiveTextBox].isSaved = False
+            config.tabArr[config.currentActiveTextBox].isSaved = False
             # update the values in the textbox array
-            tabArr[currentActiveTextBox].contents = self.textbox.toPlainText()
+            config.tabArr[config.currentActiveTextBox].contents = self.textbox.text()
             # update the cursor position
-            tabArr[currentActiveTextBox].cursorPosition = self.textbox.textCursor().position()
+            #tabArr[currentActiveTextBox].cursorPosition = self.textbox.textCursor().position()
         # update the values in the preview box
-        self.previewbox.setPlainText(self.textbox.toPlainText())
+        self.previewbox.setText(self.textbox.text())
         # update the value of the word count
-        mainWin.infobarlayout.itemAt(wordCountIndex).widget().setText(str(tabArr[currentActiveTextBox].wordCount))
+        config.mainWin.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
 
     def saveFile(self):
         global currentActiveTextBox
         global isShortCut
-        isShortCut = True
+        config.isShortCut = True
         
         # only save if there have been changes
-        if tabArr[currentActiveTextBox].isSaved == False:
+        if config.tabArr[config.currentActiveTextBox].isSaved == False:
             tabFound = False
             # if the file I am working on is new then open dialog
-            if tabArr[currentActiveTextBox].filePath == "":
+            if config.tabArr[config.currentActiveTextBox].filePath == "":
                 aTuple = QFileDialog.getSaveFileName(self, 'Save As: ', '', 'All Files (*)')
                 filePath = aTuple[0]
                 # check if the file being saved is already open in the editor
                 # if it is then just save that tab and mark it as found
-                for tab in tabArr:
+                for tab in config.tabArr:
                     if tab.filePath == filePath:
                         tabFound = True
-                        curTab = tabArr.index(tab)
+                        curTab = config.tabArr.index(tab)
 
                 # store the filePath
-                tabArr[currentActiveTextBox].filePath = filePath
+                config.tabArr[config.currentActiveTextBox].filePath = filePath
             # if the file is not new then the dialog won't pop up because this isn't save as
             else:
-                filePath = tabArr[currentActiveTextBox].filePath
+                filePath = config.tabArr[currentActiveTextBox].filePath
             if filePath != '':
                 # get the name of the file
                 name = filePath
@@ -508,35 +497,35 @@ class MainWindow(QWidget):
 
                 # this only applies to the default name tabs, since otherwise when you save the name
                 # stays the same
-                if tabArr[currentActiveTextBox].fileName != finalName:
-                    tabArr[currentActiveTextBox].fileName = finalName
+                if config.tabArr[config.currentActiveTextBox].fileName != finalName:
+                    config.tabArr[config.currentActiveTextBox].fileName = finalName
 
-                tabArr[currentActiveTextBox].tabButton.setText(finalName)
+                config.tabArr[config.currentActiveTextBox].tabButton.setText(finalName)
 
                 f = open(filePath, "w")
                 if tabFound:
                     # change the contents of the original file
-                    f.write(tabArr[curTab].contents)
+                    f.write(config.tabArr[curTab].contents)
                     # set the isSaved indicator to True
-                    tabArr[curTab].isSaved = True
+                    config.tabArr[curTab].isSaved = True
                     # store the tab we want to land on
-                    tempTab = tabArr[curTab]
-                    tabArr[currentActiveTextBox].isSaved = True
+                    tempTab = config.tabArr[curTab]
+                    config.tabArr[config.currentActiveTextBox].isSaved = True
                     # finally close the current active tab 
                     self.closeTab()
                     # now move to the tab we were on
                     tempTab.tabClicked()
                 else:
-                    f.write(tabArr[currentActiveTextBox].contents)
-                    tabArr[currentActiveTextBox].isSaved = True
+                    f.write(config.tabArr[config.currentActiveTextBox].contents)
+                    config.tabArr[config.currentActiveTextBox].isSaved = True
                     # click on it so that the title of the window changes to match the tab
-                    tabArr[currentActiveTextBox].tabClicked()
+                    config.tabArr[config.currentActiveTextBox].tabClicked()
 
                 f.close()
 
     def openFile(self):
         global isShortCut
-        isShortCut = True
+        config.isShortCut = True
         #QFileDialog.getOpenFileName(self, "Files", "All Files (*)")
         aTuple = QFileDialog.getOpenFileName(self, 'Open: ', '', 'All Files (*)')
         if aTuple[0] != '':
@@ -548,7 +537,7 @@ class MainWindow(QWidget):
 
             tabFound = False
             # see if you are opening a file that is already open in the editor
-            for tab in tabArr:
+            for tab in config.tabArr:
                 if tab.filePath == aTuple[0]:
                     tabFound = True
                     tab.tabClicked()
@@ -567,10 +556,10 @@ class MainWindow(QWidget):
                 # create a new tab with the name of the file that was opened
                 self.newTab(finalName, aTuple[0], content)
                 # put the cursor at the end of the text
-                self.textbox.moveCursor(QTextCursor.End)
+                #self.textbox.moveCursor(QTextCursor.End)
 
     def closeTabHelper(self):
-        self.closeTab(currentActiveTextBox, currentActiveTextBox)
+        self.closeTab(config.currentActiveTextBox, config.currentActiveTextBox)
 
     def closeTab(self, tabToClose, currentActiveTab):
         global currentActiveTextBox
@@ -580,7 +569,7 @@ class MainWindow(QWidget):
         global tabArr
         global tabBar
         global isShortCut
-        isShortCut = True
+        config.isShortCut = True
     
         # for storing closed tabs to be able to restore them
         global tabStack
@@ -598,14 +587,14 @@ class MainWindow(QWidget):
             else:
                 returnIndex = currentActiveTab
             # change the CATB to be the tab we want to close
-            currentActiveTextBox = tabToClose
+            config.currentActiveTextBox = tabToClose
 
         # if it is just an untitled empty page, we can set it as saved since nothing is lost
-        if "untitled" in tabArr[currentActiveTextBox].fileName and tabArr[currentActiveTextBox].contents == "":
-            tabArr[currentActiveTextBox].isSaved = True
+        if "untitled" in config.tabArr[config.currentActiveTextBox].fileName and config.tabArr[config.currentActiveTextBox].contents == "":
+            config.tabArr[config.currentActiveTextBox].isSaved = True
     
         # check that tab isSaved before deleting it
-        if tabArr[currentActiveTextBox].isSaved == False:
+        if config.tabArr[config.currentActiveTextBox].isSaved == False:
             msg = QMessageBox()
             msg.setWindowTitle("Notes")
             msg.setText("Do you want to save changes before closing?")
@@ -630,13 +619,13 @@ class MainWindow(QWidget):
             
         if isCancelled == False:    
             # close tab and textbox at currentactivetextbox
-            if len(tabArr) > 1 and okayToClose:
+            if len(config.tabArr) > 1 and okayToClose:
                 # remove the tab from the tab bar
-                self.tabLayout.removeWidget(tabArr[currentActiveTextBox])
+                self.tabLayout.removeWidget(config.tabArr[config.currentActiveTextBox])
                 # remove the tab from the tab array
-                if "untitled" in tabArr[currentActiveTextBox].fileName:
+                if "untitled" in config.tabArr[config.currentActiveTextBox].fileName:
                     # get the number of the untitled tab
-                    temp = tabArr[currentActiveTextBox].fileName
+                    temp = config.tabArr[config.currentActiveTextBox].fileName
                     index = temp.index('_')
                     c = temp[index + 1]
                     curEmptyTab = ""
@@ -646,40 +635,45 @@ class MainWindow(QWidget):
                         curEmptyTab += c
                         c = temp[index + 1 + counter]
                     # mark this number of unused tab as unused
-                    usedNums[int(curEmptyTab)] = False 
+                    config.usedNums[int(curEmptyTab)] = False 
                 # find the correct tab to remove
-                for tabs in tabArr:
-                    if tabs == tabArr[currentActiveTextBox]:
+                for tabs in config.tabArr:
+                    if tabs == config.tabArr[config.currentActiveTextBox]:
                         #tabStack.append(copy.deepcopy(tabs))
                         tabs.deleteLater()
+                        # add and remove a stretch to fix the black borders issue lol
+                        self.layout.itemAt(config.tabRowIndex).addStretch(1)
+                        self.layout.itemAt(config.tabRowIndex).removeWidget(self.layout.itemAt(config.tabRowIndex).itemAt(self.layout.itemAt(config.tabRowIndex).count()-1).widget())
+                        
                 # store the tab and textbox contents
-                tabStack.append(tabArr[currentActiveTextBox])
+                config.tabStack.append(config.tabArr[config.currentActiveTextBox])
                 # remove the tab from the tabarray
-                tabArr.remove(tabArr[currentActiveTextBox])
-                tabCount -= 1
+                config.tabArr.remove(config.tabArr[config.currentActiveTextBox])
+                config.tabCount -= 1
                 # if we removed the last tab close the program
-                if len(tabArr) == 0:
+                if len(config.tabArr) == 0:
                     self.close()
                 # if we removed a non active tab then just restore the appropriate tab
                 if returnIndex != -1:
-                    currentActiveTextBox = returnIndex + 1
+                    config.currentActiveTextBox = returnIndex + 1
                 # if the tab we just removed is the first tab
-                if currentActiveTextBox == 0:
+                if config.currentActiveTextBox == 0:
                     # just shift over to the tab to its right by staying at index 0
-                    tabArr[currentActiveTextBox].tabClicked()
+                    config.tabArr[config.currentActiveTextBox].tabClicked()
 
                 # if we just removed the last tab
-                elif currentActiveTextBox == len(tabArr):
+                elif config.currentActiveTextBox == len(config.tabArr):
                     # we just shift over to the left
-                    tabArr[currentActiveTextBox - 1].tabClicked()
+                    config.tabArr[config.currentActiveTextBox - 1].tabClicked()
                 
                 # finally if we remove any old random tab around the middle
                 else:
                     # use the tab on the left
-                    tabArr[currentActiveTextBox - 1].tabClicked()
-            
+                    config.tabArr[config.currentActiveTextBox - 1].tabClicked()
+                
+                
             # if we press close when there is one tab or 0 tabs we just close the window if it's okay
-            elif len(tabArr) == 1 and okayToClose:
+            elif len(config.tabArr) == 1 and okayToClose:
                 self.close()
             
             # otherwise they want to save, so we can call on the save function
@@ -688,70 +682,68 @@ class MainWindow(QWidget):
 
     def nextTab(self):
         global isShortCut
-        isShortCut = True
-        if tabCycle == True:
+        config.isShortCut = True
+        if config.tabCycle == True:
             # if we are on the last text box we cant go out of bounds
-            if currentActiveTextBox < len(tabArr) - 1: 
-                if len(tabArr) > 1:
-                    tabArr[currentActiveTextBox + 1].tabClicked()
+            if config.currentActiveTextBox < len(config.tabArr) - 1: 
+                if len(config.tabArr) > 1:
+                    config.tabArr[config.currentActiveTextBox + 1].tabClicked()
             # if we are on the very last text box
             else:
                 # and there is more than 1 box
-                if len(tabArr) > 1:
-                    tabArr[0].tabClicked()
+                if len(config.tabArr) > 1:
+                    config.tabArr[0].tabClicked()
         # if we don't want to cycle we just do the same as above except we do nothing if we are at 0
         else:
              # if we are on the first text box we cant go into the negatives so we display the last one
-            if currentActiveTextBox < len(tabArr) - 1: 
-                if len(tabArr) > 1:
-                    tabArr[currentActiveTextBox + 1].tabClicked()
+            if config.currentActiveTextBox < len(config.tabArr) - 1: 
+                if len(config.tabArr) > 1:
+                    config.tabArr[config.currentActiveTextBox + 1].tabClicked()
 
     def prevTab(self):
         global isShortCut
-        isShortCut = True
-        if tabCycle == True:
+        config.isShortCut = True
+        if config.tabCycle == True:
             # if we are on the first text box we cant go into the negatives so we display the last one
-            if currentActiveTextBox > 0: 
-                if len(tabArr) > 1:
-                    tabArr[currentActiveTextBox - 1].tabClicked()
+            if config.currentActiveTextBox > 0: 
+                if len(config.tabArr) > 1:
+                    config.tabArr[config.currentActiveTextBox - 1].tabClicked()
             # if we are on the very first text box
             else:
                 # and there is more than 1 box
-                if len(tabArr) > 1:
-                    tabArr[len(tabArr) - 1].tabClicked()
+                if len(config.tabArr) > 1:
+                    config.tabArr[len(config.tabArr) - 1].tabClicked()
         # if we don't want to cycle we just do the same as above except we do nothing if we are at 0
         else:
              # if we are on the first text box we cant go into the negatives so we display the last one
-            if currentActiveTextBox > 0: 
-                if len(tabArr) > 1:
-                    tabArr[currentActiveTextBox - 1].tabClicked()
+            if config.currentActiveTextBox > 0: 
+                if len(config.tabArr) > 1:
+                    config.tabArr[config.currentActiveTextBox - 1].tabClicked()
 
     def displayTextBox(self, index):
         global currentActiveTextBox
         global tabArr
         # make the tab that was clicked the active one
-        currentActiveTextBox = index
+        config.currentActiveTextBox = index
         # restore the text that there was on that tab
-        self.textbox.setPlainText(tabArr[currentActiveTextBox].contents)
+        self.textbox.setText(config.tabArr[config.currentActiveTextBox].contents)
         # restore the correct word count
-        self.infobarlayout.itemAt(wordCountIndex).widget().setText(str(tabArr[currentActiveTextBox].wordCount))
-        # put the cursor where we left it 
-        self.textbox.moveCursor(QTextCursor.End)
+        self.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
         # make the textbox the focus
         #self.layout.itemAt(textBoxIndex).widget().setFocus()
-        self.layout.itemAt(textBoxIndex).itemAt(0).widget().setFocus()
+        self.layout.itemAt(config.textBoxIndex).itemAt(0).widget().setFocus()
 
     # idek
     def addTextBox(self, contents):  
         global currentActiveTextBox
         # update the current active text box
-        currentActiveTextBox = len(tabArr) - 1
+        config.currentActiveTextBox = len(config.tabArr) - 1
         # add the contents to the textbox
-        self.textbox.setPlainText(contents)
+        self.textbox.setText(contents)
         # add the contents to the preview pane
-        self.previewbox.setPlainText(contents)
+        self.previewbox.setText(contents)
         # add the correct wordcount for the tab (will be 0 if new tab)
-        self.infobarlayout.itemAt(wordCountIndex).widget().setText(str(tabArr[currentActiveTextBox].wordCount))
+        self.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
         # focus the cursor on the new text box
         self.textbox.setFocus()
 
@@ -760,23 +752,22 @@ class MainWindow(QWidget):
         global tabArr
         
         global isShortCut
-        isShortCut = True
-        tab = Tab(name, filePath, contents)
-        tabArr.append(tab)        
-        mainWin.tabLayout.insertWidget(tabCount, tab)
-        tabCount += 1
+        config.isShortCut = True
+        tab = Tab.Tab(name, filePath, contents)
+        config.tabArr.append(tab)        
+        config.mainWin.tabLayout.insertWidget(config.tabCount, tab)
+        config.tabCount += 1
         self.addTextBox(contents)
 
     def newTabEmpty(self):
         global tabCount
         global tabArr
-        
         global isShortCut
-        isShortCut = True
-        tab = Tab("", "", "")
-        tabArr.append(tab)
-        mainWin.tabLayout.insertWidget(tabCount, tab)
-        tabCount += 1
+        config.isShortCut = True
+        tab = Tab.Tab("", "", "")
+        config.tabArr.append(tab)
+        config.mainWin.tabLayout.insertWidget(config.tabCount, tab)
+        config.tabCount += 1
         self.addTextBox("")
 
     def on_focusChanged(self, old, new):
@@ -790,7 +781,7 @@ class MainWindow(QWidget):
         pos = event.pos()
         # set pressing to true
         self.pressing = True
-        if isMaximized == False:
+        if config.isMaximized == False:
             # if they clicked on the edge then we need to change pressing to true and resizingWindow to
             # true and we need to change the cursor shape
             # top left
@@ -832,7 +823,7 @@ class MainWindow(QWidget):
     def mouseMoveEvent(self, event):
         pos = event.pos()
         QApplication.setOverrideCursor(Qt.ArrowCursor)
-        if isMaximized == False:
+        if config.isMaximized == False:
             # top left
             if pos.x() <= 10 and pos.y() <= 10:
                 QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
@@ -944,115 +935,6 @@ class MainWindow(QWidget):
 myappid = 'Codap'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 
-# make the resolution global variables
-screen_resolution = 0
-width = 0
-height = 0
-key = ''
-res = {}
-res["1920x1080"] = [640, 360] # full hd
-res["2560x1440"] = [853, 480] # wqhd
-res["3440x1440"] = [1147, 480] # ultrawide
-res["3840x2160"] = [1160, 720] # 4k
-focused = False # variable to track if the gui is focused so it knows to track typing or not
-stack = []
-# variables to track if modifiers are currently held down
-isControlDown = False
-isShiftDown = False
-isAltDown = False
-# variable to track the margins used on the main layout
-MARGIN = 5
-# variable to make the starting indent on the textbox 
-START_INDENT = 50
-# tab size
-TAB_SIZE = 8
-# variable to allow going back to previous size after maximizing
-isMaximized = False
-# variable to track the tab bar index
-tabRowIndex = 1
-# variable to track the main textbox index in case I update the layout order
-textBoxIndex = 3
-# word count index
-infoBarIndex = 4
-# word count index
-wordCountIndex = 1
-# variable to track the tabBar so I can access it quickly
-# variable to track the number of default tabs currently open
-curEmptyTab = 1
-# list to store which numbers have been used for default tabs
-usedNums = []
-for i in range(0, 1000):
-    usedNums.append(False)
-# variable to track the index of the tab so we know the textbox associated with it
-tabCount = 0
-# arraf storing the tabs
-tabArr = []
-# variables to store the mainwindow and title bar
-mainWin = 0
-titleBar = 0
-# index of current active textbox
-currentActiveTextBox = 0
-# if tabs cycling should wrap around
-tabCycle = True
-# stack to store closed tabs so we can reopen them
-tabStack = []
-# variable to store whether the last action was a shortcut so we don't have to save after every
-# shortcut
-isShortCut = False
-# variable to set the cursor flash time
-cursorFlashTime = 800
-# variable to be able to snap to sides and corners
-leftDown = False
-upDown = False
-downDown = False
-rightDown = False
-# list of special characters
-special_characters = "!@#$%^&*()-+?_=.:;,<>/\"'}{~`[]"
-# list of python keywords
-numbersList = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
-python_keywords = ['False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield']
-c_keywords = ['auto', 'double', 'int', 'struct', 'break', 'else', 'long', 'switch', 'case', 'enum', 'register', 'typedef', 'const', 'extern', 'return', 'union', 'char', 'float', 'short', 'unsinged', 'continue', 'for', 'signed', 'volatile', 'default', 'goto', 'sizeof', 'void', 'do', 'if', 'static', 'while', '!', '@', '#', '$', '%', '^', '&', '*', '-', '+', '?', '_', '=', '.', ':', ';', ',', '<', '>', '/', '\"', '~', '`']
-java_keywords = [
-'abstract', 'continue', 'for', 'new', 'switch', 'assert', 'default', 'goto', 'package', 'synchronized', 'boolean', 'do', 'if', 'private', 'this', 'break', 'double', 'implements', 'protected', 'throw', 'byte', 'else', 'import', 'public', 'throws', 'case', 'enum', 'instanceof', 'return', 'transient', 'catch', 'extends', 'int', 'short', 'try', 'char', 'final', 'interface', 'static', 'void', 'class', 'finally', 'long', 'strictfp', 'volatile', 'const', 'float', 'native', 'super', 'while', '!', '@', '#', '$', '%', '^', '&', '*', '-', '+', '?', '_', '=', '.', ':', ';', ',', '<', '>', '/', '\"', "'", '~', '`'] 
-js_keywords = ['abstract', 'arguments', 'await', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'enum', 'eval', 'export', 'extends', 'false', 'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements', 'import', 'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null', 'package', 'private', 'protected', 'public', 'return', 'short', 'static', 'super', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield', '!', '@', '#', '$', '%', '^', '&', '*', '-', '+', '?', '_', '=', '.', ':', ';', ',', '<', '>', '/', '\"', '~', '`']
-cs_keywords = ['abstract','as','base','bool','break','byte','case','catch','char','checked','class','const','continue','decimal','default','delegate','do','double','else','enum','','event','explicit','extern','false','finally','fixed','float','for','foreach','goto','if','implicit','in','int','interface','internal','is','lock','long','','namespace','new','null','object','operator','out','override','params','private','protected','public','readonly','ref','return','sbyte','sealed','short','sizeof','stackalloc','','static','string','struct','switch','this','throw','true','try','typeof','uint','ulong','unchecked','unsafe','ushort','using','virtual','void','volatile','while', '!', '@', '#', '$', '%', '^', '&', '*', '-', '+', '?', '_', '=', '.', ':', ';', ',', '<', '>', '/', '\"', '~', '`']
-
-# variables for color settings
-bracketColor = "#D08770"
-keywordColor = "#A3BE8C"
-parenColor = "#EBCB8B"
-braceColor = "#D08770"
-functionColor = "#88C0D0"
-commentColor = "#B48EAD"
-textColor = "#D8DEE9"
-stringColor = "#8FBCBB"
-numberColor = "#BF616A"
-
-# create a dictionary with the colors used for different languages syntax highlighting
-keywords = {}
-keywords["py"] = python_keywords
-keywords["c"] = c_keywords
-keywords["cpp"] = c_keywords
-keywords["java"] = java_keywords
-keywords["js"] = js_keywords
-keywords["cs"] = cs_keywords
-
-# global variables to track comments
-singleLineComment = False
-multiLineComment = False
-# global variable to track strings
-isString = False
-
-# create dictionary for the character to represent comments for each language
-commentChar = {}
-commentChar["py"] = ["#", "'''", "'''"]
-commentChar["c"] = ["//", "/*", "*/"]
-commentChar["cpp"] = ["//", "/*", "*/"]
-commentChar["cs"] = ["//", "/*", "*/"]
-commentChar["java"] = ["//", "/*", "*/"]
-commentChar["js"] = ["//", "/*", "*/"]
-
-
 stylesheet2 = """
     QWidget {
         background-image: url("background.png"); 
@@ -1064,20 +946,20 @@ stylesheet2 = """
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     #app.setStyleSheet(stylesheet2)
-    app.setCursorFlashTime(cursorFlashTime)
+    app.setCursorFlashTime(config.cursorFlashTime)
     
     screen_resolution = app.desktop().screenGeometry()
     width, height = screen_resolution.width(), screen_resolution.height()
     key = str(width) + "x" + str(height)
     startingLocation = []
-    if key not in res:
+    if key not in config.res:
         startingLocation = [500, 500]
     else:
-        startingLocation = res[key]
+        startingLocation = config.res[key]
     mw = MainWindow()
     mw.show()
     # make the textbox be automatically in focus on startup
     #mainWin.layout.itemAt(textBoxIndex).widget().setFocus()
-    mainWin.layout.itemAt(textBoxIndex).itemAt(0).widget().setFocus()
+    config.mainWin.layout.itemAt(config.textBoxIndex).itemAt(0).widget().setFocus()
 
     sys.exit(app.exec_())

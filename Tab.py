@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
 from PyQt5.QtGui import QColor, QPainter, QTextFormat, QLinearGradient
+import TitleBar, Tab, WordCount, PreviewPane, TextBox, main
 import textwrap
 from pynput import keyboard
 import string
@@ -24,6 +25,7 @@ import ctypes
 import re
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
+import config
 
 class Tab(QWidget):
     def __init__(self, fileName, filePath, contents):
@@ -34,9 +36,9 @@ class Tab(QWidget):
         if fileName == "":
             numToUse = -1
             for i in range(1, 1000):
-                if usedNums[i] == False:
+                if config.usedNums[i] == False:
                     numToUse = i
-                    usedNums[i] = True
+                    config.usedNums[i] = True
                     break
             self.fileName = "untitled_" + str(numToUse) + ".txt"
         else:
@@ -119,7 +121,7 @@ class Tab(QWidget):
         # left, top, right, bottom
         self.singleTabLayout.setContentsMargins(0,0,0,0)        
         self.tabClicked()
-    
+        
     # function to get the filetype of the current tab
     def getFileType(self):
         name = self.fileName
@@ -145,11 +147,11 @@ class Tab(QWidget):
             if event.button() == QtCore.Qt.RightButton:
                 # get the index of the tab we want to close
                 tabIndex = -1
-                for tab in tabArr:
+                for tab in config.tabArr:
                     if tab == self:
-                        tabIndex = tabArr.index(tab)
+                        config.tabIndex = config.tabArr.index(tab)
                         break
-                mainWin.closeTab(tabIndex, currentActiveTextBox)
+                config.mainWin.closeTab(config.tabIndex, config.currentActiveTextBox)
         return QtCore.QObject.event(obj, event)
     
     # when hovering over a tab it should be the little hand cursor
@@ -177,13 +179,13 @@ class Tab(QWidget):
             }-  
                                     """)
         # Go to the contents of the tab that was clicked
-        for i in range(0, len(tabArr)):
+        for i in range(0, len(config.tabArr)):
             # if we find the right tab we know which textbox to display
-            if tabArr[i] == self:
-                mainWin.displayTextBox(i)
+            if config.tabArr[i] == self:
+                config.mainWin.displayTextBox(i)
             # if it's not the right tab then color it in the unfocused color
             else:
-                tabArr[i].tabButton.setStyleSheet("""
+                config.tabArr[i].tabButton.setStyleSheet("""
             QPushButton
             {
             background-color: #2E3440;
@@ -201,5 +203,5 @@ class Tab(QWidget):
             }-  
                                     """)
         # change the title of the window to be the tab name
-        titleBar.title.setText(self.fileName)
+        #main.titleBar.title.setText(self.fileName)
    
