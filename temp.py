@@ -1,1 +1,1 @@
-hehelol
+"hello {}".format("bitch")

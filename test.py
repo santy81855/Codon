@@ -55,6 +55,336 @@ class QCodeEditor(QPlainTextEdit):
         self.oldPosition = 0
         self.is_first_input = False
     
+    def setPlainText(self, text):
+        global singleLineComment
+        global multiLineComment
+        global isStringSingle
+        global isStringDouble
+        # first it should clear the text box
+        self.clear()
+        # get the current filetype
+        fileType = tabArr[currentActiveTextBox].getFileType()
+        # if this is not a code file then there is no syntax highlighting anyway
+        if fileType not in keywords:
+            return QPlainTextEdit.setPlainText(self, text)
+        # if it is a code file then we need to get the list of keywords to highlight
+        list_of_keywords = keywords[fileType]
+        # get the singlelinecomment character for this file type
+        char = commentChar[fileType]
+        isStringSingle = False
+        isStringDouble = False
+        multiLineComment = False
+        singleLineComment = False     
+        # add the text char by char while syntax highlighting it
+        for c in text:
+            # if we reach a space
+            if c == ' ':
+                # get the last word using the cursor
+                cur = self.textCursor()
+                position = cur.position()
+                cur.select(QTextCursor.WordUnderCursor)
+                word = cur.selection().toPlainText()
+                # if the last word is a keyword
+                if word in list_of_keywords:
+                    if singleLineComment == False and multiLineComment == False and isStringSingle == False and isStringDouble == False:
+                        temp = "<span style=\" font-size:14pt; font-weight:300; color:" + keywordColor + ";\" >" + word + "</span>"
+                        cur.insertHtml(temp)
+                       
+                    elif singleLineComment == True or multiLineComment == True:
+                        temp = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >" + word + "</span>"
+                        cur.insertHtml(temp)
+                    
+                    elif isStringSingle == True or isStringDouble == True:
+                        temp = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >" + word + "</span>"
+                        cur.insertHtml(temp)
+                        
+                # if it is not a keyword leane it alone 
+                else:
+                    cur.clearSelection()
+                    cur.setPosition(position, QTextCursor.MoveAnchor)
+                # add the space 
+                cur.insertText(c)
+            # if we reach a newline
+            elif c == '\n':
+                cur = self.textCursor()
+                singleLineComment = False
+                cur.insertText('\n')
+            # if we reach a python single line character
+            elif fileType == "py" and c == "#":
+                cur = self.textCursor()
+                if isStringSingle == False and isStringDouble == False:
+                    temp = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >#</span>"
+                    cur.insertHtml(temp)
+                    #singleLineComment = True
+                else:
+                    temp = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >#</span>"
+                    cur.insertHtml(temp)
+            
+            elif fileType != "py" and c == '/':
+                # get the character right before this one
+                # check if this is the second slash
+                cur = self.textCursor()
+                position = cur.position()
+                if position > 0 and isStringSingle == False and isStringDouble == False:
+                    cur.setPosition(position, QTextCursor.MoveAnchor)
+                    cur.setPosition(position - 1, QTextCursor.KeepAnchor)
+                    char = cur.selection().toPlainText()
+                    # if the character before this one is a slash then we know it's comment time so we
+                    # replace the selection with 2 slashes
+                    if char == '/':
+                        comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >//</span>"
+                        cur.insertHtml(comment)      
+                        # set the single line comment to true
+                        singleLineComment = True
+                    # if the character before this one is a * then we have the end of a multiline comment
+                    elif char == '*':
+                        comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >*/</span>"
+                        cur.insertHtml(comment)      
+                        # set the single line comment to true
+                        multiLineComment = True
+                    # if it's just any random character before this then treat it like normal
+                    else:
+                        if singleLineComment == False and multiLineComment == False:
+                            cur.clearSelection()
+                            cur.setPosition(position, QTextCursor.MoveAnchor)
+                            comment = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ";\" >/</span>"
+                            cur.insertHtml(comment)
+                        else:      
+                            cur.clearSelection()
+                            cur.setPosition(position, QTextCursor.MoveAnchor)
+                            comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >/</span>"
+                            cur.insertHtml(comment)
+                # if we are currently writing a string then make it string colored
+                elif isStringSingle == True or isStringDouble == True:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >/</span>"
+                    cur.insertHtml(comment)
+
+                else:
+                    if singleLineComment == False and multiLineComment == False:
+                        comment = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ";\" >/</span>"
+                        cur.insertHtml(comment)             
+                    else:
+                        comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >/</span>"
+                        cur.insertHtml(comment)    
+
+            elif fileType != "py" and c == '*':
+                cur = self.textCursor()
+                position = cur.position()
+                # need to check if the character before this one is a slash
+                if position > 0 and isStringSingle == False and isStringDouble == False:
+                    cur.setPosition(position, QTextCursor.MoveAnchor)
+                    cur.setPosition(position - 1, QTextCursor.KeepAnchor)
+                    char = cur.selection().toPlainText()
+                    # if the character before this one is a slash then we know it's comment time so we
+                    # replace the selection with 2 slashes
+                    if char == '/':
+                        comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >/*</span>"
+                        cur.insertHtml(comment)      
+                        # set the single line comment to true
+                        multiLineComment = True
+                   
+                    # if it's just any random character before this then treat it like normal
+                    else:
+                        if singleLineComment == False and multiLineComment == False:
+                            cur.clearSelection()
+                            cur.setPosition(position, QTextCursor.MoveAnchor)
+                            comment = "<span style=\" font-size:14pt; font-weight:300; color:" + keywordColor + ";\" >*</span>"
+                            cur.insertHtml(comment)
+                        else:      
+                            cur.clearSelection()
+                            cur.setPosition(position, QTextCursor.MoveAnchor)
+                            comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >*</span>"
+                            cur.insertHtml(comment)
+                # if we are currently writing a string then make it string colored
+                elif isStringSingle == True or isStringDouble == True:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >*</span>"
+                    cur.insertHtml(comment)
+                # if its the first char
+                else:
+                    if singleLineComment == False and multiLineComment == False:
+                        comment = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ";\" >/</span>"
+                        cur.insertHtml(comment)             
+                    else:
+                        comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >/</span>"
+                        cur.insertHtml(comment)  
+            
+            # if we get a string char
+            elif c == "'":
+                cur = self.textCursor()
+                # if we are not in a comment or a string
+                if multiLineComment == False and singleLineComment == False and isStringSingle == False and isStringDouble == False:
+                    isStringSingle = True
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ";\" >'</span>"
+                    cur.insertHtml(comment)  
+                # if we are in a comment
+                elif multiLineComment == True or singleLineComment == True:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >'</span>"
+                    cur.insertHtml(comment)  
+                # if we are in a double string
+                elif isStringDouble == True:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >'</span>"
+                    cur.insertHtml(comment)  
+                # if we are ending a single string
+                elif isStringSingle == True:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ";\" >'</span>"
+                    cur.insertHtml(comment)  
+                    isStringSingle = False
+            
+            # insert tabs
+            elif c == '\t':
+                cur = self.textCursor()
+                cur.insertText('\t')
+            
+            elif c == '"':
+                cur = self.textCursor()
+                # if we are not in a comment or a string
+                if multiLineComment == False and singleLineComment == False and isStringSingle == False and isStringDouble == False:
+                    isStringDouble = True
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ';\" >"</span>'
+                    cur.insertHtml(comment)  
+                # if we are in a comment
+                elif multiLineComment == True or singleLineComment == True:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ';\" >"</span>'
+                    cur.insertHtml(comment)  
+                # if we are ending a double string
+                elif isStringDouble == True:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ';\" >"</span>'
+                    cur.insertHtml(comment)  
+                    isStringDouble = False
+                # if we are in a singleString
+                elif isStringSingle == True:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ';\" >"</span>'
+                    cur.insertHtml(comment)
+            
+            # this means beginning of a function
+            elif c == '(':
+                cur = self.textCursor()
+                # color the word before this functionColor if it is in any of the dictionaries
+                word = self.getLastWord(cur)
+                if singleLineComment == False and multiLineComment == False and isStringSingle == False and isStringDouble == False:
+                    # highlight it 
+                    cur.select(QTextCursor.WordUnderCursor)
+                    newWord = "<span style=\" font-size:14pt; font-weight:300; color:" + functionColor + ";\" >" + word + "</span>"
+                    cur.insertHtml(newWord)
+                    cur.clearSelection()
+                    # insert the ( using the paren color
+                    openParen = "<span style=\" font-size:14pt; font-weight:300; color:" + parenColor + ";\" >(</span>"
+                    cur.insertHtml(openParen)
+                elif singleLineComment == True or multiLineComment == True:
+                    # highlight it 
+                    cur.select(QTextCursor.WordUnderCursor)
+                    newWord = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >" + word + "</span>"
+                    cur.insertHtml(newWord)
+                    cur.clearSelection()
+                    # insert the ( using the paren color
+                    openParen = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >(</span>"
+                    cur.insertHtml(openParen)
+                elif isStringSingle == True or isStringDouble == True:
+                    # highlight it 
+                    cur.select(QTextCursor.WordUnderCursor)
+                    newWord = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >" + word + "</span>"
+                    cur.insertHtml(newWord)
+                    cur.clearSelection()
+                    # insert the ( using the paren color
+                    openParen = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >(</span>"
+                    cur.insertHtml(openParen)
+            
+            elif c == ')':
+                cur = self.textCursor()
+                word = self.getLastWord(cur)
+                if singleLineComment == False and multiLineComment == False and isStringSingle == False and isStringDouble == False:
+                    # insert the ) using the parenColor
+                    closingParen = "<span style=\" font-size:14pt; font-weight:300; color:" + parenColor + ";\" >)</span>"
+                    cur.insertHtml(closingParen)
+                elif singleLineComment == True or multiLineComment == True:
+                    # insert the ( using the paren color
+                    openParen = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >)</span>"
+                    cur.insertHtml(openParen)
+                elif isStringSingle == True or isStringDouble == True:
+                    # insert the ( using the paren color
+                    openParen = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >)</span>"
+                    cur.insertHtml(openParen)
+            
+            # all of these are the same color anyways            
+            elif c == '{' or c == '}':
+                cur = self.textCursor()
+                word = self.getLastWord(cur)
+                # if this is not a comment line we color it like normal
+                if (singleLineComment == False and multiLineComment == False and isStringSingle == False and isStringDouble == False) or fileType == "py":
+                    # insert the bracket using the bracketcolor
+                    openingBracket = "<span style=\" font-size:14pt; font-weight:300; color:" + bracketColor + ";\" >" + c + "</span>"
+                    cur.insertHtml(openingBracket)
+                elif singleLineComment == True or multiLineComment == True:
+                    openingBracket = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >" + c + "</span>"
+                    cur.insertHtml(openingBracket)
+                elif isStringSingle == True or isStringDouble == True:
+                    openingBracket = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >" + c + "</span>"
+                    cur.insertHtml(openingBracket)
+            
+            # all of these are the same color anyways            
+            elif c == '[' or c == ']':
+                cur = self.textCursor()
+                word = self.getLastWord(cur)
+                # if this is not a comment line we color it like normal
+                if singleLineComment == False and multiLineComment == False and isStringSingle == False and isStringDouble == False:
+                    # insert the bracket using the bracketcolor
+                    openingBracket = "<span style=\" font-size:14pt; font-weight:300; color:" + braceColor + ";\" >" + c + "</span>"
+                    cur.insertHtml(openingBracket)
+                elif singleLineComment == True or multiLineComment == True:
+                    openingBracket = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >" + c + "</span>"
+                    cur.insertHtml(openingBracket)
+                elif isStringSingle == True or isStringDouble == True:
+                    openingBracket = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >" + c + "</span>"
+                    cur.insertHtml(openingBracket)
+            
+            # if it is a number
+            elif c in numbersList:
+                # just make sure that there is not an alpha character right before it
+                cur = self.textCursor()
+                position = cur.position()
+                isNumber = True
+                if position > 0:
+                    # select the character right before it
+                    cur.setPosition(position, QTextCursor.MoveAnchor)
+                    cur.setPosition(position - 1, QTextCursor.KeepAnchor)
+                    char = cur.selection().toPlainText()
+
+                    if char.isalpha() == True:
+                        isNumber = False
+                cur.clearSelection()
+                cur.setPosition(position, QTextCursor.MoveAnchor)
+                if singleLineComment == False and multiLineComment == False and isStringSingle == False and isStringDouble == False:
+                    if isNumber == True:
+                        temp = "<span style=\" font-size:14pt; font-weight:300; color:" + numberColor + ";\" >" + c + "</span>"
+                        cur.insertHtml(temp)
+                    else:
+                        print("here")
+                        print(char)
+                        temp = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ";\" >" + c + "</span>"
+                        cur.insertHtml(temp)
+                elif singleLineComment == True or multiLineComment == True:
+                    temp = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >" + c + "</span>"
+                    cur.insertHtml(temp)
+                elif isStringSingle == True or isStringDouble == True:
+                    temp = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >" + c + "</span>"
+                    cur.insertHtml(temp)
+
+            else:
+                cur = self.textCursor()
+                position = cur.position()
+                # if its just normal text 
+                if singleLineComment == False and multiLineComment == False and isStringSingle == False and isStringDouble == False:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + textColor + ";\" >" + c + "</span>"
+                    cur.insertHtml(comment)    
+                # if it is part of a comment
+                elif singleLineComment == True or multiLineComment == True:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >" + c + "</span>"
+                    cur.insertHtml(comment)    
+                # if it is part of a string
+                elif isStringSingle == True or isStringDouble == True:
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >" + c + "</span>"
+                    cur.insertHtml(comment)          
+    
     def keyPressEvent(self, event):
         global wordCount
         global singleLineComment
@@ -63,6 +393,7 @@ class QCodeEditor(QPlainTextEdit):
         # start by checking if the tab is a code file
         cur = self.textCursor()
         position = cur.position()
+        tabArr[currentActiveTextBox].cursorPosition = position
         fileType = tabArr[currentActiveTextBox].getFileType()
         singleLineComment = False
         if fileType in commentChar:
@@ -266,14 +597,18 @@ class QCodeEditor(QPlainTextEdit):
             cur = self.textCursor()
             position = cur.position()
             if position > 0:
-                cur.setPosition(position, QTextCursor.MoveAnchor)
-                cur.setPosition(position - 1, QTextCursor.KeepAnchor)
+                cur.setPosition(position-1, QTextCursor.MoveAnchor)
+                cur.setPosition(position, QTextCursor.KeepAnchor)
                 char = cur.selection().toPlainText()
                 # if the character before this one is a slash then we know it's comment time so we
                 # replace the selection with 2 slashes
                 if char == '/':
-                    # 
-                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >//</span>"
+                    # we also make sure that everything after these is commentcolor
+                    cur.movePosition(QTextCursor.EndOfLine, QTextCursor.KeepAnchor)
+                    line = cur.selection().toPlainText()
+                    # add a slash at the beginning of the line so we can have 2 slashes
+                    line = '/' + line
+                    comment = "<span style=\" font-size:14pt; font-weight:300; color:" + commentColor + ";\" >" + line + "</span>"
                     cur.insertHtml(comment)      
                 else:
                     if singleLineComment == False:
@@ -634,6 +969,8 @@ class Tab(QWidget):
             self.filePath = filePath
         # variable to check if it is up to date
         self.isSaved = False
+        # cursor position
+        self.cursorPosition = 0
         # variable to store the contents of the text box
         self.contents = contents
         # variable to store the word count of the document
@@ -1215,8 +1552,7 @@ class MainWindow(QWidget):
             downDown = True
             upDown = False
             leftDown = False
-            rightDown = False
-            
+            rightDown = False     
 
     def paintEvent(self, ev):
         painter = QPainter(self)
@@ -1258,6 +1594,8 @@ class MainWindow(QWidget):
             tabArr[currentActiveTextBox].isSaved = False
             # update the values in the textbox array
             tabArr[currentActiveTextBox].contents = self.textbox.toPlainText()
+            # update the cursor position
+            tabArr[currentActiveTextBox].cursorPosition = self.textbox.textCursor().position()
         # update the values in the preview box
         self.previewbox.setPlainText(self.textbox.toPlainText())
         # update the value of the word count
@@ -1522,7 +1860,6 @@ class MainWindow(QWidget):
 
     def displayTextBox(self, index):
         global currentActiveTextBox
-        
         global tabArr
         # make the tab that was clicked the active one
         currentActiveTextBox = index
@@ -1530,13 +1867,13 @@ class MainWindow(QWidget):
         self.textbox.setPlainText(tabArr[currentActiveTextBox].contents)
         # restore the correct word count
         self.infobarlayout.itemAt(wordCountIndex).widget().setText(str(tabArr[currentActiveTextBox].wordCount))
-        # put the cursor at the end of the text
+        # put the cursor where we left it 
         self.textbox.moveCursor(QTextCursor.End)
         # make the textbox the focus
         #self.layout.itemAt(textBoxIndex).widget().setFocus()
         self.layout.itemAt(textBoxIndex).itemAt(0).widget().setFocus()
 
-    # add a new textbox to go along with this tab making this tab the parent of that textbox
+    # idek
     def addTextBox(self, contents):  
         global currentActiveTextBox
         # update the current active text box
@@ -1992,12 +2329,13 @@ rightDown = False
 # list of special characters
 special_characters = "!@#$%^&*()-+?_=.:;,<>/\"'}{~`[]"
 # list of python keywords
+numbersList = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
 python_keywords = ['False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield']
-c_keywords = ['auto', 'double', 'int', 'struct', 'break', 'else', 'long', 'switch', 'case', 'enum', 'register', 'typedef', 'const', 'extern', 'return', 'union', 'char', 'float', 'short', 'unsinged', 'continue', 'for', 'signed', 'volatile', 'default', 'goto', 'sizeof', 'void', 'do', 'if', 'static', 'while']
+c_keywords = ['auto', 'double', 'int', 'struct', 'break', 'else', 'long', 'switch', 'case', 'enum', 'register', 'typedef', 'const', 'extern', 'return', 'union', 'char', 'float', 'short', 'unsinged', 'continue', 'for', 'signed', 'volatile', 'default', 'goto', 'sizeof', 'void', 'do', 'if', 'static', 'while', '!', '@', '#', '$', '%', '^', '&', '*', '-', '+', '?', '_', '=', '.', ':', ';', ',', '<', '>', '/', '\"', '~', '`']
 java_keywords = [
-'abstract', 'continue', 'for', 'new', 'switch', 'assert', 'default', 'goto', 'package', 'synchronized', 'boolean', 'do', 'if', 'private', 'this', 'break', 'double', 'implements', 'protected', 'throw', 'byte', 'else', 'import', 'public', 'throws', 'case', 'enum', 'instanceof', 'return', 'transient', 'catch', 'extends', 'int', 'short', 'try', 'char', 'final', 'interface', 'static', 'void', 'class', 'finally', 'long', 'strictfp', 'volatile', 'const', 'float', 'native', 'super', 'while'] 
-js_keywords = ['abstract', 'arguments', 'await', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'enum', 'eval', 'export', 'extends', 'false', 'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements', 'import', 'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null', 'package', 'private', 'protected', 'public', 'return', 'short', 'static', 'super', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield']
-cs_keywords = ['abstract','as','base','bool','break','byte','case','catch','char','checked','class','const','continue','decimal','default','delegate','do','double','else','enum','','event','explicit','extern','false','finally','fixed','float','for','foreach','goto','if','implicit','in','int','interface','internal','is','lock','long','','namespace','new','null','object','operator','out','override','params','private','protected','public','readonly','ref','return','sbyte','sealed','short','sizeof','stackalloc','','static','string','struct','switch','this','throw','true','try','typeof','uint','ulong','unchecked','unsafe','ushort','using','virtual','void','volatile','while']
+'abstract', 'continue', 'for', 'new', 'switch', 'assert', 'default', 'goto', 'package', 'synchronized', 'boolean', 'do', 'if', 'private', 'this', 'break', 'double', 'implements', 'protected', 'throw', 'byte', 'else', 'import', 'public', 'throws', 'case', 'enum', 'instanceof', 'return', 'transient', 'catch', 'extends', 'int', 'short', 'try', 'char', 'final', 'interface', 'static', 'void', 'class', 'finally', 'long', 'strictfp', 'volatile', 'const', 'float', 'native', 'super', 'while', '!', '@', '#', '$', '%', '^', '&', '*', '-', '+', '?', '_', '=', '.', ':', ';', ',', '<', '>', '/', '\"', "'", '~', '`'] 
+js_keywords = ['abstract', 'arguments', 'await', 'boolean', 'break', 'byte', 'case', 'catch', 'char', 'class', 'const', 'continue', 'debugger', 'default', 'delete', 'do', 'double', 'else', 'enum', 'eval', 'export', 'extends', 'false', 'final', 'finally', 'float', 'for', 'function', 'goto', 'if', 'implements', 'import', 'in', 'instanceof', 'int', 'interface', 'let', 'long', 'native', 'new', 'null', 'package', 'private', 'protected', 'public', 'return', 'short', 'static', 'super', 'switch', 'synchronized', 'this', 'throw', 'throws', 'transient', 'true', 'try', 'typeof', 'var', 'void', 'volatile', 'while', 'with', 'yield', '!', '@', '#', '$', '%', '^', '&', '*', '-', '+', '?', '_', '=', '.', ':', ';', ',', '<', '>', '/', '\"', '~', '`']
+cs_keywords = ['abstract','as','base','bool','break','byte','case','catch','char','checked','class','const','continue','decimal','default','delegate','do','double','else','enum','','event','explicit','extern','false','finally','fixed','float','for','foreach','goto','if','implicit','in','int','interface','internal','is','lock','long','','namespace','new','null','object','operator','out','override','params','private','protected','public','readonly','ref','return','sbyte','sealed','short','sizeof','stackalloc','','static','string','struct','switch','this','throw','true','try','typeof','uint','ulong','unchecked','unsafe','ushort','using','virtual','void','volatile','while', '!', '@', '#', '$', '%', '^', '&', '*', '-', '+', '?', '_', '=', '.', ':', ';', ',', '<', '>', '/', '\"', '~', '`']
 
 # variables for color settings
 bracketColor = "#D08770"
@@ -2007,6 +2345,8 @@ braceColor = "#D08770"
 functionColor = "#88C0D0"
 commentColor = "#B48EAD"
 textColor = "#D8DEE9"
+stringColor = "#8FBCBB"
+numberColor = "#BF616A"
 
 # create a dictionary with the colors used for different languages syntax highlighting
 keywords = {}
@@ -2020,6 +2360,8 @@ keywords["cs"] = cs_keywords
 # global variables to track comments
 singleLineComment = False
 multiLineComment = False
+# global variable to track strings
+isString = False
 
 # create dictionary for the character to represent comments for each language
 commentChar = {}
