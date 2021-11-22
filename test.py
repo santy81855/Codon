@@ -207,7 +207,7 @@ class QCodeEditor(QPlainTextEdit):
             # any time we type a letter update the word count (this probably does not scale well)
             # get the text of this tabs textbox
             # add the current key as well to account for the first letter being pressed
-            text = str(event.text()) + tabArr[currentActiveTextBox].contents
+            text = tabArr[currentActiveTextBox].contents + str(event.text())
             # if we just pasted then we want to get the most updated contents of the textbox
             if event.matches(QKeySequence.Paste):
                 text = text + QApplication.clipboard().text()
