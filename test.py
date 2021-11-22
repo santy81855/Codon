@@ -1,15 +1,16 @@
 import sys
 from PyQt5 import QtCore
 from PyQt5 import QtGui
-from PyQt5.QtGui import QCursor, QMouseEvent, QFont, QKeySequence, QSyntaxHighlighter, QTextCharFormat, QBrush, QTextCursor
+from PySide2.QtGui import QSyntaxHighlighter, QTextDocument
+from PyQt5.QtGui import QCursor, QMouseEvent, QFont, QKeySequence, QTextCharFormat, QBrush, QTextCursor
 from PyQt5.QtCore import QPoint, pyqtSignal, QRegExp
 from PyQt5.QtCore import Qt, QPropertyAnimation, QRect, QEasingCurve
 from PyQt5.QtCore import QObject, QMimeData
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter, QFileDialog, QGraphicsDropShadowEffect
-from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QPlainTextEdit, QShortcut
+from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QShortcut
 from PyQt5.QtWidgets import QLabel, QStackedWidget, QMessageBox
 from PyQt5.QtWidgets import QPushButton, QDesktopWidget
-from PyQt5.QtWidgets import QVBoxLayout, QScrollBar
+from PyQt5.QtWidgets import QVBoxLayout, QScrollBar, QPlainTextEdit
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
@@ -24,6 +25,7 @@ import ctypes
 import re
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
+import syntax
 
 class QLineNumberArea(QWidget):
     def __init__(self, editor):
@@ -54,7 +56,7 @@ class QCodeEditor(QPlainTextEdit):
         self.endCursorPosition = 0
         self.oldPosition = 0
         self.is_first_input = False
-    
+    '''
     def setPlainText(self, text):
         global singleLineComment
         global multiLineComment
@@ -382,7 +384,7 @@ class QCodeEditor(QPlainTextEdit):
                 elif isStringSingle == True or isStringDouble == True:
                     comment = "<span style=\" font-size:14pt; font-weight:300; color:" + stringColor + ";\" >" + c + "</span>"
                     cur.insertHtml(comment)          
-    
+    '''
     def keyPressEvent(self, event):
         global wordCount
         global singleLineComment
@@ -1167,7 +1169,7 @@ class TextPreview(QPlainTextEdit):
         cur.clearSelection()
         cur.setPosition(position, QTextCursor.MoveAnchor)
         return word
-
+    '''
     def setPlainText(self, text):
         global singleLineComment
         global multiLineComment
@@ -1496,7 +1498,7 @@ class TextPreview(QPlainTextEdit):
                 elif isStringSingle == True or isStringDouble == True:
                     comment = "<span style=\" font-size:3pt; font-weight:300; color:" + stringColor + ";\" >" + c + "</span>"
                     cur.insertHtml(comment) 
-
+    '''
 class MainWindow(QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -2201,6 +2203,10 @@ class MainWindow(QWidget):
         currentActiveTextBox = index
         # restore the text that there was on that tab
         self.textbox.setPlainText(tabArr[currentActiveTextBox].contents)
+        # create the highlighter
+        highlight = syntax.PythonHighlighter(self.textbox.document())
+        highlight.highlightBlock(tabArr[currentActiveTextBox].contents)
+        self.textbox.show()
         # restore the correct word count
         self.infobarlayout.itemAt(wordCountIndex).widget().setText(str(tabArr[currentActiveTextBox].wordCount))
         # put the cursor where we left it 
@@ -2216,6 +2222,9 @@ class MainWindow(QWidget):
         currentActiveTextBox = len(tabArr) - 1
         # add the contents to the textbox
         self.textbox.setPlainText(contents)
+        # create the highlighter
+        #highlight = syntax.PythonHighlighter(self.textbox.document())
+        #self.textbox.show()
         # add the contents to the preview pane
         self.previewbox.setPlainText(contents)
         # add the correct wordcount for the tab (will be 0 if new tab)
