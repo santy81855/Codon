@@ -460,9 +460,7 @@ class MainWindow(QWidget):
             # just got
             config.tabArr[config.currentActiveTextBox].wordCount = len(text)
             # update the value of the word count button
-            config.mainWin.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
-        # update the values in the preview box
-        self.previewbox.setText(self.textbox.text())
+            config.mainWin.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))        
         # update the value of the word count
         config.mainWin.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
 
@@ -489,7 +487,7 @@ class MainWindow(QWidget):
                 config.tabArr[config.currentActiveTextBox].filePath = filePath
             # if the file is not new then the dialog won't pop up because this isn't save as
             else:
-                filePath = config.tabArr[currentActiveTextBox].filePath
+                filePath = config.tabArr[config.currentActiveTextBox].filePath
             if filePath != '':
                 # get the name of the file
                 name = filePath
@@ -741,9 +739,14 @@ class MainWindow(QWidget):
         self.previewbox.getLexer()
         # restore the correct word count
         self.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
-        # make the textbox the focus
-        #self.layout.itemAt(textBoxIndex).widget().setFocus()
-        self.layout.itemAt(config.textBoxIndex).itemAt(0).widget().setFocus()
+        # add the contents to the preview pane
+        self.previewbox.setText(config.tabArr[config.currentActiveTextBox].contents)
+        # get the lexer
+        self.previewbox.getLexer()
+        # place the cursor back where it was
+        self.textbox.setFocus()
+        self.textbox.setCursorPosition(1, 5)
+        #self.textbox.SendScintilla(QsciScintilla.SCI_SETCURSOR, config.tabArr[config.currentActiveTextBox].curPos)
 
     # idek
     def addTextBox(self, contents):  
@@ -760,8 +763,9 @@ class MainWindow(QWidget):
         self.previewbox.getLexer()
         # add the correct wordcount for the tab (will be 0 if new tab)
         self.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
-        # focus the cursor on the new text box
+        # place the cursor back where it was
         self.textbox.setFocus()
+        self.textbox.SendScintilla(QsciScintilla.SCI_SETCURSOR, config.tabArr[config.currentActiveTextBox].curPos)
 
     def newTab(self, name, filePath, contents):
         global tabCount

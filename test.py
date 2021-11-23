@@ -22,7 +22,7 @@ import subprocess
 from pathlib import Path
 import ctypes
 import re
-# to get the working monitor size
+# to get the working monitor size 
 from win32api import GetMonitorInfo, MonitorFromPoint
 
 class QLineNumberArea(QWidget):

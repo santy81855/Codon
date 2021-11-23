@@ -77,7 +77,7 @@ keywordColor = "#81A1C1"
 parenColor = "#EBCB8B"
 braceColor = "#D08770"
 functionColor = "#88C0D0"
-commentColor = "#B48EAD"
+commentColor = "#4C566A"
 textColor = "#D8DEE9"
 stringColor = "#8FBCBB"
 numberColor = "#BF616A"
@@ -86,6 +86,8 @@ lineNumberColor = "#8FBCBB"
 selectionColor = "#4C566A"
 curLineColor = "#3B4252"
 selectionTextColor = "#D8DEE9"
+classColor = "#A3BE8C"
+operatorColor = "#EBCB8B"
 # create a dictionary with the colors used for different languages syntax highlighting
 keywords = {}
 keywords["py"] = python_keywords

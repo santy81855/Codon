@@ -70,6 +70,8 @@ class Editor(QsciScintilla):
         self.setCaretLineBackgroundColor(QColor(config.curLineColor))
         # remove horizontal scroll bar
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
+        # remove vertical scroll bar
+        self.SendScintilla(QsciScintilla.SCI_SETVSCROLLBAR, 0)
         # auto indent
         self.setAutoIndent(True)
     
@@ -103,6 +105,10 @@ class Editor(QsciScintilla):
             lexer.setDefaultPaper(QColor(config.backgroundColor))
             # change the default text color
             lexer.setDefaultColor(QColor(config.textColor))
+            # make the identifier(variable names) have the textcolor
+            lexer.setColor(QColor(config.textColor), 11)
+            # change the operator color (symbols)
+            lexer.setColor(QColor(config.operatorColor), 10)
             # change the keyword color
             lexer.setColor(QColor(config.keywordColor), 5)
             # change the comment color (single, and block)
@@ -110,10 +116,13 @@ class Editor(QsciScintilla):
             lexer.setColor(QColor(config.commentColor), 6)
             # change function color
             lexer.setColor(QColor(config.functionColor), 9)
-            # change the quote color
+            # class name color
+            lexer.setColor(QColor(config.classColor), 8)
+            # change the string color
             lexer.setColor(QColor(config.stringColor), 4)
             lexer.setColor(QColor(config.stringColor), 3)
             lexer.setColor(QColor(config.stringColor), 7)
+            lexer.setColor(QColor(config.stringColor), 13) # open string
             # change number color
             lexer.setColor(QColor(config.numberColor), 2)
             # decoration color
@@ -143,6 +152,9 @@ class Editor(QsciScintilla):
         QsciScintilla.mouseMoveEvent(self, event)
     
     def keyPressEvent(self, event):
+        # store the position of the cursor everytime we type
+        config.tabArr[config.currentActiveTextBox].curPos = int(self.SendScintilla(QsciScintilla.SCI_GETCURRENTPOS))
+        
         if event.matches(QKeySequence.AddTab):
             config.mainWin.newTabEmpty()
         else:

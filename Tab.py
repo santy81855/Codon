@@ -56,6 +56,8 @@ class Tab(QWidget):
         self.contents = contents
         # variable to store the word count of the document
         self.wordCount = 0
+        # cursor position
+        self.curPos = 0
         # set the word count on the button if there is any content to this file
         if contents != "":
             # use regex to split it into a list of words

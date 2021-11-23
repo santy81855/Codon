@@ -38,8 +38,15 @@ class TextPreview(QsciScintilla):
         self.setMarginsBackgroundColor(QColor(config.backgroundColor))
         self.setReadOnly(True)
         self.setColor(QColor(config.textColor))
-        # we want this one to not be selectable
-        self.setSelectionBackgroundColor(QColor(config.backgroundColor))
+        # make the caret invisible
+        self.setCaretWidth(0)
+        # make line height smaller
+        self.setExtraDescent(-1)
+        # variable to track mouse clicking
+        self.pressing = False
+        self.start = 0
+        # variable to store the position of teh textbox
+        self.position = 0
     
     def getLexer(self):
         # get the file types
@@ -71,6 +78,10 @@ class TextPreview(QsciScintilla):
             lexer.setDefaultPaper(QColor(config.backgroundColor))
             # change the default text color
             lexer.setDefaultColor(QColor(config.textColor))
+            # make the identifier(variable names) have the textcolor
+            lexer.setColor(QColor(config.textColor), 11)
+            # change the operator color (symbols)
+            lexer.setColor(QColor(config.operatorColor), 10)
             # change the keyword color
             lexer.setColor(QColor(config.keywordColor), 5)
             # change the comment color (single, and block)
@@ -78,10 +89,13 @@ class TextPreview(QsciScintilla):
             lexer.setColor(QColor(config.commentColor), 6)
             # change function color
             lexer.setColor(QColor(config.functionColor), 9)
-            # change the quote color
+            # class name color
+            lexer.setColor(QColor(config.classColor), 8)
+            # change the string color
             lexer.setColor(QColor(config.stringColor), 4)
             lexer.setColor(QColor(config.stringColor), 3)
             lexer.setColor(QColor(config.stringColor), 7)
+            lexer.setColor(QColor(config.stringColor), 13) # open string
             # change number color
             lexer.setColor(QColor(config.numberColor), 2)
             # decoration color
@@ -100,9 +114,43 @@ class TextPreview(QsciScintilla):
             lexer.setFont(font, 11)
             lexer.setFont(font, 12)
             lexer.setFont(font, 13)
+            lexer.setFont(font, 14)
+            lexer.setFont(font, 15)
             self.setLexer(lexer)
     
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)
         # call the normal mousemoveevent function so that we don't lose functionality
-        QsciScintilla.mouseMoveEvent(self, event)
+        #QsciScintilla.mouseMoveEvent(self, event)
+        # if they are pressing then we want to scroll a certain amount for every pixel that we move
+        if self.pressing:
+            # store the starting position
+            before = self.start
+            # get the new position
+            end = event.pos()
+            # make this new position the starting position for the next movement
+            self.start = end
+            # get the difference in the y axis
+            lines = end.y() - before.y()
+            config.mainWin.textbox.SendScintilla(QsciScintilla.SCI_LINESCROLL, 0, int(lines/2))
+            # ensure that both textboxes have the same first visible line at all times
+            firstVisible = config.mainWin.textbox.firstVisibleLine()
+            self.setFirstVisibleLine(firstVisible)
+    
+    def mousePressEvent(self, event):
+        # set pressing to true
+        self.pressing = True
+        # store the position we pressed at
+        self.start = event.pos()
+        # store the position of the cursor when we clicked
+        self.position = int(config.mainWin.textbox.SendScintilla(QsciScintilla.SCI_GETCURRENTPOS))
+    
+    def mouseReleaseEvent(self, event):
+        self.pressing = False
+        # place the cursor back where it was
+        config.mainWin.textbox.setFocus()
+        config.mainWin.textbox.SendScintilla(QsciScintilla.SCI_SETCURSOR, self.position)
+
+    
+    def mouseDoubleClickEvent(self, event):
+        return
