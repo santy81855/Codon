@@ -73,7 +73,7 @@ cs_keywords = ['abstract','as','base','bool','break','byte','case','catch','char
 
 # variables for color settings
 bracketColor = "#D08770"
-keywordColor = "#A3BE8C"
+keywordColor = "#81A1C1"
 parenColor = "#EBCB8B"
 braceColor = "#D08770"
 functionColor = "#88C0D0"

@@ -203,5 +203,5 @@ class Tab(QWidget):
             }-  
                                     """)
         # change the title of the window to be the tab name
-        #main.titleBar.title.setText(self.fileName)
+        config.mainWin.layout.itemAt(0).widget().title.setText(self.fileName + " - notepad")
    
