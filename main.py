@@ -18,6 +18,8 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
 from PyQt5.QtGui import QColor, QPainter, QTextFormat, QLinearGradient
+from PyQt5 import Qsci
+from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciLexerCPP, QsciLexerCSharp, QsciLexerJava, QsciLexerJavaScript, QsciLexerJSON
 import textwrap
 from pynput import keyboard
 import string
@@ -256,7 +258,7 @@ class MainWindow(QWidget):
 
         # detect if there was a change in the active text edit, and if so change the corresponding
         # tab's isSaved to False
-        self.textbox.textChanged.connect(self.setSavedToFalse)
+        #self.textbox.textChanged.connect(self.setSavedToFalse)
         # to help rounded corners work
         self.setAttribute(Qt.WA_TranslucentBackground)
     
@@ -450,7 +452,7 @@ class MainWindow(QWidget):
         if len(config.tabStack) > 0:            
             oldTab = config.tabStack.pop()
             self.newTab(oldTab.fileName, oldTab.filePath, oldTab.contents)
-
+    '''
     def setSavedToFalse(self):
         global isShortCut
         global tabArr
@@ -476,7 +478,7 @@ class MainWindow(QWidget):
             config.mainWin.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))        
         # update the value of the word count
         config.mainWin.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
-
+    '''
     def saveFile(self):
         global currentActiveTextBox
         global isShortCut
@@ -768,6 +770,9 @@ class MainWindow(QWidget):
         # update the current cursor position
         pos = config.tabArr[config.currentActiveTextBox].curPos
         self.textbox.setCursorPosition(pos[0], pos[1])
+        # make sure the previewbox has the same firstvisible line
+        first = self.textbox.firstVisibleLine()
+        self.previewbox.setFirstVisibleLine(first)
         #pos = self.textbox.getCursorPosition()
         # update the cursor position button
         config.mainWin.infobarlayout.itemAt(config.cursorPositionIndex).widget().setText("ln " + str(pos[0]+1) + ", col " + str(pos[1]+1))
