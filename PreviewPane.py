@@ -41,7 +41,7 @@ class TextPreview(QsciScintilla):
         # make the caret invisible
         self.setCaretWidth(0)
         # make line height smaller
-        self.setExtraDescent(-1)
+        self.setExtraDescent(-6)
         # variable to track mouse clicking
         self.pressing = False
         self.start = 0
@@ -50,7 +50,7 @@ class TextPreview(QsciScintilla):
     
     def getLexer(self):
         # get the file types
-        fileType = config.tabArr[config.currentActiveTextBox].getFileType()
+        fileType = config.tabArr[config.currentActiveTextBox].language
         
         # Set the default font
         font = QFont()
@@ -116,6 +116,42 @@ class TextPreview(QsciScintilla):
             lexer.setFont(font, 13)
             lexer.setFont(font, 14)
             lexer.setFont(font, 15)
+            self.setLexer(lexer)
+        else:
+            lexer = QsciLexerPython()
+            lexer.setDefaultFont(font)
+            # change the background color
+            lexer.setDefaultPaper(QColor(config.backgroundColor))
+            # change the default text color
+            lexer.setDefaultColor(QColor(config.textColor))
+            # make the identifier(variable names) have the textcolor
+            lexer.setColor(QColor(config.textColor), 1)
+            lexer.setColor(QColor(config.textColor), 2)
+            lexer.setColor(QColor(config.textColor), 3)
+            lexer.setColor(QColor(config.textColor), 4)
+            lexer.setColor(QColor(config.textColor), 5)
+            lexer.setColor(QColor(config.textColor), 6)
+            lexer.setColor(QColor(config.textColor), 7)
+            lexer.setColor(QColor(config.textColor), 8)
+            lexer.setColor(QColor(config.textColor), 9)
+            lexer.setColor(QColor(config.textColor), 10)
+            lexer.setColor(QColor(config.textColor), 11)
+            lexer.setColor(QColor(config.textColor), 12)
+            lexer.setColor(QColor(config.textColor), 13)
+            # set fonts
+            lexer.setFont(font, 1)
+            lexer.setFont(font, 2)
+            lexer.setFont(font, 3)
+            lexer.setFont(font, 4)
+            lexer.setFont(font, 5)
+            lexer.setFont(font, 6)
+            lexer.setFont(font, 7)
+            lexer.setFont(font, 8)
+            lexer.setFont(font, 9)
+            lexer.setFont(font, 10)
+            lexer.setFont(font, 11)
+            lexer.setFont(font, 12)
+            lexer.setFont(font, 13)
             self.setLexer(lexer)
     
     def mouseMoveEvent(self, event):

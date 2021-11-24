@@ -29,7 +29,7 @@ class WordCountButton(QPushButton):
     def __init__(self, parent):
         super(WordCountButton, self).__init__()
         self.parent = parent
-        self.setText("wc:113")
+        self.setText("")
         self.clicked.connect(self.wordCountClicked)
         #self.setFixedSize(20, 20)
         self.adjustSize()

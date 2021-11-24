@@ -29,7 +29,9 @@ textBoxIndex = 3
 # word count index
 infoBarIndex = 4
 # word count index
-wordCountIndex = 1
+wordCountIndex = 2
+# language selection index
+languageSelectionIndex = 1
 # variable to track the tabBar so I can access it quickly
 # variable to track the number of default tabs currently open
 curEmptyTab = 1
@@ -88,14 +90,15 @@ curLineColor = "#3B4252"
 selectionTextColor = "#D8DEE9"
 classColor = "#A3BE8C"
 operatorColor = "#EBCB8B"
-# create a dictionary with the colors used for different languages syntax highlighting
+# create a dictionary to convert from shorthand to full formatted name
 keywords = {}
-keywords["py"] = python_keywords
-keywords["c"] = c_keywords
-keywords["cpp"] = c_keywords
-keywords["java"] = java_keywords
-keywords["js"] = js_keywords
-keywords["cs"] = cs_keywords
+keywords["py"] = "    python"
+keywords["c"] = "         c"
+keywords["cpp"] = "       cpp"
+keywords["java"] = "      java"
+keywords["js"] = "javascript"
+keywords["cs"] = "        c#"
+keywords["json"] = "      json"
 
 # global variables to track comments
 singleLineComment = False
@@ -111,3 +114,14 @@ commentChar["cpp"] = ["//", "/*", "*/"]
 commentChar["cs"] = ["//", "/*", "*/"]
 commentChar["java"] = ["//", "/*", "*/"]
 commentChar["js"] = ["//", "/*", "*/"]
+
+# dictionary to convert from language name to shorthand
+languageDict = {}
+languageDict["python"] = "py"
+languageDict["c"] = "c"
+languageDict["c#"] = "cs"
+languageDict["c++"] = "cpp"
+languageDict["java"] = "java"
+languageDict["javascript"] = "js"
+languageDict["json"] = "json"
+languageDict["plaintext"] = None

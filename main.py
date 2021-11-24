@@ -1,7 +1,7 @@
 import sys
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
-import TitleBar, Tab, WordCount, PreviewPane, TextBox
+import TitleBar, Tab, WordCount, PreviewPane, TextBox, language
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -145,6 +145,9 @@ class MainWindow(QWidget):
         # left, top, right, bottom
         self.infobarlayout.setContentsMargins(0, 12, 10, 0)
         self.infobarlayout.setSpacing(0)
+        #
+        self.infobarlayout.addWidget(language.LanguageSelection(self))
+        #
         self.infobarlayout.addWidget(WordCount.WordCountButton(self))
         self.layout.addLayout(self.infobarlayout)
         #------------------------------------------------------------------------#
@@ -452,6 +455,8 @@ class MainWindow(QWidget):
             config.tabArr[config.currentActiveTextBox].isSaved = False
             # update the values in the textbox array
             config.tabArr[config.currentActiveTextBox].contents = self.textbox.text()
+            # update the value of the preview box
+            self.previewbox.setText(self.textbox.text())
             # update the word count
             text = config.tabArr[config.currentActiveTextBox].contents
             # use regex to split it into a list of words
@@ -739,6 +744,11 @@ class MainWindow(QWidget):
         self.previewbox.getLexer()
         # restore the correct word count
         self.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
+        # add the correct specifier for the language (first convert from "py" to "python")
+        if config.tabArr[config.currentActiveTextBox].language in config.keywords:
+            self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText(config.keywords[config.tabArr[config.currentActiveTextBox].language])
+        elif config.tabArr[config.currentActiveTextBox].language == "plaintext":
+            self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText("plain text")
         # add the contents to the preview pane
         self.previewbox.setText(config.tabArr[config.currentActiveTextBox].contents)
         # get the lexer
@@ -763,6 +773,11 @@ class MainWindow(QWidget):
         self.previewbox.getLexer()
         # add the correct wordcount for the tab (will be 0 if new tab)
         self.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
+        # add the correct specifier for the language (first convert from "py" to "python")
+        if config.tabArr[config.currentActiveTextBox].language in config.keywords:
+            self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText(config.keywords[config.tabArr[config.currentActiveTextBox].language])
+        elif config.tabArr[config.currentActiveTextBox].language == "plaintext":
+            self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText("plain text")
         # place the cursor back where it was
         self.textbox.setFocus()
         self.textbox.SendScintilla(QsciScintilla.SCI_SETCURSOR, config.tabArr[config.currentActiveTextBox].curPos)

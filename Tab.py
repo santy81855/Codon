@@ -50,8 +50,8 @@ class Tab(QWidget):
             self.filePath = filePath
         # variable to check if it is up to date
         self.isSaved = False
-        # cursor position
-        self.cursorPosition = 0
+        # variable to store the language of the file(code)
+        self.language = self.getFileType()
         # variable to store the contents of the text box
         self.contents = contents
         # variable to store the word count of the document
@@ -141,6 +141,8 @@ class Tab(QWidget):
             return "cs"
         elif ".json" in name:
             return "json"
+        else:
+            return "plaintext"
     
     # event filter to detect right click
     def eventFilter(self, obj, event):
