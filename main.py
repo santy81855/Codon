@@ -157,8 +157,14 @@ class MainWindow(QWidget):
         self.setLayout(self.layout)
         # add the initial default tab that will open on launch
         self.newTabEmpty()
-        # make the default size be half the window
-        self.setGeometry(startingLocation[0], startingLocation[1], startingLocation[0], startingLocation[1])
+        # make the default size be half the window on the right
+        # get the current working resolution to account for things like the taskbar
+        monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
+        working_resolution = monitor_info.get("Work")
+        print(working_resolution)
+        workingWidth = working_resolution[2]
+        workingHeight = working_resolution[3]
+        self.setGeometry(workingWidth/7, 0, workingWidth - (2 * workingWidth / 7), workingHeight)
         #self.layout.setContentsMargins(MARGIN,0,MARGIN,MARGIN)
         # right has no margin because that is where the other widget will be(preview pane)
         self.layout.setContentsMargins(config.MARGIN,config.MARGIN,config.MARGIN,config.MARGIN)

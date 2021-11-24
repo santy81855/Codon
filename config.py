@@ -4,10 +4,10 @@ width = 0
 height = 0
 key = ''
 res = {}
-res["1920x1080"] = [640, 360] # full hd
-res["2560x1440"] = [853, 480] # wqhd
-res["3440x1440"] = [1147, 480] # ultrawide
-res["3840x2160"] = [1160, 720] # 4k
+res["1920x1080"] = [1920/2, 0] # full hd
+res["2560x1440"] = [2560/2, 0] # wqhd
+res["3440x1440"] = [3440/2, 0] # ultrawide
+res["3840x2160"] = [3840/2, 0] # 4k
 focused = False # variable to track if the gui is focused so it knows to track typing or not
 stack = []
 # variables to track if modifiers are currently held down
