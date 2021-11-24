@@ -51,6 +51,8 @@ class Editor(QsciScintilla):
         self.setMarginWidth(0, fontmetrics.width("00000"))
         self.setMarginLineNumbers(0, True)
         self.setMarginsBackgroundColor(QColor(config.backgroundColor))
+        self.setTabIndents(True)
+        self.setIndentationsUseTabs(True)
         self.setIndentationWidth(4)
         self.setColor(QColor(config.textColor))
         self.setEolMode(1)
@@ -77,7 +79,9 @@ class Editor(QsciScintilla):
         self.setAutoIndent(True)
         # detect if lines changed
         self.cursorPositionChanged.connect(self.cursorChanged)
-    
+        # store if opening bracket was our last move
+        self.wasBracket = False    
+
     def getLexer(self):
         # get the file types
         fileType = config.tabArr[config.currentActiveTextBox].language
@@ -196,7 +200,26 @@ class Editor(QsciScintilla):
         
         if event.matches(QKeySequence.AddTab):
             config.mainWin.newTabEmpty()
+        
+        #
+        elif event.key() == 16777220:
+            if self.wasBracket == True:
+                # do the enter
+                QsciScintilla.keyPressEvent(self, event)
+                # if hte last key we input was a bracket we want to add an extra tab
+                pos = self.getCursorPosition()
+                self.indent(pos[0])
+                self.setCursorPosition(pos[0], pos[1] +1000)
+                self.wasBracket = False
+            else:
+                return QsciScintilla.keyPressEvent(self, event)
+        
         else:
+            if event.text() == '{':
+                self.wasBracket = True
+            else:
+                # set the bracket false by default
+                self.wasBracket = False
             return QsciScintilla.keyPressEvent(self, event)
     
     def keyReleaseEvent(self, event):
@@ -217,6 +240,8 @@ class Editor(QsciScintilla):
     def cursorChanged(self):
         first = self.firstVisibleLine()
         config.mainWin.previewbox.setFirstVisibleLine(first)
+        # make the active line on the previewbox the same
+
     
     def mousePressEvent(self, event):
         QsciScintilla.mousePressEvent(self, event)

@@ -77,7 +77,7 @@ class LanguageSelection(QComboBox):
             config.mainWin.previewbox.getLexer()
     
     def mouseMoveEvent(self, event):
-        QApplication.setOverrideCursor(Qt.ArrowCursor)
+        QApplication.setOverrideCursor(Qt.PointingHandCursor)
     
     def mousePressEvent(self, event):
         self.showPopup()

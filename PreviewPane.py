@@ -43,6 +43,7 @@ class TextPreview(QsciScintilla):
         # make line height smaller
         self.setExtraDescent(-6)
         self.setExtraAscent(-6)
+        
         # variable to track mouse clicking
         self.pressing = False
         self.start = 0
