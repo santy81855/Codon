@@ -1,7 +1,7 @@
 import sys
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
-import TitleBar, Tab, WordCount, PreviewPane, TextBox, language
+import TitleBar, Tab, WordCount, PreviewPane, TextBox, language, CurrentCursor
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython
 from PyQt5 import QtCore
 from PyQt5 import QtGui
@@ -138,16 +138,18 @@ class MainWindow(QWidget):
         #------------------------------------------------------------------------#
         # add the infobar at the bottom
         self.infobarlayout = QHBoxLayout()
-        # add a stretch so we start the buttons on the right
-        self.infobarlayout.addStretch(1)
         # start the display from the right
         #self.infobarlayout.addStretch(1)
         # left, top, right, bottom
         self.infobarlayout.setContentsMargins(0, 12, 10, 0)
         self.infobarlayout.setSpacing(0)
-        #
+        # add the line/col button
+        self.infobarlayout.addWidget(CurrentCursor.CurrentCursor(self))
+        # add a stretch so we start the buttons on the right
+        self.infobarlayout.addStretch(1)
+        # add the seleciton of languages combobox
         self.infobarlayout.addWidget(language.LanguageSelection(self))
-        #
+        # add the word counter
         self.infobarlayout.addWidget(WordCount.WordCountButton(self))
         self.layout.addLayout(self.infobarlayout)
         #------------------------------------------------------------------------#
@@ -753,6 +755,9 @@ class MainWindow(QWidget):
         self.previewbox.setText(config.tabArr[config.currentActiveTextBox].contents)
         # get the lexer
         self.previewbox.getLexer()
+        # update the current cursor position
+        pos = self.textbox.getCursorPosition()
+        config.mainWin.infobarlayout.itemAt(config.cursorPositionIndex).widget().setText("ln " + str(pos[0]+1) + ", col " + str(pos[1]+1))
         # place the cursor back where it was
         self.textbox.setFocus()
         self.textbox.setCursorPosition(1, 5)
@@ -778,6 +783,9 @@ class MainWindow(QWidget):
             self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText(config.keywords[config.tabArr[config.currentActiveTextBox].language])
         elif config.tabArr[config.currentActiveTextBox].language == "plaintext":
             self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText("plain text")
+        # update the current cursor position
+        pos = self.textbox.getCursorPosition()
+        config.mainWin.infobarlayout.itemAt(config.cursorPositionIndex).widget().setText("ln " + str(pos[0]+1) + ", col " + str(pos[1]+1))
         # place the cursor back where it was
         self.textbox.setFocus()
         self.textbox.SendScintilla(QsciScintilla.SCI_SETCURSOR, config.tabArr[config.currentActiveTextBox].curPos)

@@ -13,7 +13,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QScrollBar
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
-from PyQt5.QtGui import QColor, QPainter, QTextFormat, QLinearGradient
+from PyQt5.QtGui import QColor, QPainter, QTextFormat, QLinearGradient, QImage
 import textwrap
 from pynput import keyboard
 import string
@@ -60,7 +60,8 @@ class Editor(QsciScintilla):
             self.ARROW_MARKER_NUM)
         self.setMarkerBackgroundColor(QColor(config.selectionColor),
             self.ARROW_MARKER_NUM)
-    
+
+        # set the selection colors
         self.setSelectionBackgroundColor(QColor(config.selectionColor))
         self.setSelectionForegroundColor(QColor(config.selectionTextColor))
         self.setCaretForegroundColor(QColor(config.lineNumberColor))
@@ -74,6 +75,8 @@ class Editor(QsciScintilla):
         self.SendScintilla(QsciScintilla.SCI_SETVSCROLLBAR, 0)
         # auto indent
         self.setAutoIndent(True)
+        # detect if lines changed
+        self.cursorPositionChanged.connect(self.cursorChanged)
     
     def getLexer(self):
         # get the file types
@@ -195,5 +198,31 @@ class Editor(QsciScintilla):
             config.mainWin.newTabEmpty()
         else:
             return QsciScintilla.keyPressEvent(self, event)
+    
+    def keyReleaseEvent(self, event):
+        # update the current cursor position
+        pos = self.getCursorPosition()
+        config.mainWin.infobarlayout.itemAt(config.cursorPositionIndex).widget().setText("ln " + str(pos[0]+1) + ", col " + str(pos[1]+1))
+        return QsciScintilla.keyReleaseEvent(self, event)
+    
+    def wheelEvent(self, event):
+        # intercept scrolls on the main textbox so that we can do the same for the previewbox
+        QsciScintilla.wheelEvent(self, event)
+        QsciScintilla.wheelEvent(config.mainWin.previewbox, event)
+        first = self.firstVisibleLine()
+        config.mainWin.previewbox.setFirstVisibleLine(first)
+    
+    # if the cursor position changes we want to make sure the preview tab has the same first
+    # visible line
+    def cursorChanged(self):
+        first = self.firstVisibleLine()
+        config.mainWin.previewbox.setFirstVisibleLine(first)
+    
+    def mousePressEvent(self, event):
+        QsciScintilla.mousePressEvent(self, event)
+        # update the cursor position
+        pos = self.getCursorPosition()
+        config.mainWin.infobarlayout.itemAt(config.cursorPositionIndex).widget().setText("ln " + str(pos[0]+1) + ", col " + str(pos[1]+1))
+        
 
         

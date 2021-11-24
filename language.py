@@ -52,7 +52,7 @@ class LanguageSelection(QComboBox):
             border:none;
             color: #8FBCBB;
             font: 12pt "Consolas";
-            padding-left: 10px;
+            padding-left: 5px;
             padding-right: 5px;
             padding-top: 5px;
             padding-bottom: 5px;

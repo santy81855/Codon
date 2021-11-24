@@ -42,6 +42,7 @@ class TextPreview(QsciScintilla):
         self.setCaretWidth(0)
         # make line height smaller
         self.setExtraDescent(-6)
+        self.setExtraAscent(-6)
         # variable to track mouse clicking
         self.pressing = False
         self.start = 0
@@ -187,6 +188,9 @@ class TextPreview(QsciScintilla):
         config.mainWin.textbox.setFocus()
         config.mainWin.textbox.SendScintilla(QsciScintilla.SCI_SETCURSOR, self.position)
 
+    def wheelEvent(self, event):
+        # can't scroll on this one
+        return
     
     def mouseDoubleClickEvent(self, event):
         return

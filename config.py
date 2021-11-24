@@ -29,9 +29,11 @@ textBoxIndex = 3
 # word count index
 infoBarIndex = 4
 # word count index
-wordCountIndex = 2
+wordCountIndex = 3
 # language selection index
-languageSelectionIndex = 1
+languageSelectionIndex = 2
+# cursor position button index
+cursorPositionIndex = 0
 # variable to track the tabBar so I can access it quickly
 # variable to track the number of default tabs currently open
 curEmptyTab = 1
