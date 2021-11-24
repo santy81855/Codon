@@ -81,6 +81,8 @@ class Editor(QsciScintilla):
         self.cursorPositionChanged.connect(self.cursorChanged)
         # store if opening bracket was our last move
         self.wasBracket = False    
+        # set the wrapmode so that text wraps 
+        self.setWrapMode(QsciScintilla.WrapWord)
 
     def getLexer(self):
         # get the file types
@@ -194,10 +196,7 @@ class Editor(QsciScintilla):
         # call the normal mousemoveevent function so that we don't lose functionality
         QsciScintilla.mouseMoveEvent(self, event)
     
-    def keyPressEvent(self, event):
-        # store the position of the cursor everytime we type
-        config.tabArr[config.currentActiveTextBox].curPos = int(self.SendScintilla(QsciScintilla.SCI_GETCURRENTPOS))
-        
+    def keyPressEvent(self, event):     
         if event.matches(QKeySequence.AddTab):
             config.mainWin.newTabEmpty()
         
@@ -240,6 +239,7 @@ class Editor(QsciScintilla):
     def cursorChanged(self):
         first = self.firstVisibleLine()
         config.mainWin.previewbox.setFirstVisibleLine(first)
+        config.tabArr[config.currentActiveTextBox].curPos = self.getCursorPosition()
         # make the active line on the previewbox the same
 
     

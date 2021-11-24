@@ -531,9 +531,10 @@ class MainWindow(QWidget):
                 else:
                     f.write(config.tabArr[config.currentActiveTextBox].contents)
                     config.tabArr[config.currentActiveTextBox].isSaved = True
+                    # update the language
+                    config.tabArr[config.currentActiveTextBox].language = config.tabArr[config.currentActiveTextBox].getFileType()
                     # click on it so that the title of the window changes to match the tab
                     config.tabArr[config.currentActiveTextBox].tabClicked()
-
                 f.close()
 
     def openFile(self):
@@ -755,12 +756,15 @@ class MainWindow(QWidget):
         self.previewbox.setText(config.tabArr[config.currentActiveTextBox].contents)
         # get the lexer
         self.previewbox.getLexer()
-        # update the current cursor position
-        pos = self.textbox.getCursorPosition()
-        config.mainWin.infobarlayout.itemAt(config.cursorPositionIndex).widget().setText("ln " + str(pos[0]+1) + ", col " + str(pos[1]+1))
         # place the cursor back where it was
         self.textbox.setFocus()
-        self.textbox.setCursorPosition(1, 5)
+        #self.textbox.setCursorPosition(1, 5)
+        # update the current cursor position
+        pos = config.tabArr[config.currentActiveTextBox].curPos
+        self.textbox.setCursorPosition(pos[0], pos[1])
+        #pos = self.textbox.getCursorPosition()
+        # update the cursor position button
+        config.mainWin.infobarlayout.itemAt(config.cursorPositionIndex).widget().setText("ln " + str(pos[0]+1) + ", col " + str(pos[1]+1))
         #self.textbox.SendScintilla(QsciScintilla.SCI_SETCURSOR, config.tabArr[config.currentActiveTextBox].curPos)
 
     # idek
@@ -784,11 +788,12 @@ class MainWindow(QWidget):
         elif config.tabArr[config.currentActiveTextBox].language == "plaintext":
             self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText("plain text")
         # update the current cursor position
-        pos = self.textbox.getCursorPosition()
+        pos = config.tabArr[config.currentActiveTextBox].curPos
+        #pos = self.textbox.getCursorPosition()
         config.mainWin.infobarlayout.itemAt(config.cursorPositionIndex).widget().setText("ln " + str(pos[0]+1) + ", col " + str(pos[1]+1))
         # place the cursor back where it was
         self.textbox.setFocus()
-        self.textbox.SendScintilla(QsciScintilla.SCI_SETCURSOR, config.tabArr[config.currentActiveTextBox].curPos)
+        self.textbox.setCursorPosition(pos[0], pos[1])
 
     def newTab(self, name, filePath, contents):
         global tabCount
