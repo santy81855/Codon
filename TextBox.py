@@ -201,15 +201,15 @@ class Editor(QsciScintilla):
         if event.matches(QKeySequence.AddTab):
             config.mainWin.newTabEmpty()
         
-        #
         elif event.key() == 16777220:
             if self.wasBracket == True:
-                # do the enter
+                # do 1 enter
                 QsciScintilla.keyPressEvent(self, event)
-                # if hte last key we input was a bracket we want to add an extra tab
                 pos = self.getCursorPosition()
+                # add an indent
                 self.indent(pos[0])
-                self.setCursorPosition(pos[0], pos[1] +1000)
+                # put the cursor at the end of the indent
+                self.setCursorPosition(pos[0], pos[1] + config.TAB_SIZE)
                 self.wasBracket = False
             else:
                 return QsciScintilla.keyPressEvent(self, event)
@@ -221,7 +221,7 @@ class Editor(QsciScintilla):
                 # set the bracket false by default
                 self.wasBracket = False
             return QsciScintilla.keyPressEvent(self, event)
-    
+        
     def keyReleaseEvent(self, event):
         # update the current cursor position
         pos = self.getCursorPosition()
