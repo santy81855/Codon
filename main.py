@@ -797,6 +797,7 @@ class MainWindow(QWidget):
         self.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
         # add the correct specifier for the language (first convert from "py" to "python")
         if config.tabArr[config.currentActiveTextBox].language in config.keywords:
+            print(config.tabArr[config.currentActiveTextBox].language)
             self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText(config.keywords[config.tabArr[config.currentActiveTextBox].language])
         elif config.tabArr[config.currentActiveTextBox].language == "plaintext":
             self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText("plain text")

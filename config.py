@@ -95,6 +95,7 @@ operatorColor = "#EBCB8B"
 
 # more settings
 scrollBarWidth = 12
+fontSize = 14
 
 # create a dictionary to convert from shorthand to full formatted name
 keywords = {}

@@ -41,7 +41,7 @@ class Editor(QsciScintilla):
         font = QFont()
         font.setFamily('Consolas')
         font.setFixedPitch(True)
-        font.setPointSize(14)
+        font.setPointSize(config.fontSize)
         self.setFont(font)
         self.setMarginsFont(font)
          # Margin 0 is used for line numbers
@@ -95,13 +95,54 @@ class Editor(QsciScintilla):
         font = QFont()
         font.setFamily('Consolas')
         font.setFixedPitch(True)
-        font.setPointSize(14)
+        font.setPointSize(config.fontSize)
         self.setFont(font)
         self.setMarginsFont(font)
         # if we want to use syntax highlighting
         if fileType in config.keywords:
             if fileType == "py":
                 lexer = QsciLexerPython()
+                # change the background color
+                lexer.setDefaultPaper(QColor(config.backgroundColor))
+                # change the default text color
+                lexer.setDefaultColor(QColor(config.textColor))
+                # make the identifier(variable names) have the textcolor
+                lexer.setColor(QColor(config.textColor), 11)
+                # change the operator color (symbols)
+                lexer.setColor(QColor(config.operatorColor), 10)
+                # change the keyword color
+                lexer.setColor(QColor(config.keywordColor), 5)
+                # change the comment color (single, and block)
+                lexer.setColor(QColor(config.commentColor), 1)
+                lexer.setColor(QColor(config.commentColor), 6)
+                # change function color
+                lexer.setColor(QColor(config.functionColor), 9)
+                # class name color
+                lexer.setColor(QColor(config.classColor), 8)
+                # change the string color
+                lexer.setColor(QColor(config.stringColor), 4)
+                lexer.setColor(QColor(config.stringColor), 3)
+                lexer.setColor(QColor(config.stringColor), 7)
+                lexer.setColor(QColor(config.stringColor), 13) # open string
+                # change number color
+                lexer.setColor(QColor(config.numberColor), 2)
+                # decoration color
+                lexer.setColor(QColor(config.stringColor), 15)
+                # set fonts
+                lexer.setFont(font, 1)
+                lexer.setFont(font, 2)
+                lexer.setFont(font, 3)
+                lexer.setFont(font, 4)
+                lexer.setFont(font, 5)
+                lexer.setFont(font, 6)
+                lexer.setFont(font, 7)
+                lexer.setFont(font, 8)
+                lexer.setFont(font, 9)
+                lexer.setFont(font, 10)
+                lexer.setFont(font, 11)
+                lexer.setFont(font, 12)
+                lexer.setFont(font, 13)
+                lexer.setAutoIndentStyle(2)
             elif fileType == "c" or fileType == "cpp":
                 lexer = QsciLexerCPP()
             elif fileType == "java":
@@ -113,46 +154,6 @@ class Editor(QsciScintilla):
             elif fileType == "json":
                 lexer = QsciLexerJSON()
             lexer.setDefaultFont(font)
-            # change the background color
-            lexer.setDefaultPaper(QColor(config.backgroundColor))
-            # change the default text color
-            lexer.setDefaultColor(QColor(config.textColor))
-            # make the identifier(variable names) have the textcolor
-            lexer.setColor(QColor(config.textColor), 11)
-            # change the operator color (symbols)
-            lexer.setColor(QColor(config.operatorColor), 10)
-            # change the keyword color
-            lexer.setColor(QColor(config.keywordColor), 5)
-            # change the comment color (single, and block)
-            lexer.setColor(QColor(config.commentColor), 1)
-            lexer.setColor(QColor(config.commentColor), 6)
-            # change function color
-            lexer.setColor(QColor(config.functionColor), 9)
-            # class name color
-            lexer.setColor(QColor(config.classColor), 8)
-            # change the string color
-            lexer.setColor(QColor(config.stringColor), 4)
-            lexer.setColor(QColor(config.stringColor), 3)
-            lexer.setColor(QColor(config.stringColor), 7)
-            lexer.setColor(QColor(config.stringColor), 13) # open string
-            # change number color
-            lexer.setColor(QColor(config.numberColor), 2)
-            # decoration color
-            lexer.setColor(QColor(config.stringColor), 15)
-            # set fonts
-            lexer.setFont(font, 1)
-            lexer.setFont(font, 2)
-            lexer.setFont(font, 3)
-            lexer.setFont(font, 4)
-            lexer.setFont(font, 5)
-            lexer.setFont(font, 6)
-            lexer.setFont(font, 7)
-            lexer.setFont(font, 8)
-            lexer.setFont(font, 9)
-            lexer.setFont(font, 10)
-            lexer.setFont(font, 11)
-            lexer.setFont(font, 12)
-            lexer.setFont(font, 13)
             self.setLexer(lexer)
         else:
             lexer = QsciLexerPython()

@@ -34,7 +34,7 @@ class LanguageSelection(QComboBox):
             "plain text", 
             "    python", 
             "         c", 
-            "       cpp", 
+            "       c++", 
             "        c#", 
             "      java", 
             "javascript", 

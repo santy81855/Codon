@@ -129,18 +129,18 @@ class Tab(QWidget):
         name = self.fileName
         if ".py" in name:
             return "py"
+        elif ".cpp" in name:
+            return "cpp"
+        elif ".cs" in name:
+            return "cs"
         elif ".c" in name:
             return "c"
         elif ".java" in name:
             return "java"
-        elif ".cpp" in name:
-            return "cpp"
-        elif ".js" in name:
-            return "js"
-        elif ".cs" in name:
-            return "cs"
         elif ".json" in name:
             return "json"
+        elif ".js" in name:
+            return "js"
         else:
             return "plaintext"
     

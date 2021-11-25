@@ -73,7 +73,7 @@ class TextPreview(QsciScintilla):
             elif fileType == "js":
                 lexer = QsciLexerJavaScript()
             elif fileType == "json":
-                lexer = QsciLexerJSON
+                lexer = QsciLexerJSON()
             lexer.setDefaultFont(font)
             # change the background color
             lexer.setDefaultPaper(QColor(config.backgroundColor))
@@ -118,6 +118,8 @@ class TextPreview(QsciScintilla):
             lexer.setFont(font, 14)
             lexer.setFont(font, 15)
             self.setLexer(lexer)
+        
+        # just use all textcolor otherwise
         else:
             lexer = QsciLexerPython()
             lexer.setDefaultFont(font)
