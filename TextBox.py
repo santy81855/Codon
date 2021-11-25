@@ -143,16 +143,88 @@ class Editor(QsciScintilla):
                 lexer.setFont(font, 12)
                 lexer.setFont(font, 13)
                 lexer.setAutoIndentStyle(2)
-            elif fileType == "c" or fileType == "cpp":
+            elif fileType == "c" or fileType == "cpp" or fileType == "java" or fileType == "js" or fileType == "cs":
                 lexer = QsciLexerCPP()
-            elif fileType == "java":
-                lexer = QsciLexerJava()
-            elif fileType == "cs":
-                lexer = QsciLexerCSharp()
-            elif fileType == "js":
-                lexer = QsciLexerJavaScript()
+                # change the background color
+                lexer.setDefaultPaper(QColor(config.backgroundColor))
+                # change the default text color
+                lexer.setDefaultColor(QColor(config.textColor))
+                # comment color
+                lexer.setColor(QColor(config.commentColor), 1)
+                lexer.setColor(QColor(config.commentColor), 1+64)
+                # number
+                lexer.setColor(QColor(config.numberColor), 4)
+                lexer.setColor(QColor(config.numberColor), 4+64)
+                # keyword
+                lexer.setColor(QColor(config.keywordColor), 5)
+                lexer.setColor(QColor(config.keywordColor), 5+64)
+                # strings
+                lexer.setColor(QColor(config.stringColor), 6)
+                lexer.setColor(QColor(config.stringColor), 6+64)
+                lexer.setColor(QColor(config.stringColor), 7)
+                lexer.setColor(QColor(config.stringColor), 7+64)
+                # operator
+                lexer.setColor(QColor(config.operatorColor), 10)
+                lexer.setColor(QColor(config.operatorColor), 10+64)
+                # identifier
+                lexer.setColor(QColor(config.textColor), 11)
+                lexer.setColor(QColor(config.textColor), 11+64)
+                # unclosed string
+                lexer.setColor(QColor(config.unclosedString), 12)
+                lexer.setColor(QColor(config.unclosedString), 12+64)
+                # autoindent
+                print(lexer.blockStart())
+                lexer.setAutoIndentStyle(QsciScintilla.AiOpening)
+                # set fonts
+                lexer.setFont(font, 1)
+                lexer.setFont(font, 2)
+                lexer.setFont(font, 3)
+                lexer.setFont(font, 4)
+                lexer.setFont(font, 5)
+                lexer.setFont(font, 6)
+                lexer.setFont(font, 7)
+                lexer.setFont(font, 8)
+                lexer.setFont(font, 9)
+                lexer.setFont(font, 10)
+                lexer.setFont(font, 11)
+                lexer.setFont(font, 12)
+                lexer.setFont(font, 13)
+
             elif fileType == "json":
                 lexer = QsciLexerJSON()
+                # change the background color
+                lexer.setDefaultPaper(QColor(config.backgroundColor))
+                # change the default text color
+                lexer.setDefaultColor(QColor(config.textColor))
+                # number color
+                lexer.setColor(QColor(config.numberColor), 1)
+                # string color
+                lexer.setColor(QColor(config.stringColor), 2)
+                # unclosed String
+                lexer.setColor(QColor(config.unclosedString), 3)
+                # comments
+                lexer.setColor(QColor(config.commentColor), 6)
+                lexer.setColor(QColor(config.commentColor), 7)
+                # operator
+                lexer.setColor(QColor(config.operatorColor), 8)
+                # keyword
+                lexer.setColor(QColor(config.keywordColor), 11)
+                # property color
+                lexer.setColor(QColor(config.keywordColor), 4)
+                # set fonts
+                lexer.setFont(font, 1)
+                lexer.setFont(font, 2)
+                lexer.setFont(font, 3)
+                lexer.setFont(font, 4)
+                lexer.setFont(font, 5)
+                lexer.setFont(font, 6)
+                lexer.setFont(font, 7)
+                lexer.setFont(font, 8)
+                lexer.setFont(font, 9)
+                lexer.setFont(font, 10)
+                lexer.setFont(font, 11)
+                lexer.setFont(font, 12)
+                lexer.setFont(font, 13)
             lexer.setDefaultFont(font)
             self.setLexer(lexer)
         else:

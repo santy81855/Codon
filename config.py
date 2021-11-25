@@ -92,6 +92,7 @@ curLineColor = "#3B4252"
 selectionTextColor = "#D8DEE9"
 classColor = "#A3BE8C"
 operatorColor = "#EBCB8B"
+unclosedString = "#BF616A"
 
 # more settings
 scrollBarWidth = 12
