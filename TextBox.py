@@ -230,15 +230,15 @@ class Editor(QsciScintilla):
     def wheelEvent(self, event):
         # intercept scrolls on the main textbox so that we can do the same for the previewbox
         QsciScintilla.wheelEvent(self, event)
-        QsciScintilla.wheelEvent(config.mainWin.previewbox, event)
+        QsciScintilla.wheelEvent(config.mainWin.previewOverlay.previewbox, event)
         first = self.firstVisibleLine()
-        config.mainWin.previewbox.setFirstVisibleLine(first)
+        config.mainWin.previewOverlay.previewbox.setFirstVisibleLine(first)
     
     # if the cursor position changes we want to make sure the preview tab has the same first
     # visible line
     def cursorChanged(self):
         first = self.firstVisibleLine()
-        config.mainWin.previewbox.setFirstVisibleLine(first)
+        config.mainWin.previewOverlay.previewbox.setFirstVisibleLine(first)
         config.tabArr[config.currentActiveTextBox].curPos = self.getCursorPosition()
         # do all the setsave stuff here
         global isShortCut
@@ -253,7 +253,7 @@ class Editor(QsciScintilla):
             # update the values in the textbox array
             config.tabArr[config.currentActiveTextBox].contents = config.mainWin.textbox.text()
             # update the value of the preview box
-            config.mainWin.previewbox.setText(config.mainWin.textbox.text())
+            config.mainWin.previewOverlay.previewbox.setText(config.mainWin.textbox.text())
             # update the word count
             text = config.tabArr[config.currentActiveTextBox].contents
             # use regex to split it into a list of words
@@ -262,6 +262,9 @@ class Editor(QsciScintilla):
             config.tabArr[config.currentActiveTextBox].wordCount = len(text)     
         # update the value of the word count
         config.mainWin.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
+        # make sure the previewbox has the same firstvisible line
+        first = self.firstVisibleLine()
+        config.mainWin.previewOverlay.previewbox.setFirstVisibleLine(first)
 
     
     def mousePressEvent(self, event):

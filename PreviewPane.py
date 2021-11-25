@@ -25,7 +25,7 @@ import re
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciLexerCPP, QsciLexerCSharp, QsciLexerJava, QsciLexerJavaScript, QsciLexerJSON
-import TitleBar, Tab, WordCount, PreviewPane, TextBox, main, config
+import TitleBar, Tab, WordCount, PreviewPane, TextBox, main, config, Overlay
 
 class TextPreview(QsciScintilla):
     def __init__(self, parent):
@@ -157,6 +157,7 @@ class TextPreview(QsciScintilla):
             self.setLexer(lexer)
     
     def mouseMoveEvent(self, event):
+        print("here")
         QApplication.setOverrideCursor(Qt.ArrowCursor)
         # call the normal mousemoveevent function so that we don't lose functionality
         #QsciScintilla.mouseMoveEvent(self, event)

@@ -74,7 +74,7 @@ class LanguageSelection(QComboBox):
             # call the lexer for the textbox
             config.mainWin.textbox.getLexer()
             # call the lexer for the preview box
-            config.mainWin.previewbox.getLexer()
+            config.mainWin.previewOverlay.previewbox.getLexer()
     
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.PointingHandCursor)

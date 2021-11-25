@@ -29,6 +29,7 @@ from pathlib import Path
 import ctypes
 import re
 import config
+import Overlay
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -97,29 +98,39 @@ class MainWindow(QWidget):
         self.textlayout.setContentsMargins(0, 10, 0, 0)
         # add the textbox to the horizontal layout to take 80% of the screen
         self.textlayout.addWidget(self.textbox, 80)
-        self.previewbox = PreviewPane.TextPreview(self)
-        self.previewbox.setStyleSheet("""
+        '''
+        self.previewOverlay.previewbox = PreviewPane.TextPreview(self)
+        self.previewOverlay.previewbox.setStyleSheet("""
             border: none;
                                 """)
         previewFont = QFont()
         previewFont.setFamily("Consolas")
         previewFont.setFixedPitch( True )
         previewFont.setPointSize( 4 )
-        self.previewbox.setFont( previewFont )
-        #self.previewbox.resize(mainWin.width() / 3, mainWin.height() - 100)
+        self.previewOverlay.previewbox.setFont( previewFont )
+        #self.previewOverlay.previewbox.resize(mainWin.width() / 3, mainWin.height() - 100)
         # you cannot type on it
-        self.previewbox.setReadOnly(True)
+        self.previewOverlay.previewbox.setReadOnly(True)
         # don't be able to select it
-        #self.previewbox.setTextInteractionFlags(Qt.NoTextInteraction)    
+        #self.previewOverlay.previewbox.setTextInteractionFlags(Qt.NoTextInteraction)    
         # it can't get bigger than a certain width
         # make the width of the preview pane constant and about the same width as the min/max/close
         # corner buttons
-        self.previewbox.setMaximumWidth(175)
-        self.previewbox.setMinimumWidth(175)
+        self.previewOverlay.previewbox.setMaximumWidth(175)
+        self.previewOverlay.previewbox.setMinimumWidth(175)
         # set the tab size to be really small
-        #self.previewbox.setTabStopWidth(4)
+        #self.previewOverlay.previewbox.setTabStopWidth(4)
         # add the preview pane to take 20% of the screen
-        self.textlayout.addWidget(self.previewbox)
+        # create a stacked widget
+        self.textlayout.addWidget(self.previewOverlay.previewbox, 20)
+        '''
+        self.previewOverlay = Overlay.Overlay(self)
+        self.previewOverlay.setMaximumWidth(175)
+        self.previewOverlay.setMinimumWidth(175)
+        #
+        self.textlayout.addWidget(self.previewOverlay)
+        #
+        #self.textlayout.addWidget(Overlay.Overlay(self))
         # add the horizontal box layout to the main vertical layout
         self.layout.addLayout(self.textlayout)
         # create a drop shadow
@@ -466,7 +477,7 @@ class MainWindow(QWidget):
             # update the values in the textbox array
             config.tabArr[config.currentActiveTextBox].contents = self.textbox.text()
             # update the value of the preview box
-            self.previewbox.setText(self.textbox.text())
+            self.previewOverlay.previewbox.setText(self.textbox.text())
             # update the word count
             text = config.tabArr[config.currentActiveTextBox].contents
             # use regex to split it into a list of words
@@ -752,7 +763,7 @@ class MainWindow(QWidget):
         # get the lexer for that tab?
         self.textbox.getLexer()
         # get the lexer
-        self.previewbox.getLexer()
+        self.previewOverlay.previewbox.getLexer()
         # restore the correct word count
         self.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
         # add the correct specifier for the language (first convert from "py" to "python")
@@ -761,9 +772,9 @@ class MainWindow(QWidget):
         elif config.tabArr[config.currentActiveTextBox].language == "plaintext":
             self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText("plain text")
         # add the contents to the preview pane
-        self.previewbox.setText(config.tabArr[config.currentActiveTextBox].contents)
+        self.previewOverlay.previewbox.setText(config.tabArr[config.currentActiveTextBox].contents)
         # get the lexer
-        self.previewbox.getLexer()
+        self.previewOverlay.previewbox.getLexer()
         # place the cursor back where it was
         self.textbox.setFocus()
         #self.textbox.setCursorPosition(1, 5)
@@ -772,7 +783,7 @@ class MainWindow(QWidget):
         self.textbox.setCursorPosition(pos[0], pos[1])
         # make sure the previewbox has the same firstvisible line
         first = self.textbox.firstVisibleLine()
-        self.previewbox.setFirstVisibleLine(first)
+        self.previewOverlay.previewbox.setFirstVisibleLine(first)
         #pos = self.textbox.getCursorPosition()
         # update the cursor position button
         config.mainWin.infobarlayout.itemAt(config.cursorPositionIndex).widget().setText("ln " + str(pos[0]+1) + ", col " + str(pos[1]+1))
@@ -788,9 +799,9 @@ class MainWindow(QWidget):
         # set the lexer
         self.textbox.getLexer()
         # add the contents to the preview pane
-        self.previewbox.setText(contents)
+        self.previewOverlay.previewbox.setText(contents)
         # get the lexer
-        self.previewbox.getLexer()
+        self.previewOverlay.previewbox.getLexer()
         # add the correct wordcount for the tab (will be 0 if new tab)
         self.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
         # add the correct specifier for the language (first convert from "py" to "python")
@@ -805,6 +816,9 @@ class MainWindow(QWidget):
         # place the cursor back where it was
         self.textbox.setFocus()
         self.textbox.setCursorPosition(pos[0], pos[1])
+        # make sure the previewbox has the same firstvisible line
+        first = self.textbox.firstVisibleLine()
+        self.previewOverlay.previewbox.setFirstVisibleLine(first)
 
     def newTab(self, name, filePath, contents):
         global tabCount
