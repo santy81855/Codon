@@ -26,7 +26,7 @@ import re
 from win32api import GetMonitorInfo, MonitorFromPoint
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciLexerCPP, QsciLexerCSharp, QsciLexerJava, QsciLexerJavaScript, QsciLexerJSON
 import TitleBar, Tab, WordCount, PreviewPane, TextBox, main
-import config
+import config, ScrollBar
 
 class Editor(QsciScintilla):
     ARROW_MARKER_NUM = 8
@@ -74,7 +74,7 @@ class Editor(QsciScintilla):
         # remove horizontal scroll bar
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
         # remove vertical scroll bar
-        self.SendScintilla(QsciScintilla.SCI_SETVSCROLLBAR, 0)
+        #self.SendScintilla(QsciScintilla.SCI_SETVSCROLLBAR, 0)
         # auto indent
         self.setAutoIndent(True)
         # detect if lines changed
@@ -83,6 +83,9 @@ class Editor(QsciScintilla):
         self.wasBracket = False    
         # set the wrapmode so that text wraps 
         self.setWrapMode(QsciScintilla.WrapWord)
+        # create a new scrollbar that looks nicer
+        self.scrollbar = ScrollBar.ScrollBar(self)
+        self.replaceVerticalScrollBar(self.scrollbar)
 
     def getLexer(self):
         # get the file types
@@ -225,6 +228,34 @@ class Editor(QsciScintilla):
         # update the current cursor position
         pos = self.getCursorPosition()
         config.mainWin.infobarlayout.itemAt(config.cursorPositionIndex).widget().setText("ln " + str(pos[0]+1) + ", col " + str(pos[1]+1))
+        config.tabArr[config.currentActiveTextBox].curPos = self.getCursorPosition()
+        # do all the setsave stuff here
+        global isShortCut
+        global tabArr
+        # if the last thing pressed was a shortcut we don't really have to do anything since there
+        # are no text differences to store
+        if config.isShortCut:
+            config.isShortCut = False
+        # if it was not a shortcut then we store the text differences
+        else:            
+            config.tabArr[config.currentActiveTextBox].isSaved = False
+            # update the values in the textbox array
+            config.tabArr[config.currentActiveTextBox].contents = config.mainWin.textbox.text()
+            # update the value of the preview box
+            config.mainWin.previewbox.setText(config.mainWin.textbox.text() + config.fiveHundredNewlines)
+            # update the word count
+            text = config.tabArr[config.currentActiveTextBox].contents
+            # use regex to split it into a list of words
+            text = re.findall('[\w\-]+', text)
+            # update the variable storing the wordcount of the tab 
+            config.tabArr[config.currentActiveTextBox].wordCount = len(text)     
+        # update the value of the word count
+        config.mainWin.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
+        # ensure that both textboxes have the same first visible line at all times
+        firstVisible = config.mainWin.textbox.firstVisibleLine()
+        config.mainWin.previewbox.setFirstVisibleLine(firstVisible)
+        first = self.firstVisibleLine()
+        config.mainWin.previewbox.setFirstVisibleLine(first)
         return QsciScintilla.keyReleaseEvent(self, event)
     
     def wheelEvent(self, event):
@@ -253,7 +284,7 @@ class Editor(QsciScintilla):
             # update the values in the textbox array
             config.tabArr[config.currentActiveTextBox].contents = config.mainWin.textbox.text()
             # update the value of the preview box
-            config.mainWin.previewbox.setText(config.mainWin.textbox.text())
+            config.mainWin.previewbox.setText(config.mainWin.textbox.text() + config.fiveHundredNewlines)
             # update the word count
             text = config.tabArr[config.currentActiveTextBox].contents
             # use regex to split it into a list of words

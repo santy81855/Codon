@@ -28,7 +28,7 @@ import subprocess
 from pathlib import Path
 import ctypes
 import re
-import config
+import config, ScrollBar
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -120,6 +120,8 @@ class MainWindow(QWidget):
         #self.previewbox.setTabStopWidth(4)
         # add the preview pane to take 20% of the screen
         self.textlayout.addWidget(self.previewbox)
+        # add teh scrollbar we created
+        #self.textlayout.addWidget(ScrollBar.ScrollBar(self))
         # add the horizontal box layout to the main vertical layout
         self.layout.addLayout(self.textlayout)
         # create a drop shadow
@@ -761,7 +763,7 @@ class MainWindow(QWidget):
         elif config.tabArr[config.currentActiveTextBox].language == "plaintext":
             self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText("plain text")
         # add the contents to the preview pane
-        self.previewbox.setText(config.tabArr[config.currentActiveTextBox].contents)
+        self.previewbox.setText(config.tabArr[config.currentActiveTextBox].contents + config.fiveHundredNewlines)
         # get the lexer
         self.previewbox.getLexer()
         # place the cursor back where it was
@@ -788,7 +790,7 @@ class MainWindow(QWidget):
         # set the lexer
         self.textbox.getLexer()
         # add the contents to the preview pane
-        self.previewbox.setText(contents)
+        self.previewbox.setText(contents + config.fiveHundredNewlines)
         # get the lexer
         self.previewbox.getLexer()
         # add the correct wordcount for the tab (will be 0 if new tab)

@@ -92,6 +92,10 @@ curLineColor = "#3B4252"
 selectionTextColor = "#D8DEE9"
 classColor = "#A3BE8C"
 operatorColor = "#EBCB8B"
+
+# more settings
+scrollBarWidth = 12
+
 # create a dictionary to convert from shorthand to full formatted name
 keywords = {}
 keywords["py"] = "    python"
@@ -127,3 +131,8 @@ languageDict["java"] = "java"
 languageDict["javascript"] = "js"
 languageDict["json"] = "json"
 languageDict["plaintext"] = None
+
+# a string of 500 newlines
+fiveHundredNewlines = ''
+for i in range(0, 500):
+    fiveHundredNewlines += '\n'

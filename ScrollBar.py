@@ -22,33 +22,52 @@ import subprocess
 from pathlib import Path
 import ctypes
 import re
+from PyQt5.Qsci import QsciScintilla
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
+import config
 
-class WordCountButton(QPushButton):
+class ScrollBar(QScrollBar):
     def __init__(self, parent):
-        super(WordCountButton, self).__init__()
+        super(ScrollBar, self).__init__()
         self.parent = parent
-        self.setText("wc:113")
-        self.clicked.connect(self.wordCountClicked)
-        #self.setFixedSize(20, 20)
-        self.adjustSize()
-        #self.setMaximumSize(100, 20)
-        self.setStyleSheet("""
-            QPushButton
-            {
-            background-color: #2E3440; 
-            border:none;
-            color: #8FBCBB;
-            font: 12pt "Consolas";
-            padding-left: 5px;
-            padding-right: 5px;
-            padding-top: 5px;
-            padding-bottom: 5px;
-            }
-                                """)
-                                
         self.setMouseTracking(True)
-    
-    def wordCountClicked(self):
-        print("here")
+        self.setTracking(True)
+        #self.setMinimumWidth(14)
+        #self.setMaximumWidth(14)
+        self.setStyleSheet("""
+        QScrollBar::vertical
+        {
+            border:none;
+            width: """ + str(config.scrollBarWidth) + """px;
+        }
+        QScrollBar::add-line:vertical
+        {
+            border:none;
+            bagkground:none;
+            width: 0px;
+            height: 0px;
+        }
+        QScrollBar::sub-line:vertical
+        {
+            border:none;
+            background:none;
+            width: 0px;
+            height: 0px;
+        }
+        QScrollBar::handle:vertical
+        {
+            background-color:"""+str(config.curLineColor)+"""; 
+            border:none;  
+        }
+        QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical 
+        {
+            background: none;
+        }
+
+                            """)
+        #3B4252
+    def mouseMoveEvent(self, event):
+        QApplication.setOverrideCursor(Qt.ArrowCursor)
+        # call the normal mousemoveevent function so that we don't lose functionality
+        QScrollBar.mouseMoveEvent(self, event)

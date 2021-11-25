@@ -25,7 +25,7 @@ import re
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciLexerCPP, QsciLexerCSharp, QsciLexerJava, QsciLexerJavaScript, QsciLexerJSON
-import TitleBar, Tab, WordCount, PreviewPane, TextBox, main, config
+import TitleBar, Tab, WordCount, PreviewPane, TextBox, main, config, ScrollBar
 
 class TextPreview(QsciScintilla):
     def __init__(self, parent):
@@ -46,7 +46,6 @@ class TextPreview(QsciScintilla):
         
         # variable to track mouse clicking
         self.pressing = False
-        self.start = 0
         # variable to store the position of teh textbox
         self.position = 0
     
@@ -162,24 +161,23 @@ class TextPreview(QsciScintilla):
         #QsciScintilla.mouseMoveEvent(self, event)
         # if they are pressing then we want to scroll a certain amount for every pixel that we move
         if self.pressing:
-            # store the starting position
-            before = self.start
-            # get the new position
-            end = event.pos()
-            # make this new position the starting position for the next movement
-            self.start = end
-            # get the difference in the y axis
-            lines = end.y() - before.y()
-            config.mainWin.textbox.SendScintilla(QsciScintilla.SCI_LINESCROLL, 0, int(lines/2))
+            # calculate the amount of pixels we just moved in terms of the scrollbar
+            ratio = event.pos().y() / self.height()
+            sliderPosition = ratio * config.mainWin.textbox.scrollbar.maximum()
+            config.mainWin.textbox.scrollbar.setSliderPosition(sliderPosition)
             # ensure that both textboxes have the same first visible line at all times
             firstVisible = config.mainWin.textbox.firstVisibleLine()
             self.setFirstVisibleLine(firstVisible)
     
     def mousePressEvent(self, event):
+        ratio = event.pos().y() / self.height()
+        sliderPosition = ratio * config.mainWin.textbox.scrollbar.maximum()
+        config.mainWin.textbox.scrollbar.setSliderPosition(sliderPosition)
+        # ensure that both textboxes have the same first visible line at all times
+        firstVisible = config.mainWin.textbox.firstVisibleLine()
+        self.setFirstVisibleLine(firstVisible)
         # set pressing to true
         self.pressing = True
-        # store the position we pressed at
-        self.start = event.pos()
         # store the position of the cursor when we clicked
         self.position = int(config.mainWin.textbox.SendScintilla(QsciScintilla.SCI_GETCURRENTPOS))
     
