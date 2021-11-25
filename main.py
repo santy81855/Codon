@@ -12,7 +12,7 @@ from PyQt5.QtCore import QObject, QMimeData
 from PyQt5.QtWidgets import QApplication, QMainWindow, QLineEdit, QCompleter, QFileDialog, QGraphicsDropShadowEffect
 from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QPlainTextEdit, QShortcut, QScrollArea
 from PyQt5.QtWidgets import QLabel, QStackedWidget, QMessageBox
-from PyQt5.QtWidgets import QPushButton, QDesktopWidget
+from PyQt5.QtWidgets import QPushButton, QDesktopWidget, QSizeGrip
 from PyQt5.QtWidgets import QVBoxLayout, QScrollBar
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
@@ -30,7 +30,7 @@ import ctypes
 import re
 import config
 
-class MainWindow(QWidget):
+class MainWindow(QMainWindow):
     def __init__(self):
         super(MainWindow, self).__init__()
         self.keyPressEvent = self.keyPressEvent
@@ -43,9 +43,10 @@ class MainWindow(QWidget):
         self.setWindowOpacity(1.0)
         # vertical layout
         self.layout = QVBoxLayout()
+        self.layout.addWidget(sizegrip)
         self.layout.setSpacing(0)
         # add the title bar
-        self.layout.addWidget(TitleBar.MyBar(self))
+        #self.layout.addWidget(TitleBar.MyBar(self))
         # create a horizontal layout to represent the tab bar
         self.tabLayout = QHBoxLayout()
 
@@ -169,10 +170,10 @@ class MainWindow(QWidget):
         self.setGeometry(workingWidth/7, 0, workingWidth - (2 * workingWidth / 7), workingHeight)
         #self.layout.setContentsMargins(MARGIN,0,MARGIN,MARGIN)
         # right has no margin because that is where the other widget will be(preview pane)
-        self.layout.setContentsMargins(config.MARGIN,config.MARGIN,config.MARGIN,config.MARGIN)
+        self.layout.setContentsMargins(config.MARGIN,0,config.MARGIN,config.MARGIN)
         # the min height will be 600 x 600
         self.setMinimumSize(600, 600)
-        self.setWindowFlags(Qt.FramelessWindowHint)
+        #self.setWindowFlags(Qt.FramelessWindowHint)
         self.pressing = False
         self.movingPosition = False
         self.resizingWindow = False
@@ -835,7 +836,7 @@ class MainWindow(QWidget):
             self.setWindowOpacity(0.98)
         else:
             self.setWindowOpacity(1.0)
-
+'''
     def mousePressEvent(self, event):
         pos = event.pos()
         # set pressing to true
@@ -878,7 +879,8 @@ class MainWindow(QWidget):
                 self.resizingWindow = True
                 self.start = event.pos().y()
                 self.bottom = True       
-  
+''' 
+'''
     def mouseMoveEvent(self, event):
         pos = event.pos()
         QApplication.setOverrideCursor(Qt.ArrowCursor)
@@ -973,7 +975,7 @@ class MainWindow(QWidget):
                     self.setGeometry(self.pos().x(), self.pos().y(), self.width(), pos) 
                 elif self.width() - event.pos().x() > 600:
                     self.setGeometry(self.pos().x() + event.pos().x(), self.pos().y(), self.width() - event.pos().x(), self.height())
-            
+      
     # if the mouse button is released then tag pressing as false
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.RightButton:
@@ -989,7 +991,7 @@ class MainWindow(QWidget):
         self.tr = False
         self.tl = False
         self.top = False
-
+'''
 # this sets the icon as your taskbar icon
 myappid = 'Codap'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)

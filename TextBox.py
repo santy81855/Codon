@@ -187,6 +187,31 @@ class Editor(QsciScintilla):
             lexer.setFont(font, 12)
             lexer.setFont(font, 13)
             self.setLexer(lexer)
+            self.textChanged.connect(self.change)
+    
+    def change(self):
+        # do all the setsave stuff here
+        global isShortCut
+        global tabArr
+        # if the last thing pressed was a shortcut we don't really have to do anything since there
+        # are no text differences to store
+        if config.isShortCut:
+            config.isShortCut = False
+        # if it was not a shortcut then we store the text differences
+        else:            
+            config.tabArr[config.currentActiveTextBox].isSaved = False
+            # update the values in the textbox array
+            config.tabArr[config.currentActiveTextBox].contents = config.mainWin.textbox.text()
+            # update the value of the preview box
+            config.mainWin.previewbox.setText(config.mainWin.textbox.text())
+            # update the word count
+            text = config.tabArr[config.currentActiveTextBox].contents
+            # use regex to split it into a list of words
+            text = re.findall('[\w\-]+', text)
+            # update the variable storing the wordcount of the tab 
+            config.tabArr[config.currentActiveTextBox].wordCount = len(text)     
+        # update the value of the word count
+        config.mainWin.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
 
     def mouseMoveEvent(self, event):
         if event.pos().x() < 80:
