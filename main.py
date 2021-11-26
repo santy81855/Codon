@@ -28,12 +28,11 @@ import subprocess
 from pathlib import Path
 import ctypes
 import re
-import config, ScrollBar
+import config, ScrollBar, Find
 
 class MainWindow(QWidget):
     def __init__(self):
         super(MainWindow, self).__init__()
-        self.keyPressEvent = self.keyPressEvent
         # store the main window widget
         global mainWin
         global tabCount
@@ -263,6 +262,23 @@ class MainWindow(QWidget):
         #self.textbox.textChanged.connect(self.setSavedToFalse)
         # to help rounded corners work
         self.setAttribute(Qt.WA_TranslucentBackground)
+        # shortcut to bring up the find menu
+        self.findWin = Find.FindWindow(self)
+        self.shortcut_find = QShortcut(QKeySequence('Ctrl+f'), self)
+        self.shortcut_find.activated.connect(self.showFind)
+        # variable to track if the find box is up
+        self.isFind = False
+
+    def showFind(self):
+        # top left is a Qpoint and it is with respect to the screen
+        topLeft = self.textbox.mapToGlobal(QtCore.QPoint(0,0))
+        width = self.textbox.width()
+        # place it so it is always at the very top but not quite all the way to the left
+        self.findWin.setGeometry(topLeft.x() + width - 400, topLeft.y(),300,30)
+        self.findWin.show()
+        self.findWin.find.setFocus()
+        
+        self.isFind = True
     
     def snapWin(self, direction):
         global rightDown
@@ -426,6 +442,13 @@ class MainWindow(QWidget):
             config.upDown = False
             config.leftDown = False
             config.rightDown = False     
+        # place the find box if it is up
+        if config.mainWin.isFind == True:
+            # top left is a Qpoint and it is with respect to the screen
+            topLeft = config.mainWin.textbox.mapToGlobal(QtCore.QPoint(0,0))
+            width = config.mainWin.textbox.width()
+            # place it so it is always at the very top but not quite all the way to the left
+            config.mainWin.findWin.setGeometry(topLeft.x() + width - 400, topLeft.y(),300,30)
 
     def paintEvent(self, ev):
         painter = QPainter(self)
@@ -650,7 +673,11 @@ class MainWindow(QWidget):
                 config.tabCount -= 1
                 # if we removed the last tab close the program
                 if len(config.tabArr) == 0:
+                    # close the find box if it is up
+                    if config.mainWin.isFind == True:
+                        config.mainWin.findWin.close()
                     self.close()
+                    
                 # if we removed a non active tab then just restore the appropriate tab
                 if returnIndex != -1:
                     config.currentActiveTextBox = returnIndex + 1
@@ -808,7 +835,7 @@ class MainWindow(QWidget):
 
     def on_focusChanged(self, old, new):
         # set the opacity to 1 if not focused
-        if self.isActiveWindow():
+        if self.isActiveWindow() and self.isFind == False:
             self.setWindowOpacity(0.98)
         else:
             self.setWindowOpacity(1.0)

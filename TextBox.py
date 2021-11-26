@@ -271,6 +271,11 @@ class Editor(QsciScintilla):
     def keyPressEvent(self, event):     
         if event.matches(QKeySequence.AddTab):
             config.mainWin.newTabEmpty()
+        
+        # get rid of the find menu when pressing escape
+        elif event.key() == QtCore.Qt.Key_Escape:
+            config.mainWin.isFind = False
+            config.mainWin.findWin.hide()
 
         elif event.key() == 16777220:
             # first determine what type of character we are dealing with

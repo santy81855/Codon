@@ -142,12 +142,23 @@ class MyBar(QWidget):
             ans = msg.exec_()
             # if yes
             if ans != 4194304:
+                # close the find box if it is up
+                if config.mainWin.isFind == True:
+                    self.parent.findWin.close()
                 self.parent.close()
+                
         # if there is 1 tab and it is not saved then just bring up the closeTab dialogue
         elif len(config.tabArr) == 1 and config.tabArr[0].isSaved == False:
+            # close the find box if it is up
+            if config.mainWin.isFind == True:
+                config.mainWin.findWin.close()
             self.parent.closeTab(0, 0)
+            
         # otherwise just close
         else:
+            # close the find box if it is up
+            if config.mainWin.isFind == True:
+                self.parent.findWin.close()
             self.parent.close()
 
     def btn_max_clicked(self):
@@ -165,6 +176,13 @@ class MyBar(QWidget):
             self.parent.showMaximized()
             # toggle isMax so we know the state
             config.isMaximized = True
+            # place the find box if it is up
+            if config.mainWin.isFind == True:
+                # top left is a Qpoint and it is with respect to the screen
+                topLeft = config.mainWin.textbox.mapToGlobal(QtCore.QPoint(0,0))
+                width = config.mainWin.textbox.width()
+                # place it so it is always at the very top but not quite all the way to the left
+                config.mainWin.findWin.setGeometry(topLeft.x() + width - 400, topLeft.y(),300,30)
         # focus on the textbox
         #self.parent.layout.itemAt(textBoxIndex).widget().setFocus()
         self.parent.layout.itemAt(config.textBoxIndex).itemAt(0).widget().setFocus()
@@ -204,6 +222,13 @@ class MyBar(QWidget):
                                     self.mapToGlobal(self.movement).y() - 5,
                                     self.parent.width(),
                                     self.parent.height())
+                # if hte find window is up we want to move it along with the main window
+                if config.mainWin.isFind == True:
+                    # get the position of the window
+                    findpos = config.mainWin.findWin.pos()
+                    width = config.mainWin.findWin.width()
+                    height = config.mainWin.findWin.height()
+                    self.parent.findWin.setGeometry(findpos.x() + self.movement.x(), findpos.y() + self.movement.y(), width, height)
                 self.start = self.end
 
     def mouseReleaseEvent(self, QMouseEvent):
@@ -215,7 +240,6 @@ class MyBar(QWidget):
             globalpos = QCursor()
             monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
             working_resolution = monitor_info.get("Work")
-            print(working_resolution)
             workingWidth = working_resolution[2]
             workingHeight = working_resolution[3]
             leftLimit = workingWidth / 2
@@ -228,6 +252,13 @@ class MyBar(QWidget):
             else:
                 self.parent.setGeometry(workingWidth / 2, 0, workingWidth/2, workingHeight)                            
                 config.rightDown = True
+            # place the find box if it is up
+            if config.mainWin.isFind == True:
+                # top left is a Qpoint and it is with respect to the screen
+                topLeft = config.mainWin.textbox.mapToGlobal(QtCore.QPoint(0,0))
+                width = config.mainWin.textbox.width()
+                # place it so it is always at the very top but not quite all the way to the left
+                config.mainWin.findWin.setGeometry(topLeft.x() + width - 400, topLeft.y(),300,30)
         else:
             self.pressing = False
             self.movingPosition = False
