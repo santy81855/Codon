@@ -102,6 +102,8 @@ class FindWindow(QWidget):
         self.replace.hide()
         self.setMouseTracking(True)
         self.isReplace = False
+        self.findText = ""
+        self.replaceText = ""
 
     def buttonClicked(self):
         # if replace box is not up we add it
@@ -120,7 +122,11 @@ class FindWindow(QWidget):
             config.mainWin.isFind = False
             self.hide()
         else:
-            return QWidget.keyPressEvent(self, event)    
+            return QWidget.keyPressEvent(self, event)
+        
+    def keyReleaseEvent(self, event):
+        # want to update the replace and findtext as we type
+        print("here")
 
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)
