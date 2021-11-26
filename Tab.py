@@ -40,7 +40,7 @@ class Tab(QWidget):
                     numToUse = i
                     config.usedNums[i] = True
                     break
-            self.fileName = "untitled_" + str(numToUse) + ".txt"
+            self.fileName = "doc_" + str(numToUse) + ".txt"
         else:
             self.fileName = fileName
         # add the file path

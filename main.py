@@ -86,7 +86,7 @@ class MainWindow(QWidget):
         font = QFont()
         font.setFamily("Consolas")
         font.setFixedPitch( True )
-        font.setPointSize( 14 )
+        font.setPointSize( config.fontSize )
         self.textbox.setFont( font )
         self.textbox.setStyleSheet("border: none;")
         #------------------------------------------------------------------------#
@@ -297,7 +297,7 @@ class MainWindow(QWidget):
             config.downDown = False
             config.upDown = False
         
-        # snap the window left
+        # snap the window right
         elif direction == "right" and config.downDown == False and config.upDown == False:
             self.setGeometry(workingWidth/2, 0, workingWidth/2, workingHeight)
             # set the right to true and the others to false
@@ -614,13 +614,13 @@ class MainWindow(QWidget):
             config.currentActiveTextBox = tabToClose
 
         # if it is just an untitled empty page, we can set it as saved since nothing is lost
-        if "untitled" in config.tabArr[config.currentActiveTextBox].fileName and config.tabArr[config.currentActiveTextBox].contents == "":
+        if "doc" in config.tabArr[config.currentActiveTextBox].fileName and config.tabArr[config.currentActiveTextBox].contents == "":
             config.tabArr[config.currentActiveTextBox].isSaved = True
     
         # check that tab isSaved before deleting it
         if config.tabArr[config.currentActiveTextBox].isSaved == False:
             msg = QMessageBox()
-            msg.setWindowTitle("Notes")
+            msg.setWindowTitle("Save Changes?")
             msg.setText("Do you want to save changes before closing?")
             msg.setStandardButtons(QMessageBox.Save | QMessageBox.No | QMessageBox.Cancel)
             msg.setDefaultButton(QMessageBox.Save)

@@ -51,11 +51,8 @@ class Editor(QsciScintilla):
         self.setMarginWidth(0, fontmetrics.width("00000"))
         self.setMarginLineNumbers(0, True)
         self.setMarginsBackgroundColor(QColor(config.backgroundColor))
-        #self.setIndentationsUseTabs(True)
-        #self.setTabIndents(True)
         self.setTabWidth(4)
         self.setAutoIndent(True)
-        #self.setIndentationWidth(4)
         self.setColor(QColor(config.textColor))
         self.setEolMode(1)
         # Clickable margin 1 for showing markers
@@ -84,7 +81,8 @@ class Editor(QsciScintilla):
         # create a new scrollbar that looks nicer
         self.scrollbar = ScrollBar.ScrollBar(self)
         self.replaceVerticalScrollBar(self.scrollbar)
-
+        self.horScrollbar = ScrollBar.ScrollBar(self)
+        self.replaceHorizontalScrollBar(self.horScrollbar)
     def getLexer(self):
         # get the file types
         fileType = config.tabArr[config.currentActiveTextBox].language

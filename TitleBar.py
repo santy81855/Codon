@@ -122,12 +122,9 @@ class MyBar(QWidget):
         self.movingPosition = False
         self.resizingWindow = False
         self.setMouseTracking(True)
-        # flags for starting location of resizing window
-        self.left = False
-        self.right = False
-        self.top = False
-        self.tl = False
-        self.tr = False
+        
+        # variable to track right click
+        self.rightpressing = False
     
     # close the main window when the close button in the menu bar is pressed
     def btn_close_clicked(self):
@@ -183,7 +180,7 @@ class MyBar(QWidget):
     
     def mousePressEvent(self, event):
         if event.button() == Qt.RightButton:
-            return
+            self.rightpressing = True
         pos = event.pos()
         self.pressing = True
         if config.isMaximized == False:
@@ -211,6 +208,26 @@ class MyBar(QWidget):
 
     def mouseReleaseEvent(self, QMouseEvent):
         if QMouseEvent.button() == Qt.RightButton:
-            return
-        self.pressing = False
-        self.movingPosition = False
+            self.rightpressing = False
+            self.pressing = False
+            self.movingPosition = False
+            # get the global positionn
+            globalpos = QCursor()
+            monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
+            working_resolution = monitor_info.get("Work")
+            print(working_resolution)
+            workingWidth = working_resolution[2]
+            workingHeight = working_resolution[3]
+            leftLimit = workingWidth / 2
+            rightLimit = workingWidth
+            # if the mouse is in the left half then snap it left
+            if globalpos.pos().x() < leftLimit:
+                self.parent.setGeometry(0, 0, workingWidth/2, workingHeight)
+                config.leftDown = True
+            # otherwise snap it to the right
+            else:
+                self.parent.setGeometry(workingWidth / 2, 0, workingWidth/2, workingHeight)                            
+                config.rightDown = True
+        else:
+            self.pressing = False
+            self.movingPosition = False

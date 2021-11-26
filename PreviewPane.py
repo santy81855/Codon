@@ -41,8 +41,8 @@ class TextPreview(QsciScintilla):
         # make the caret invisible
         self.setCaretWidth(0)
         # make line height smaller
-        self.setExtraDescent(-6)
-        self.setExtraAscent(-6)
+        self.setExtraDescent(-7)
+        self.setExtraAscent(-7)
         
         # variable to track mouse clicking
         self.pressing = False

@@ -41,6 +41,11 @@ class ScrollBar(QScrollBar):
             border:none;
             width: """ + str(config.scrollBarWidth) + """px;
         }
+        QScrollBar::horizontal
+        {
+            border:none;
+            height: """ + str(config.scrollBarWidth) + """px;
+        }
         QScrollBar::add-line:vertical
         {
             border:none;
@@ -55,7 +60,26 @@ class ScrollBar(QScrollBar):
             width: 0px;
             height: 0px;
         }
+        QScrollBar::add-line:horizontal
+        {
+            border:none;
+            bagkground:none;
+            width: 0px;
+            height: 0px;
+        }
+        QScrollBar::sub-line:horizontal
+        {
+            border:none;
+            background:none;
+            width: 0px;
+            height: 0px;
+        }
         QScrollBar::handle:vertical
+        {
+            background-color:"""+str(config.curLineColor)+"""; 
+            border:none;  
+        }
+        QScrollBar::handle:horizontal
         {
             background-color:"""+str(config.curLineColor)+"""; 
             border:none;  
@@ -64,7 +88,10 @@ class ScrollBar(QScrollBar):
         {
             background: none;
         }
-
+        QScrollBar::add-page:vertical, QScrollBar::sub-page:horizontal
+        {
+            background: none;
+        }
                             """)
         #3B4252
     def mouseMoveEvent(self, event):
