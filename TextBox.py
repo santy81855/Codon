@@ -83,6 +83,7 @@ class Editor(QsciScintilla):
         self.replaceVerticalScrollBar(self.scrollbar)
         self.horScrollbar = ScrollBar.ScrollBar(self)
         self.replaceHorizontalScrollBar(self.horScrollbar)
+
     def getLexer(self):
         # get the file types
         fileType = config.tabArr[config.currentActiveTextBox].language
@@ -169,7 +170,6 @@ class Editor(QsciScintilla):
                 lexer.setColor(QColor(config.unclosedString), 12)
                 lexer.setColor(QColor(config.unclosedString), 12+64)
                 # autoindent
-                print(lexer.blockStart())
                 lexer.setAutoIndentStyle(QsciScintilla.AiOpening)
                 # set fonts
                 lexer.setFont(font, 1)

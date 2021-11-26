@@ -39,7 +39,8 @@ class TextPreview(QsciScintilla):
         self.setReadOnly(True)
         self.setColor(QColor(config.textColor))
         # make the caret invisible
-        self.setCaretWidth(0)
+        #self.setCaretWidth(0)
+        self.SendScintilla(QsciScintilla.SCI_SETCARETPERIOD, 0)
         # make line height smaller
         self.setExtraDescent(-7)
         self.setExtraAscent(-7)
@@ -112,8 +113,8 @@ class TextPreview(QsciScintilla):
                 # change the default text color
                 lexer.setDefaultColor(QColor(config.textColor))
                 # comment color
-                lexer.setColor(QColor(config.commentColor), 1)
-                lexer.setColor(QColor(config.commentColor), 1+64)
+                #lexer.setColor(QColor(config.commentColor), 1)
+                #lexer.setColor(QColor(config.commentColor), 1+64)
                 # number
                 lexer.setColor(QColor(config.numberColor), 4)
                 lexer.setColor(QColor(config.numberColor), 4+64)
@@ -135,7 +136,6 @@ class TextPreview(QsciScintilla):
                 lexer.setColor(QColor(config.unclosedString), 12)
                 lexer.setColor(QColor(config.unclosedString), 12+64)
                 # autoindent
-                print(lexer.blockStart())
                 lexer.setAutoIndentStyle(QsciScintilla.AiOpening)
                 # set fonts
                 lexer.setFont(font, 1)

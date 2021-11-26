@@ -454,33 +454,7 @@ class MainWindow(QWidget):
         if len(config.tabStack) > 0:            
             oldTab = config.tabStack.pop()
             self.newTab(oldTab.fileName, oldTab.filePath, oldTab.contents)
-    '''
-    def setSavedToFalse(self):
-        global isShortCut
-        global tabArr
-        # if the last thing pressed was a shortcut we don't really have to do anything since there
-        # are no text differences to store
-        if config.isShortCut:
-            config.isShortCut = False
-        # if it was not a shortcut then we store the text differences
-        else:            
-            config.tabArr[config.currentActiveTextBox].isSaved = False
-            # update the values in the textbox array
-            config.tabArr[config.currentActiveTextBox].contents = self.textbox.text()
-            # update the value of the preview box
-            self.previewbox.setText(self.textbox.text())
-            # update the word count
-            text = config.tabArr[config.currentActiveTextBox].contents
-            # use regex to split it into a list of words
-            text = re.findall('[\w\-]+', text)
-            # update the variable storing the wordcount of the tab to be the length of the list we
-            # just got
-            config.tabArr[config.currentActiveTextBox].wordCount = len(text)
-            # update the value of the word count button
-            config.mainWin.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))        
-        # update the value of the word count
-        config.mainWin.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
-    '''
+
     def saveFile(self):
         global currentActiveTextBox
         global isShortCut
@@ -620,7 +594,7 @@ class MainWindow(QWidget):
         # check that tab isSaved before deleting it
         if config.tabArr[config.currentActiveTextBox].isSaved == False:
             msg = QMessageBox()
-            msg.setWindowTitle("Save Changes?")
+            msg.setWindowTitle("Save " + str(config.tabArr[config.currentActiveTextBox].fileName) + "?")
             msg.setText("Do you want to save changes before closing?")
             msg.setStandardButtons(QMessageBox.Save | QMessageBox.No | QMessageBox.Cancel)
             msg.setDefaultButton(QMessageBox.Save)
