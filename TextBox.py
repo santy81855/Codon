@@ -51,9 +51,11 @@ class Editor(QsciScintilla):
         self.setMarginWidth(0, fontmetrics.width("00000"))
         self.setMarginLineNumbers(0, True)
         self.setMarginsBackgroundColor(QColor(config.backgroundColor))
-        self.setTabIndents(True)
-        self.setIndentationsUseTabs(True)
-        self.setIndentationWidth(4)
+        #self.setIndentationsUseTabs(True)
+        #self.setTabIndents(True)
+        self.setTabWidth(4)
+        self.setAutoIndent(True)
+        #self.setIndentationWidth(4)
         self.setColor(QColor(config.textColor))
         self.setEolMode(1)
         # Clickable margin 1 for showing markers
@@ -73,10 +75,6 @@ class Editor(QsciScintilla):
         self.setCaretLineBackgroundColor(QColor(config.curLineColor))
         # remove horizontal scroll bar
         self.SendScintilla(QsciScintilla.SCI_SETHSCROLLBAR, 0)
-        # remove vertical scroll bar
-        #self.SendScintilla(QsciScintilla.SCI_SETVSCROLLBAR, 0)
-        # auto indent
-        self.setAutoIndent(True)
         # detect if lines changed
         self.cursorPositionChanged.connect(self.cursorChanged)
         # store if opening bracket was our last move
@@ -275,26 +273,91 @@ class Editor(QsciScintilla):
     def keyPressEvent(self, event):     
         if event.matches(QKeySequence.AddTab):
             config.mainWin.newTabEmpty()
-        
+
         elif event.key() == 16777220:
-            if self.wasBracket == True:
-                # do 1 enter
+            # first determine what type of character we are dealing with
+            pos = self.getCursorPosition()
+            line = pos[0]
+            col = pos[1]
+            self.setSelection(line, col, line, col-1)
+            leftChar = self.selectedText()
+            # place the cursor back where it was and get the right character
+            self.setCursorPosition(line, col)
+            self.setSelection(line, col, line, col+1)
+            rightChar = self.selectedText()
+            # put the cursor back in the original position
+            self.setCursorPosition(line, col)
+            if leftChar == "{":
+                if rightChar == "}":
+                    # place two enters
+                    QsciScintilla.keyPressEvent(self, event)
+                    QsciScintilla.keyPressEvent(self, event)
+                    # get the position of the cursor after the two enters
+                    pos = self.getCursorPosition()
+                    line = pos[0]
+                    col = pos[1]
+                    # insert a tab between the braces
+                    self.indent(line-1)
+                    # move cursor to correct spot
+                    self.setCursorPosition(line-1, col+1)
+                # otherwise insert our own closing bracket and then move the cursor back to the
+                # original position
+                else:
+                    self.insert("}")
+                    self.setCursorPosition(line, col)
+                    # place two enters
+                    QsciScintilla.keyPressEvent(self, event)
+                    QsciScintilla.keyPressEvent(self, event)
+                    # get the position of the cursor after the two enters
+                    pos = self.getCursorPosition()
+                    line = pos[0]
+                    col = pos[1]
+                    # insert a tab between the braces
+                    self.indent(line-1)
+                    # move cursor to correct spot
+                    self.setCursorPosition(line-1, col+1)
+                    
+            elif leftChar == "[":
+                if rightChar == "]":
+                    # place two enters
+                    QsciScintilla.keyPressEvent(self, event)
+                    QsciScintilla.keyPressEvent(self, event)
+                    # get the position of the cursor after the two enters
+                    pos = self.getCursorPosition()
+                    line = pos[0]
+                    col = pos[1]
+                    # insert a tab between the braces
+                    self.indent(line-1)
+                    # move cursor to correct spot
+                    self.setCursorPosition(line-1, col+1)
+                # otherwise insert our own closing bracket and then move the cursor back to the
+                # original position
+                else:
+                    self.insert("]")
+                    self.setCursorPosition(line, col)
+                    # place two enters
+                    QsciScintilla.keyPressEvent(self, event)
+                    QsciScintilla.keyPressEvent(self, event)
+                    # get the position of the cursor after the two enters
+                    pos = self.getCursorPosition()
+                    line = pos[0]
+                    col = pos[1]
+                    # insert a tab between the braces
+                    self.indent(line-1)
+                    # move cursor to correct spot
+                    self.setCursorPosition(line-1, col+1)
+            elif leftChar == ":":
+                # for this just press enter and indent
                 QsciScintilla.keyPressEvent(self, event)
                 pos = self.getCursorPosition()
-                # add an indent
-                self.indent(pos[0])
-                # put the cursor at the end of the indent
-                self.setCursorPosition(pos[0], pos[1] + config.TAB_SIZE)
-                self.wasBracket = False
+                line = pos[0]
+                col = pos[1]
+                self.indent(line+1)
+                # put the cursor at the end of the indentation
+                self.setCursorPosition(line, col+1)
             else:
                 return QsciScintilla.keyPressEvent(self, event)
-        
         else:
-            if event.text() == '{':
-                self.wasBracket = True
-            else:
-                # set the bracket false by default
-                self.wasBracket = False
             return QsciScintilla.keyPressEvent(self, event)
         
     def keyReleaseEvent(self, event):

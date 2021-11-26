@@ -57,7 +57,7 @@ class TextPreview(QsciScintilla):
         font = QFont()
         font.setFamily('Consolas')
         font.setFixedPitch(True)
-        font.setPointSize(config.fontSize)
+        font.setPointSize( 4 )
         self.setFont(font)
         self.setMarginsFont(font)
         # if we want to use syntax highlighting
