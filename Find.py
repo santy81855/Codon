@@ -126,7 +126,7 @@ class FindWindow(QWidget):
         
     def keyReleaseEvent(self, event):
         # want to update the replace and findtext as we type
-        print("here")
+        print("findHere")
 
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)

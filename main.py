@@ -275,7 +275,8 @@ class MainWindow(QWidget):
         width = self.textbox.width()
         # place it so it is always at the very top but not quite all the way to the left
         self.findWin.setGeometry(topLeft.x() + width - 400, topLeft.y(),300,30)
-        self.findWin.show()
+        if self.isFind == False:
+            self.findWin.show()
         self.findWin.find.setFocus()
         
         self.isFind = True
