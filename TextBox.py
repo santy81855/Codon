@@ -42,6 +42,7 @@ class Editor(QsciScintilla):
         font.setFamily('Consolas')
         font.setFixedPitch(True)
         font.setPointSize(config.fontSize)
+        font.setWeight(QFont.Bold)
         self.setFont(font)
         self.setMarginsFont(font)
          # Margin 0 is used for line numbers
@@ -83,6 +84,9 @@ class Editor(QsciScintilla):
         self.replaceVerticalScrollBar(self.scrollbar)
         self.horScrollbar = ScrollBar.ScrollBar(self)
         self.replaceHorizontalScrollBar(self.horScrollbar)
+        # variables to track whether we need to indent after pressing enter on a bracket or brace
+        self.openBracket = False # {
+        self.openBrace = False # [
 
     def getLexer(self):
         # get the file types
@@ -91,6 +95,7 @@ class Editor(QsciScintilla):
         # Set the default font
         font = QFont()
         font.setFamily('Consolas')
+        font.setWeight(QFont.Bold)
         font.setFixedPitch(True)
         font.setPointSize(config.fontSize)
         self.setFont(font)
@@ -276,7 +281,17 @@ class Editor(QsciScintilla):
         elif event.key() == QtCore.Qt.Key_Escape:
             config.mainWin.isFind = False
             config.mainWin.findWin.hide()
-
+        
+        # if we open a bracket
+        elif event.text() == "{":
+            self.openBracket = True
+            return QsciScintilla.keyPressEvent(self, event)
+        
+        elif event.text() == "[":
+            self.openBrace = True
+            return QsciScintilla.keyPressEvent(self, event)
+        
+        # if we press enter
         elif event.key() == 16777220:
             # first determine what type of character we are dealing with
             pos = self.getCursorPosition()
@@ -290,7 +305,7 @@ class Editor(QsciScintilla):
             rightChar = self.selectedText()
             # put the cursor back in the original position
             self.setCursorPosition(line, col)
-            if leftChar == "{":
+            if leftChar == "{" and self.openBracket == True:
                 if rightChar == "}":
                     # place two enters
                     QsciScintilla.keyPressEvent(self, event)
@@ -319,8 +334,9 @@ class Editor(QsciScintilla):
                     self.indent(line-1)
                     # move cursor to correct spot
                     self.setCursorPosition(line-1, col+1)
+                self.openBracket = False
                     
-            elif leftChar == "[":
+            elif leftChar == "[" and self.openBrace == True:
                 if rightChar == "]":
                     # place two enters
                     QsciScintilla.keyPressEvent(self, event)
@@ -349,6 +365,8 @@ class Editor(QsciScintilla):
                     self.indent(line-1)
                     # move cursor to correct spot
                     self.setCursorPosition(line-1, col+1)
+                self.openBrace = False
+
             elif leftChar == ":":
                 # for this just press enter and indent
                 QsciScintilla.keyPressEvent(self, event)
