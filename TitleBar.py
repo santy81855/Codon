@@ -188,6 +188,11 @@ class MyBar(QWidget):
         self.parent.layout.itemAt(config.textBoxIndex).itemAt(0).widget().setFocus()
 
     def btn_min_clicked(self):
+        # close the find box if it is up
+        if config.mainWin.isFind == True:
+            config.mainWin.isFind = False
+            self.parent.findWin.hide()
+
         # same with the show minimized
         self.parent.showMinimized()
     
