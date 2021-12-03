@@ -368,6 +368,18 @@ class MainWindow(QWidget):
             config.downDown = False
             config.upDown = False
         
+        # maximize
+        elif direction == "top" and config.upDown == True:
+            # click the max button
+            self.setGeometry(0, 0, workingWidth, workingHeight)
+            config.isMaximized = True
+            #self.layout.itemAt(0).widget().btn_max_clicked()
+            # set all to false
+            config.rightDown = False
+            config.leftDown = False
+            config.downDown = False
+            config.upDown = False
+        
         # snap top left from left
         elif direction == "top" and config.leftDown == True and config.rightDown == False:
             self.setGeometry(0, 0, workingWidth/2, workingHeight/2)
@@ -401,18 +413,6 @@ class MainWindow(QWidget):
             # set left to true and others to false
             config.leftDown = True
             config.rightDown = False
-            config.downDown = False
-            config.upDown = False
-        
-        # maximize
-        elif direction == "top" and config.upDown == True:
-            # click the max button
-            self.setGeometry(0, 0, workingWidth, workingHeight)
-            isMaximized = True
-            #self.layout.itemAt(0).widget().btn_max_clicked()
-            # set all to false
-            config.rightDown = False
-            config.leftDown = False
             config.downDown = False
             config.upDown = False
 
