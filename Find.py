@@ -27,6 +27,108 @@ from PyQt5.Qsci import QsciScintilla
 from win32api import GetMonitorInfo, MonitorFromPoint
 import config
 
+class ReplaceBox(QPlainTextEdit):
+    def __init__(self, parent):
+        super(ReplaceBox, self).__init__()
+        self.parent = parent
+        # create the font
+        font = QFont()
+        font.setFamily('Consolas')
+        font.setFixedPitch(True)
+        font.setPointSize(config.fontSize)
+        self.setPlaceholderText("Find")
+        self.setTabChangesFocus(True)
+        self.setStyleSheet("""
+        border:none;
+        background-color:"""+config.curLineColor+""";
+        color:"""+config.textColor+""";
+                                """)
+        self.setFont(font)
+        self.setLineWrapMode(0)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setMaximumSize(300,35)
+        self.setMouseTracking(True)
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            config.mainWin.isFind = False
+            self.parent.hide()
+        else:
+            # store the letter
+            return QPlainTextEdit.keyPressEvent(self, event)
+    
+    def mouseMoveEvent(self, event):
+        QApplication.setOverrideCursor(Qt.IBeamCursor)
+
+class FindBox(QPlainTextEdit):
+    def __init__(self, parent):
+        super(FindBox, self).__init__()
+        self.parent = parent
+        # create the font
+        font = QFont()
+        font.setFamily('Consolas')
+        font.setFixedPitch(True)
+        font.setPointSize(config.fontSize)
+        self.setPlaceholderText("Find")
+        self.setTabChangesFocus(True)
+        self.setStyleSheet("""
+        border:none;
+        background-color:"""+config.curLineColor+""";
+        color:"""+config.textColor+""";
+                                """)
+        self.setFont(font)
+        self.setLineWrapMode(0)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setMaximumSize(300,35)
+        self.setMouseTracking(True)
+        self.isEnter = False
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            config.mainWin.isFind = False
+            self.parent.hide()
+        # if we press enter we need to move to the next instance
+        elif event.key() == 16777220:
+            if config.mainWin.textbox.hasSelectedText():
+                config.mainWin.textbox.findNext()
+                self.isEnter = True
+        else:
+            self.isEnter = False
+            # store the letter
+            return QPlainTextEdit.keyPressEvent(self, event)
+        
+    def keyReleaseEvent(self, event):
+        # want to update the replace and findtext as we type
+        # search
+        if self.isEnter == False:
+            if config.mainWin.textbox.findFirst(self.toPlainText(), False, False, False, True, True,
+            0, 0, True, False) == False or self.toPlainText() == '':
+                # place the cursor on the position of that tab
+                config.mainWin.textbox.setCursorPosition(config.tabArr[config.currentActiveTextBox].curPos[0],
+            config.tabArr[config.currentActiveTextBox].curPos[1])     
+    
+    def mouseMoveEvent(self, event):
+        QApplication.setOverrideCursor(Qt.IBeamCursor)
+
+class ButtonFormat(QPushButton):
+    def __init__(self, parent, title):
+        super(ButtonFormat, self).__init__()
+        # create the font
+        font = QFont()
+        font.setFamily('Consolas')
+        font.setFixedPitch(True)
+        font.setPointSize(config.fontSize)
+        self.setText(title)
+        self.setFont(font)
+        self.setFixedSize(30,40)
+        self.setStyleSheet("""
+        color:"""+config.textColor+""";
+        border:none;
+                                    """)
+
+
 class FindWindow(QWidget):
     def __init__(self, parent):
         super(FindWindow, self).__init__()
@@ -63,35 +165,18 @@ class FindWindow(QWidget):
         self.buttonvert.addWidget(self.button)
         self.horlayout.addLayout(self.buttonvert)
         # create the find textbox
-        self.find = QPlainTextEdit("")
-        self.find.setPlaceholderText("Find")
-        self.find.setTabChangesFocus(True)
-        self.find.setStyleSheet("""
-        border:none;
-        background-color:"""+config.curLineColor+""";
-        color:"""+config.textColor+""";
-                                """)
-        self.find.setFont(font)
-        self.find.setLineWrapMode(0)
-        self.find.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.find.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.find.setMaximumSize(300,35)
+        self.find = FindBox(self)
         # add it to the toprow horizontal layout
         self.toprow.addWidget(self.find)
+        # add a button to the top row for next and prev
+        self.prev = ButtonFormat(self, "<")
+        self.prev.clicked.connect(self.prevClicked)
+        self.next = ButtonFormat(self, ">")
+        self.next.clicked.connect(self.nextClicked)
+        self.toprow.addWidget(self.prev)
+        self.toprow.addWidget(self.next)
         # create the replace text box
-        self.replace = QPlainTextEdit()
-        self.replace.setPlaceholderText("Replace")
-        self.replace.setTabChangesFocus(True)
-        self.replace.setStyleSheet("""
-        border: none;
-        background-color:"""+config.curLineColor+""";
-        color:"""+config.textColor+""";
-                                """)
-        self.replace.setFont(font)
-        self.replace.setLineWrapMode(0)
-        self.replace.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.replace.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.replace.setMaximumSize(300,35)
+        self.replace = ReplaceBox(self)
         # add the replace box to the bottom horizontal layout
         self.bottomrow.addWidget(self.replace)
         # add the two horizontal layouts to the vertical layout
@@ -104,6 +189,34 @@ class FindWindow(QWidget):
         self.isReplace = False
         self.findText = ""
         self.replaceText = ""
+        self.isCaseSensitive = False
+        self.forward = True
+
+    def nextClicked(self):
+        if config.mainWin.textbox.hasSelectedText():
+            # if we are currently moving backward then we want to swap directions
+            if self.forward == False:
+                # get the current cursor position on the toxbox
+                pos = config.mainWin.textbox.getCursorPosition()
+                # get the length of the selected word
+                x = len(config.mainWin.textbox.selectedText())
+                # find first from beginning of word, so it should reselect itself, but forward this time
+                config.mainWin.textbox.findFirst(self.find.toPlainText(), False, False, False, True, True,
+                pos[0], pos[1] - x, True, False)
+                self.forward = True
+                config.mainWin.textbox.findNext()
+            else:
+                config.mainWin.textbox.findNext()
+    
+    def prevClicked(self):
+        if config.mainWin.textbox.hasSelectedText():
+            if self.forward == True:
+                config.mainWin.textbox.findFirst(self.find.toPlainText(), False, False, False, True, False,
+                -1, -1, True, False)
+                self.forward = False
+                config.mainWin.textbox.findNext()
+            else:
+                config.mainWin.textbox.findNext()
 
     def buttonClicked(self):
         # if replace box is not up we add it
@@ -115,18 +228,7 @@ class FindWindow(QWidget):
             self.replace.hide()
             self.button.setFixedSize(30,35)
             self.buttonvert.addStretch(1)
-            self.isReplace = False
-        
-    def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Escape:
-            config.mainWin.isFind = False
-            self.hide()
-        else:
-            return QWidget.keyPressEvent(self, event)
-        
-    def keyReleaseEvent(self, event):
-        # want to update the replace and findtext as we type
-        print("findHere")
+            self.isReplace = False       
 
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)

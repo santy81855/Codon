@@ -1,0 +1,7 @@
+how to build qscintilla app using pyinstaller
+
+1) Make sure the following line is in the spec file
+hiddenimports=['PyQt5.QtPrintSupport']
+
+2) If it says you don't have the pywin32 dll or whatever then follow instructions over on:
+https://stackoverflow.com/questions/65573140/importerror-no-system-module-pywintypes-pywintypes39-dll
