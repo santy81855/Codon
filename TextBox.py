@@ -376,6 +376,15 @@ class Editor(QsciScintilla):
                 self.indent(line+1)
                 # put the cursor at the end of the indentation
                 self.setCursorPosition(line, col+1)
+            # add an indent if there is a left bracket
+            elif leftChar == "{":
+                QsciScintilla.keyPressEvent(self, event)
+                self.indent(line+1)
+                # move cursor one spot to the right
+                pos = self.getCursorPosition()
+                line = pos[0]
+                col = pos[1]
+                self.setCursorPosition(line, col+1)
             else:
                 return QsciScintilla.keyPressEvent(self, event)
         else:
