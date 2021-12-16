@@ -27,6 +27,10 @@ from PyQt5.Qsci import QsciScintilla
 from win32api import GetMonitorInfo, MonitorFromPoint
 import config
 
+isRegex = False
+isCaseSensitive = False
+isWholeWord = False
+
 class ReplaceBox(QPlainTextEdit):
     def __init__(self, parent):
         super(ReplaceBox, self).__init__()
@@ -36,7 +40,7 @@ class ReplaceBox(QPlainTextEdit):
         font.setFamily('Consolas')
         font.setFixedPitch(True)
         font.setPointSize(config.fontSize)
-        self.setPlaceholderText("Find")
+        self.setPlaceholderText("Replace")
         self.setTabChangesFocus(True)
         self.setStyleSheet("""
         border:none;
@@ -47,7 +51,8 @@ class ReplaceBox(QPlainTextEdit):
         self.setLineWrapMode(0)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setMaximumSize(300,35)
+        self.setMaximumSize(380,35)
+        self.setMinimumSize(300,35)
         self.setMouseTracking(True)
 
     def keyPressEvent(self, event):
@@ -81,7 +86,8 @@ class FindBox(QPlainTextEdit):
         self.setLineWrapMode(0)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setMaximumSize(300,35)
+        self.setMaximumSize(380,35)
+        self.setMinimumSize(300,35)
         self.setMouseTracking(True)
         self.isEnter = False
 
@@ -103,7 +109,7 @@ class FindBox(QPlainTextEdit):
         # want to update the replace and findtext as we type
         # search
         if self.isEnter == False:
-            if config.mainWin.textbox.findFirst(self.toPlainText(), False, False, False, True, True,
+            if config.mainWin.textbox.findFirst(self.toPlainText(), isRegex, isCaseSensitive, isWholeWord, True, True,
             0, 0, True, False) == False or self.toPlainText() == '':
                 # place the cursor on the position of that tab
                 config.mainWin.textbox.setCursorPosition(config.tabArr[config.currentActiveTextBox].curPos[0],
@@ -122,12 +128,23 @@ class ButtonFormat(QPushButton):
         font.setPointSize(config.fontSize)
         self.setText(title)
         self.setFont(font)
-        self.setFixedSize(30,40)
+        self.setFixedSize(30,35)
         self.setStyleSheet("""
-        color:"""+config.textColor+""";
-        border:none;
+        QPushButton
+        {
+            color:"""+config.textColor+""";
+            border:none;
+        }
+        QPushButton::hover
+        {
+            background-color:"""+config.curLineColor+""";
+        }
+        
                                     """)
-
+        self.setMouseTracking(True)
+    
+    def mouseMoveEvent(self, event):
+        QApplication.setOverrideCursor(Qt.PointingHandCursor)
 
 class FindWindow(QWidget):
     def __init__(self, parent):
@@ -135,7 +152,6 @@ class FindWindow(QWidget):
         # set the style for the widget
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setStyleSheet("""
-        border:none;
         background-color:""" + config.backgroundColor + """
                         """)
         self.parent = parent
@@ -149,13 +165,25 @@ class FindWindow(QWidget):
         # create the two horizontal layouts
         self.toprow = QHBoxLayout()
         self.bottomrow = QHBoxLayout()
-        # create a vertical layout to store the button in
+        # create a vertical layout to store the replace toggle button in
         self.buttonvert = QVBoxLayout()
+        # create a horizontal layout to store the buttons in 
+        self.nextprevHor = QHBoxLayout()
+        # create a vertical layout to store the button layout in
+        self.nextprevVert = QVBoxLayout()
         # create a button that will be used to toggle the replacebox
         self.button = QPushButton(">")
         self.button.setStyleSheet("""
-        color:"""+config.textColor+""";
-        border:none;
+        QPushButton
+        {
+            color:"""+config.textColor+""";
+            border:none;
+        }
+        QPushButton::hover
+        {
+            background-color:"""+config.curLineColor+""";
+        }
+        
                                     """)
         self.button.setFont(font)
         self.button.setFixedSize(30,40)
@@ -173,24 +201,159 @@ class FindWindow(QWidget):
         self.prev.clicked.connect(self.prevClicked)
         self.next = ButtonFormat(self, ">")
         self.next.clicked.connect(self.nextClicked)
-        self.toprow.addWidget(self.prev)
-        self.toprow.addWidget(self.next)
+        self.nextprevHor.addWidget(self.prev)
+        self.nextprevHor.addWidget(self.next)
+        self.nextprevVert.addLayout(self.nextprevHor)
         # create the replace text box
         self.replace = ReplaceBox(self)
         # add the replace box to the bottom horizontal layout
         self.bottomrow.addWidget(self.replace)
+        # create buttons for case sensitive or whole word or regex
+        self.caseSensitive = ButtonFormat(self, "Aa")
+        self.caseSensitive.clicked.connect(self.caseSensitiveClicked)
+        self.wholeWord = ButtonFormat(self, "|")
+        self.wholeWord.clicked.connect(self.wholeWordClicked)
+        self.regex = ButtonFormat(self, "*")
+        self.regex.clicked.connect(self.regexClicked)
+        # create the replace next and replace all buttons
+        self.replaceNext = ButtonFormat(self, "1")
+        self.replaceNext.clicked.connect(self.replaceNextClicked)
+        self.replaceAll = ButtonFormat(self, "()")
+        self.replaceAll.clicked.connect(self.replaceAllClicked)
+        # add the buttons to the bottom row
+        self.bottomrow.addWidget(self.replaceNext)
+        self.bottomrow.addWidget(self.replaceAll)
+        self.bottomrow.addStretch(1)
+        # hide them by default
+        self.replaceNext.hide()
+        self.replaceAll.hide()
+        # add all the top row buttons
+        self.toprow.addWidget(self.caseSensitive)
+        self.toprow.addWidget(self.wholeWord)
+        self.toprow.addWidget(self.regex)
         # add the two horizontal layouts to the vertical layout
         self.findlayout.addLayout(self.toprow, 50)
         self.findlayout.addLayout(self.bottomrow, 50)
         self.horlayout.addLayout(self.findlayout)
+        self.horlayout.addLayout(self.nextprevVert)
         self.setLayout(self.horlayout)
         self.replace.hide()
         self.setMouseTracking(True)
         self.isReplace = False
         self.findText = ""
         self.replaceText = ""
-        self.isCaseSensitive = False
         self.forward = True
+
+    def replaceNextClicked(self):
+        if config.mainWin.textbox.hasSelectedText() == True:
+            config.mainWin.textbox.replace(self.replace.toPlainText())
+            if config.mainWin.textbox.findFirst(self.find.toPlainText(), isRegex, isCaseSensitive, isWholeWord, True, True,
+            0, 0, True, False) == False or self.find.toPlainText() == "":
+                # place the cursor on the position of that tab
+                config.mainWin.textbox.setCursorPosition(config.tabArr[config.currentActiveTextBox].curPos[0],
+        config.tabArr[config.currentActiveTextBox].curPos[1])    
+    
+    def replaceAllClicked(self):
+        while config.mainWin.textbox.hasSelectedText() == True:
+            config.mainWin.textbox.replace(self.replace.toPlainText())
+            if config.mainWin.textbox.findFirst(self.find.toPlainText(), isRegex, isCaseSensitive, isWholeWord, True, True,
+            0, 0, True, False) == False or self.find.toPlainText() == "":
+                # place the cursor on the position of that tab
+                config.mainWin.textbox.setCursorPosition(config.tabArr[config.currentActiveTextBox].curPos[0],
+        config.tabArr[config.currentActiveTextBox].curPos[1])    
+    
+    def wholeWordClicked(self):
+        global isWholeWord
+        if isWholeWord == False:
+            isWholeWord = True
+            self.wholeWord.setStyleSheet("""
+            QPushButton
+            {
+                background-color:"""+config.backgroundColor+""";
+                color:#8FBCBB;
+                border:none;
+            }
+            QPushButton::hover
+            {
+                background-color:#8FBCBB;
+                color:"""+config.backgroundColor+""";
+            }
+            """)
+        else:
+            isWholeWord = False
+            self.wholeWord.setStyleSheet("""
+            QPushButton
+            {
+                color:"""+config.textColor+""";
+                border:none;
+            }
+            QPushButton::hover
+            {
+                background-color:"""+config.curLineColor+""";
+            }
+            """)
+    
+    def regexClicked(self):
+        global isRegex
+        if isRegex == False:
+            isRegex = True
+            self.regex.setStyleSheet("""
+            QPushButton
+            {
+                background-color:"""+config.backgroundColor+""";
+                color:#8FBCBB;
+                border:none;
+            }
+            QPushButton::hover
+            {
+                background-color:#8FBCBB;
+                color:"""+config.backgroundColor+""";
+            }
+            """)
+        else:
+            isRegex = False
+            self.regex.setStyleSheet("""
+            QPushButton
+            {
+                color:"""+config.textColor+""";
+                border:none;
+            }
+            QPushButton::hover
+            {
+                background-color:"""+config.curLineColor+""";
+            }
+            """)
+    
+    def caseSensitiveClicked(self):
+        global isCaseSensitive
+        if isCaseSensitive == False:
+            isCaseSensitive = True
+            self.caseSensitive.setStyleSheet("""
+            QPushButton
+            {
+                background-color:"""+config.backgroundColor+""";
+                color:#8FBCBB;
+                border:none;
+            }
+            QPushButton::hover
+            {
+                background-color:#8FBCBB;
+                color:"""+config.backgroundColor+""";
+            }
+            """)
+        else:
+            isCaseSensitive = False
+            self.caseSensitive.setStyleSheet("""
+            QPushButton
+            {
+                color:"""+config.textColor+""";
+                border:none;
+            }
+            QPushButton::hover
+            {
+                background-color:"""+config.curLineColor+""";
+            }
+            """)
 
     def nextClicked(self):
         if config.mainWin.textbox.hasSelectedText():
@@ -222,13 +385,25 @@ class FindWindow(QWidget):
         # if replace box is not up we add it
         if self.isReplace == False:
             self.replace.show()
+            self.replaceNext.show()
+            self.replaceAll.show()
             self.button.setFixedSize(30,80)
+            self.prev.setFixedSize(30,80)
+            self.next.setFixedSize(30,80)
             self.isReplace = True
+            self.replace.setFocus()
         else:
             self.replace.hide()
+            self.replaceNext.hide()
+            self.replaceAll.hide()
             self.button.setFixedSize(30,35)
+            self.prev.setFixedSize(30,35)
+            self.next.setFixedSize(30,35)
             self.buttonvert.addStretch(1)
-            self.isReplace = False       
+            self.nextprevVert.addStretch(1)
+            self.isReplace = False 
+            self.find.setFocus()      
+        
 
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)
