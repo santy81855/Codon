@@ -144,13 +144,14 @@ class ButtonFormat(QPushButton):
         self.setMouseTracking(True)
     
     def mouseMoveEvent(self, event):
-        QApplication.setOverrideCursor(Qt.PointingHandCursor)
+        QApplication.setOverrideCursor(Qt.PointingHandCursor )
 
 class FindWindow(QWidget):
     def __init__(self, parent):
         super(FindWindow, self).__init__()
+        self.setFixedHeight(100)
         # set the style for the widget
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        #self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setStyleSheet("""
         background-color:""" + config.backgroundColor + """
                         """)
@@ -393,6 +394,10 @@ class FindWindow(QWidget):
             self.isReplace = True
             self.replace.setFocus()
         else:
+            self.hide()
+            self.parent.isFind = False
+            self.parent.showFind()
+            """
             self.replace.hide()
             self.replaceNext.hide()
             self.replaceAll.hide()
@@ -403,7 +408,7 @@ class FindWindow(QWidget):
             self.nextprevVert.addStretch(1)
             self.isReplace = False 
             self.find.setFocus()      
-        
+            """
 
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)

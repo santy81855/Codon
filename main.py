@@ -118,7 +118,13 @@ class MainWindow(QWidget):
         # set the tab size to be really small
         #self.previewbox.setTabStopWidth(4)
         # add the preview pane to take 20% of the screen
-        self.textlayout.addWidget(self.previewbox)
+        # create a vertical layout to store the preview and the find
+        self.findWin = Find.FindWindow(self)
+        self.findlayout = QVBoxLayout()
+        self.findlayout.addWidget(self.findWin)
+        self.findlayout.addWidget(self.previewbox)
+        self.textlayout.addLayout(self.findlayout)
+        self.findWin.hide()
         # add teh scrollbar we created
         #self.textlayout.addWidget(ScrollBar.ScrollBar(self))
         # add the horizontal box layout to the main vertical layout
@@ -263,7 +269,6 @@ class MainWindow(QWidget):
         # to help rounded corners work
         self.setAttribute(Qt.WA_TranslucentBackground)
         # shortcut to bring up the find menu
-        self.findWin = Find.FindWindow(self)
         self.shortcut_find = QShortcut(QKeySequence('Ctrl+f'), self)
         self.shortcut_find.activated.connect(self.showFind)
         # variable to track if the find box is up
@@ -271,15 +276,24 @@ class MainWindow(QWidget):
 
     def showFind(self):
         # top left is a Qpoint and it is with respect to the screen
-        topLeft = self.textbox.mapToGlobal(QtCore.QPoint(0,0))
-        width = self.textbox.width()
+        #topLeft = self.textbox.mapToGlobal(QtCore.QPoint(0,0))
+        #width = self.textbox.width()
         # place it so it is always at the very top but not quite all the way to the left
-        self.findWin.setGeometry(topLeft.x() + width - 548, topLeft.y(),300,30)
+        #self.findWin.setGeometry(topLeft.x() + width - 548, topLeft.y(),300,30)
         if self.isFind == False:
+            print("here")
             self.findWin.show()
-        self.findWin.find.setFocus()
-        
-        self.isFind = True
+            self.findWin.replace.hide()
+            self.findWin.replaceNext.hide()
+            self.findWin.replaceAll.hide()
+            self.findWin.button.setFixedSize(30,35)
+            self.findWin.prev.setFixedSize(30,35)
+            self.findWin.next.setFixedSize(30,35)
+            self.findWin.buttonvert.addStretch(1)
+            self.findWin.nextprevVert.addStretch(1)
+            self.findWin.isReplace = False 
+            self.findWin.find.setFocus()      
+            self.isFind = True
     
     def snapWin(self, direction):
         global rightDown
