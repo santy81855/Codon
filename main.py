@@ -1,4 +1,5 @@
 import sys
+from screeninfo import get_monitors
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
 import TitleBar, Tab, WordCount, PreviewPane, TextBox, language, CurrentCursor
@@ -293,6 +294,10 @@ class MainWindow(QWidget):
             self.findWin.isReplace = False 
             self.findWin.find.setFocus()      
             self.isFind = True
+        print("hey")
+        print(QDesktopWidget().screenGeometry(self))
+        for m in get_monitors():
+            print(m) # prints the info of all monitors including which one is the primary one
     
     def snapWin(self, direction):
         global rightDown
@@ -1001,6 +1006,9 @@ class MainWindow(QWidget):
 # this sets the icon as your taskbar icon
 myappid = 'Codap'
 ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
+# to be scaling aware
+user32 = ctypes.windll.user32 
+user32.SetProcessDPIAware()
 
 stylesheet2 = """
     QWidget {
@@ -1012,8 +1020,11 @@ stylesheet2 = """
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setWindowIcon(QtGui.QIcon('logo.ico')) # sets the logo
     #app.setStyleSheet(stylesheet2)
     app.setCursorFlashTime(config.cursorFlashTime)
+    for m in get_monitors():
+        print(m) # prints the info of all monitors including which one is the primary one
     
     screen_resolution = app.desktop().screenGeometry()
     width, height = screen_resolution.width(), screen_resolution.height()
@@ -1024,9 +1035,12 @@ if __name__ == "__main__":
     else:
         startingLocation = config.res[key]
     mw = MainWindow()
-    mw.show()
+    #mw.show()
+    monitor = QDesktopWidget().screenGeometry(0)
+    mw.move(monitor.left(), monitor.top())
+    mw.showMaximized()
+    mw.layout.itemAt(0).widget().btn_max_clicked()
     # make the textbox be automatically in focus on startup
-    #mainWin.layout.itemAt(textBoxIndex).widget().setFocus()
     config.mainWin.layout.itemAt(config.textBoxIndex).itemAt(0).widget().setFocus()
 
     sys.exit(app.exec_())

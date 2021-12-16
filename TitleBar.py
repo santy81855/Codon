@@ -154,16 +154,19 @@ class MyBar(QWidget):
 
     def btn_max_clicked(self):
         global isMaximized
-
+        monitor = QDesktopWidget().screenGeometry(self.parent)
+    
         # if it is clicked while we are currently maximized, then it means we need to revert to
         # lastPosition
         if config.isMaximized:
+            #self.parent.move(monitor.left(), monitor.top())
             self.parent.showNormal()
             config.isMaximized = False
         # if it is not maximized
         else:
             # if the maximize button is pressed on the menubar, it should call the maximize function of
             # the parent window. It is a standard function, so it is not written in this code
+            #self.parent.move(monitor.left(), monitor.top())
             self.parent.showMaximized()
             # toggle isMax so we know the state
             config.isMaximized = True
