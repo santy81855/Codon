@@ -59,6 +59,11 @@ class ReplaceBox(QPlainTextEdit):
         if event.key() == QtCore.Qt.Key_Escape:
             config.mainWin.isFind = False
             self.parent.hide()
+
+        # if press enter on replace box then replace next
+        elif event.key() == 16777220:
+            self.parent.replaceNextClicked()
+
         else:
             # store the letter
             return QPlainTextEdit.keyPressEvent(self, event)
@@ -76,7 +81,6 @@ class FindBox(QPlainTextEdit):
         font.setFixedPitch(True)
         font.setPointSize(config.fontSize)
         self.setPlaceholderText("Find")
-        self.setTabChangesFocus(True)
         self.setStyleSheet("""
         border:none;
         background-color:"""+config.curLineColor+""";
@@ -100,6 +104,12 @@ class FindBox(QPlainTextEdit):
             if config.mainWin.textbox.hasSelectedText():
                 config.mainWin.textbox.findNext()
                 self.isEnter = True
+        
+        # if we press tab when on the find box we just move to the next
+        elif event.text() == "\t":
+            if self.parent.isReplace == False:
+                self.parent.buttonClicked()
+
         else:
             self.isEnter = False
             # store the letter
@@ -149,9 +159,8 @@ class ButtonFormat(QPushButton):
 class FindWindow(QWidget):
     def __init__(self, parent):
         super(FindWindow, self).__init__()
-        self.setFixedHeight(100)
+        self.setMaximumHeight(50)
         # set the style for the widget
-        #self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
         self.setStyleSheet("""
         background-color:""" + config.backgroundColor + """
                         """)
@@ -219,7 +228,7 @@ class FindWindow(QWidget):
         # create the replace next and replace all buttons
         self.replaceNext = ButtonFormat(self, "1")
         self.replaceNext.clicked.connect(self.replaceNextClicked)
-        self.replaceAll = ButtonFormat(self, "()")
+        self.replaceAll = ButtonFormat(self, "N")
         self.replaceAll.clicked.connect(self.replaceAllClicked)
         # add the buttons to the bottom row
         self.bottomrow.addWidget(self.replaceNext)
@@ -385,6 +394,7 @@ class FindWindow(QWidget):
     def buttonClicked(self):
         # if replace box is not up we add it
         if self.isReplace == False:
+            self.setMaximumHeight(100)
             self.replace.show()
             self.replaceNext.show()
             self.replaceAll.show()
@@ -395,6 +405,7 @@ class FindWindow(QWidget):
             self.replace.setFocus()
         else:
             self.hide()
+            self.setMaximumHeight(50)
             self.parent.isFind = False
             self.parent.showFind()
             """
