@@ -281,7 +281,6 @@ class MainWindow(QWidget):
         # place it so it is always at the very top but not quite all the way to the left
         #self.findWin.setGeometry(topLeft.x() + width - 548, topLeft.y(),300,30)
         if self.isFind == False:
-            print("here")
             self.findWin.show()
             self.findWin.replace.hide()
             self.findWin.replaceNext.hide()
@@ -457,22 +456,15 @@ class MainWindow(QWidget):
             config.upDown = False
             config.leftDown = False
             config.rightDown = False     
-        # place the find box if it is up
-        if config.mainWin.isFind == True:
-            # top left is a Qpoint and it is with respect to the screen
-            topLeft = config.mainWin.textbox.mapToGlobal(QtCore.QPoint(0,0))
-            width = config.mainWin.textbox.width()
-            # place it so it is always at the very top but not quite all the way to the left
-            config.mainWin.findWin.setGeometry(topLeft.x() + width - 400, topLeft.y(),300,30)
-
+    
     def paintEvent(self, ev):
         painter = QPainter(self)
         painter.setBrush(QColor("#2E3440"))
         # removes the black border around the window
         painter.setPen(QColor(0,0,0,0))
         rect = QRectF(ev.rect())
-        painter.drawRoundedRect(rect, 10, 10)   
-
+        painter.drawRoundedRect(rect, 0, 0)   
+    
     def tabJump(self, index):
         if len(config.tabArr) > index-1:
             config.tabArr[index-1].tabClicked()
@@ -688,9 +680,6 @@ class MainWindow(QWidget):
                 config.tabCount -= 1
                 # if we removed the last tab close the program
                 if len(config.tabArr) == 0:
-                    # close the find box if it is up
-                    if config.mainWin.isFind == True:
-                        config.mainWin.findWin.close()
                     self.close()
                     
                 # if we removed a non active tab then just restore the appropriate tab
