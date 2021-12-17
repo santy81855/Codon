@@ -276,6 +276,11 @@ class MainWindow(QWidget):
     def showFind(self):
         if self.isFind == False:
             self.findWin.show()
+            # if there is any selected text when we press ctrl+f, it should automatically appear in
+            # the find box
+            if self.textbox.hasSelectedText() == True:
+                self.findWin.find.setPlainText(self.textbox.selectedText())
+                self.findWin.find.selectAll()
             self.findWin.replace.hide()
             self.findWin.replaceNext.hide()
             self.findWin.replaceAll.hide()

@@ -46,6 +46,8 @@ class ReplaceBox(QPlainTextEdit):
         border:none;
         background-color:"""+config.curLineColor+""";
         color:"""+config.textColor+""";
+        selection-background-color:"""+config.selectionColor+""";
+        selection-color:"""+config.selectionTextColor+""";
                                 """)
         self.setFont(font)
         self.setLineWrapMode(0)
@@ -85,6 +87,8 @@ class FindBox(QPlainTextEdit):
         border:none;
         background-color:"""+config.curLineColor+""";
         color:"""+config.textColor+""";
+        selection-background-color:"""+config.selectionColor+""";
+        selection-color:"""+config.selectionTextColor+""";
                                 """)
         self.setFont(font)
         self.setLineWrapMode(0)
@@ -272,7 +276,7 @@ class FindWindow(QWidget):
         col = cur[1]
         num = 0
 
-        while config.mainWin.textbox.hasSelectedText() == True:
+        while config.mainWin.textbox.hasSelectedText() == True and self.find.toPlainText() != "":
             config.mainWin.textbox.replace(self.replace.toPlainText())
             if config.mainWin.textbox.hasSelectedText() == True and self.find.toPlainText() in self.replace.toPlainText():
                 # make sure that we don't repeat steps
