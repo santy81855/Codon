@@ -135,7 +135,10 @@ class ButtonFormat(QPushButton):
         font = QFont()
         font.setFamily('Consolas')
         font.setFixedPitch(True)
-        font.setPointSize(config.fontSize)
+        if title == "<" or title == ">":
+            font.setPointSize(config.fontSize)    
+        else:
+            font.setPointSize(config.fontSize - 4)
         self.setText(title)
         self.setFont(font)
         self.setFixedSize(30,35)
@@ -221,14 +224,14 @@ class FindWindow(QWidget):
         # create buttons for case sensitive or whole word or regex
         self.caseSensitive = ButtonFormat(self, "Aa")
         self.caseSensitive.clicked.connect(self.caseSensitiveClicked)
-        self.wholeWord = ButtonFormat(self, "|")
+        self.wholeWord = ButtonFormat(self, "|aa|")
         self.wholeWord.clicked.connect(self.wholeWordClicked)
-        self.regex = ButtonFormat(self, "*")
+        self.regex = ButtonFormat(self, "Re*")
         self.regex.clicked.connect(self.regexClicked)
         # create the replace next and replace all buttons
-        self.replaceNext = ButtonFormat(self, "1")
+        self.replaceNext = ButtonFormat(self, "R")
         self.replaceNext.clicked.connect(self.replaceNextClicked)
-        self.replaceAll = ButtonFormat(self, "N")
+        self.replaceAll = ButtonFormat(self, "RA")
         self.replaceAll.clicked.connect(self.replaceAllClicked)
         # add the buttons to the bottom row
         self.bottomrow.addWidget(self.replaceNext)
