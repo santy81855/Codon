@@ -1,5 +1,4 @@
 import sys
-from screeninfo import get_monitors
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
 import TitleBar, Tab, WordCount, PreviewPane, TextBox, language, CurrentCursor
