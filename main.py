@@ -577,36 +577,40 @@ class MainWindow(QWidget):
         global isShortCut
         config.isShortCut = True
         #QFileDialog.getOpenFileName(self, "Files", "All Files (*)")
-        aTuple = QFileDialog.getOpenFileName(self, 'Open: ', '', 'All Files (*)')
-        if aTuple[0] != '':
-            # read the contents of the file into a variable
-            with open(aTuple[0]) as f:
-            #   lines = f.readlines()
-                content = f.read()
-            f.close()
+        # all the files get returned in a list of tuples
+        aTuple = QFileDialog.getOpenFileNames(self, 'Open: ', '', 'All Files (*)')
+        print(aTuple)
+        print(len(aTuple[0]))
+        for i in range(0, len(aTuple[0])):
+            if aTuple[0][i] != '':
+                # read the contents of the file into a variable
+                with open(aTuple[0][i]) as f:
+                #   lines = f.readlines()
+                    content = f.read()
+                f.close()
 
-            tabFound = False
-            # see if you are opening a file that is already open in the editor
-            for tab in config.tabArr:
-                if tab.filePath == aTuple[0]:
-                    tabFound = True
-                    tab.tabClicked()
-            if tabFound == False:
-                # get the name of the file
-                name = aTuple[0]
-                end = len(name) - 1
-                c = name[end]
-                start = end
-                while c != '/' and c != '"\"':
-                    start -= 1
-                    c = name[start]
-                finalName = ''
-                for i in range(start+1, end +1 ):
-                    finalName = finalName + name[i]
-                # create a new tab with the name of the file that was opened
-                self.newTab(finalName, aTuple[0], content)
-                # put the cursor at the end of the text
-                #self.textbox.moveCursor(QTextCursor.End)
+                tabFound = False
+                # see if you are opening a file that is already open in the editor
+                for tab in config.tabArr:
+                    if tab.filePath == aTuple[0][i]:
+                        tabFound = True
+                        tab.tabClicked()
+                if tabFound == False:
+                    # get the name of the file
+                    name = aTuple[0][i]
+                    end = len(name) - 1
+                    c = name[end]
+                    start = end
+                    while c != '/' and c != '"\"':
+                        start -= 1
+                        c = name[start]
+                    finalName = ''
+                    for j in range(start+1, end + 1):
+                        finalName = finalName + name[j]
+                    # create a new tab with the name of the file that was opened
+                    self.newTab(finalName, aTuple[0][i], content)
+                    # put the cursor at the end of the text
+                    #self.textbox.moveCursor(QTextCursor.End)
 
     def closeTabHelper(self):
         self.closeTab(config.currentActiveTextBox, config.currentActiveTextBox)
