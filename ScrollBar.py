@@ -98,3 +98,5 @@ class ScrollBar(QScrollBar):
         QApplication.setOverrideCursor(Qt.ArrowCursor)
         # call the normal mousemoveevent function so that we don't lose functionality
         QScrollBar.mouseMoveEvent(self, event)
+        first = config.mainWin.textbox.firstVisibleLine()
+        config.mainWin.previewbox.setFirstVisibleLine(first)
