@@ -579,8 +579,6 @@ class MainWindow(QWidget):
         #QFileDialog.getOpenFileName(self, "Files", "All Files (*)")
         # all the files get returned in a list of tuples
         aTuple = QFileDialog.getOpenFileNames(self, 'Open: ', '', 'All Files (*)')
-        print(aTuple)
-        print(len(aTuple[0]))
         for i in range(0, len(aTuple[0])):
             if aTuple[0][i] != '':
                 # read the contents of the file into a variable
