@@ -113,8 +113,8 @@ class MainWindow(QWidget):
         # it can't get bigger than a certain width
         # make the width of the preview pane constant and about the same width as the min/max/close
         # corner buttons
-        self.previewbox.setMaximumWidth(175)
-        self.previewbox.setMinimumWidth(175)
+        self.previewbox.setMaximumWidth(300)
+        self.previewbox.setMinimumWidth(300)
         # set the tab size to be really small
         #self.previewbox.setTabStopWidth(4)
         # add the preview pane to take 20% of the screen
