@@ -267,13 +267,36 @@ class FindWindow(QWidget):
         config.tabArr[config.currentActiveTextBox].curPos[1])    
     
     def replaceAllClicked(self):
+        cur = config.mainWin.textbox.getCursorPosition()
+        line = cur[0]
+        col = cur[1]
+        num = 0
+
         while config.mainWin.textbox.hasSelectedText() == True:
             config.mainWin.textbox.replace(self.replace.toPlainText())
-            if config.mainWin.textbox.findFirst(self.find.toPlainText(), isRegex, isCaseSensitive, isWholeWord, True, True,
-            0, 0, True, False) == False or self.find.toPlainText() == "":
-                # place the cursor on the position of that tab
-                config.mainWin.textbox.setCursorPosition(config.tabArr[config.currentActiveTextBox].curPos[0],
+            if config.mainWin.textbox.hasSelectedText() == True and self.find.toPlainText() in self.replace.toPlainText():
+                # make sure that we don't repeat steps
+                tempCur = config.mainWin.textbox.getCursorPosition()
+                tempLine = tempCur[0]
+                tempCol = tempCur[1]
+                # get the length of the word - the length of the substring
+                diff = len(self.replace.toPlainText()) - len(self.find.toPlainText())
+                if tempLine == line and tempCol - diff == col and num > 0:
+                    # replace the last replacement with the find text since this method does 1 replacement too many
+                    config.mainWin.textbox.findFirst(self.replace.toPlainText(), isRegex, isCaseSensitive,
+                    isWholeWord, True, True, 0, 0, True, False)
+                    config.mainWin.textbox.replace(self.find.toPlainText())
+                    break
+                num += 1
+                config.mainWin.textbox.findNext()                
+            else: 
+                if config.mainWin.textbox.findFirst(self.find.toPlainText(), isRegex, isCaseSensitive,
+        isWholeWord, True, True, 0, 0, True, False) == False or self.find.toPlainText() == "":
+                    break
+                
+        config.mainWin.textbox.setCursorPosition(config.tabArr[config.currentActiveTextBox].curPos[0],
         config.tabArr[config.currentActiveTextBox].curPos[1])    
+    
     
     def wholeWordClicked(self):
         global isWholeWord
