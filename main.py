@@ -171,7 +171,6 @@ class MainWindow(QWidget):
         # get the current working resolution to account for things like the taskbar
         monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
         working_resolution = monitor_info.get("Work")
-        print(working_resolution)
         workingWidth = working_resolution[2]
         workingHeight = working_resolution[3]
         self.setGeometry(workingWidth/7, 0, workingWidth - (2 * workingWidth / 7), workingHeight)
@@ -276,11 +275,6 @@ class MainWindow(QWidget):
         self.isFind = False
 
     def showFind(self):
-        # top left is a Qpoint and it is with respect to the screen
-        #topLeft = self.textbox.mapToGlobal(QtCore.QPoint(0,0))
-        #width = self.textbox.width()
-        # place it so it is always at the very top but not quite all the way to the left
-        #self.findWin.setGeometry(topLeft.x() + width - 548, topLeft.y(),300,30)
         if self.isFind == False:
             self.findWin.show()
             self.findWin.replace.hide()
@@ -294,10 +288,6 @@ class MainWindow(QWidget):
             self.findWin.isReplace = False 
             self.findWin.find.setFocus()      
             self.isFind = True
-        print("hey")
-        print(QDesktopWidget().screenGeometry(self))
-        for m in get_monitors():
-            print(m) # prints the info of all monitors including which one is the primary one
     
     def snapWin(self, direction):
         global rightDown
@@ -305,6 +295,7 @@ class MainWindow(QWidget):
         global upDown
         global downDown
         global isMaximized
+        
         # start with this so that we can maximize and restore over and over with the up button
         self.showNormal()
         isMaximized = False
@@ -313,10 +304,32 @@ class MainWindow(QWidget):
         working_resolution = monitor_info.get("Work")
         workingWidth = working_resolution[2]
         workingHeight = working_resolution[3]
+        # determine if the taskbar is present by comparing the normal height to the working height
+        isTaskbar = True
+        difference = 100000
+        for i in range(0, QDesktopWidget().screenCount()):
+            if workingHeight == QDesktopWidget().screenGeometry(i).height():
+                isTaskbar = False
+                break
+            # store the smallest difference to determine the correct difference due to the taskbar
+            elif abs(QDesktopWidget().screenGeometry(i).height() - workingHeight) < difference:
+                difference = QDesktopWidget().screenGeometry(i).height() - workingHeight
+
+        # if the taskbar is present then use the working height
+        if isTaskbar == True:
+            workingWidth = QDesktopWidget().screenGeometry(self).width()
+            workingHeight = QDesktopWidget().screenGeometry(self).height() - difference
+        # if the taskbar is not present then just use the normal width and height
+        else:
+            workingWidth = QDesktopWidget().screenGeometry(self).width()
+            workingHeight = QDesktopWidget().screenGeometry(self).height()
         
+        monitor = QDesktopWidget().screenGeometry(self)
+        self.move(monitor.left(), monitor.top())
+
         # middle window from right
         if direction == "left" and config.rightDown == True:
-            self.setGeometry(workingWidth/4, 0, workingWidth/2, workingHeight)
+            self.setGeometry(monitor.left() + workingWidth/4, monitor.top(), workingWidth/2, workingHeight)
             # set the m all to false
             config.rightDown = False
             config.leftDown = False
@@ -325,7 +338,7 @@ class MainWindow(QWidget):
         
         # middle window from left
         elif direction == "right" and config.leftDown == True:
-            self.setGeometry(workingWidth/4, 0, workingWidth/2, workingHeight)
+            self.setGeometry(monitor.left() + workingWidth/4, monitor.top(), workingWidth/2, workingHeight)
             # set the m all to false
             config.rightDown = False
             config.leftDown = False
@@ -334,7 +347,7 @@ class MainWindow(QWidget):
         
         # snap the window right
         elif direction == "right" and config.downDown == False and config.upDown == False:
-            self.setGeometry(workingWidth/2, 0, workingWidth/2, workingHeight)
+            self.setGeometry(monitor.left() + workingWidth/2, monitor.top(), workingWidth/2, workingHeight)
             # set the right to true and the others to false
             config.rightDown = True
             config.leftDown = False
@@ -343,7 +356,7 @@ class MainWindow(QWidget):
         
         # snap bottom right from bottom
         elif direction == "right" and config.downDown == True and config.upDown == False:
-            self.setGeometry(workingWidth/2, workingHeight/2, workingWidth/2, workingHeight/2)
+            self.setGeometry(monitor.left() + workingWidth/2, monitor.top() + workingHeight/2, workingWidth/2, workingHeight/2)
             # set all to false
             config.rightDown = False
             config.leftDown = False
@@ -352,7 +365,7 @@ class MainWindow(QWidget):
         
         # snap bottom right from right
         elif direction == "bottom" and config.leftDown == False and config.rightDown == True:
-            self.setGeometry(workingWidth/2, workingHeight/2, workingWidth/2, workingHeight/2)
+            self.setGeometry(monitor.left() + workingWidth/2, monitor.top() + workingHeight/2, workingWidth/2, workingHeight/2)
             # set all to false
             config.rightDown = False
             config.leftDown = False
@@ -361,7 +374,7 @@ class MainWindow(QWidget):
 
         # snap bottom left from bottom
         elif direction == "left" and config.downDown == True and config.upDown == False:
-            self.setGeometry(0, workingHeight/2, workingWidth/2, workingHeight/2)
+            self.setGeometry(monitor.left(), monitor.top() + workingHeight/2, workingWidth/2, workingHeight/2)
             # set all to false
             config.rightDown = False
             config.leftDown = False
@@ -370,7 +383,7 @@ class MainWindow(QWidget):
         
         # snap bottom left from left
         elif direction == "bottom" and config.leftDown == True and config.rightDown == False:
-            self.setGeometry(0, workingHeight/2, workingWidth/2, workingHeight/2)
+            self.setGeometry(monitor.left(), monitor.top() + workingHeight/2, workingWidth/2, workingHeight/2)
             # set all to false
             config.rightDown = False
             config.leftDown = False
@@ -379,7 +392,7 @@ class MainWindow(QWidget):
         
         # snap top left from top
         elif direction == "left" and config.downDown == False and config.upDown == True:
-            self.setGeometry(0, 0, workingWidth/2, workingHeight/2)
+            self.setGeometry(monitor.left(), monitor.top(), workingWidth/2, workingHeight/2)
             # set all to false
             config.rightDown = False
             config.leftDown = False
@@ -389,7 +402,7 @@ class MainWindow(QWidget):
         # maximize
         elif direction == "top" and config.upDown == True:
             # click the max button
-            self.setGeometry(0, 0, workingWidth, workingHeight)
+            self.setGeometry(monitor.left(), monitor.top(), workingWidth, workingHeight)
             config.isMaximized = True
             #self.layout.itemAt(0).widget().btn_max_clicked()
             # set all to false
@@ -400,7 +413,7 @@ class MainWindow(QWidget):
         
         # snap top left from left
         elif direction == "top" and config.leftDown == True and config.rightDown == False:
-            self.setGeometry(0, 0, workingWidth/2, workingHeight/2)
+            self.setGeometry(monitor.left(), monitor.top(), workingWidth/2, workingHeight/2)
             # set all to false
             config.rightDown = False
             config.leftDown = False
@@ -409,7 +422,7 @@ class MainWindow(QWidget):
         
         # snap top right from top
         elif direction == "right" and config.downDown == False and config.upDown == True:
-            self.setGeometry(workingWidth/2, 0, workingWidth/2, workingHeight/2)
+            self.setGeometry(monitor.left() + workingWidth / 2, monitor.top(), workingWidth/2, workingHeight/2)
             # set all to false
             config.rightDown = False
             config.leftDown = False
@@ -418,7 +431,7 @@ class MainWindow(QWidget):
         
         # snap top right from right
         elif direction == "top" and config.leftDown == False and config.rightDown == True:
-            self.setGeometry(workingWidth/2, 0, workingWidth/2, workingHeight/2)
+            self.setGeometry(monitor.left() + workingWidth / 2, monitor.top(), workingWidth/2, workingHeight/2)   
             # set all to false
             config.rightDown = False
             config.leftDown = False
@@ -427,7 +440,7 @@ class MainWindow(QWidget):
 
         # snap left
         elif direction == "left" and config.downDown == False and config.upDown == False:
-            self.setGeometry(0, 0, workingWidth/2, workingHeight)
+            self.setGeometry(monitor.left(), monitor.top(), workingWidth/2, workingHeight)
             # set left to true and others to false
             config.leftDown = True
             config.rightDown = False
@@ -436,7 +449,7 @@ class MainWindow(QWidget):
 
         # snap up
         elif direction == "top" and config.leftDown == False and config.rightDown == False:
-            self.setGeometry(0, 0, workingWidth, workingHeight / 2)
+            self.setGeometry(monitor.left(), monitor.top(), workingWidth, workingHeight / 2)
             # set up to True and all others to false
             config.upDown = True
             config.leftDown = False
@@ -455,7 +468,7 @@ class MainWindow(QWidget):
 
         # snap down
         elif direction == "bottom" and config.leftDown == False and config.rightDown == False:
-            self.setGeometry(0, workingHeight / 2, workingWidth, workingHeight / 2)
+            self.setGeometry(monitor.left(), monitor.top() + workingHeight / 2, workingWidth, workingHeight / 2)
             # set Down to True and all others to false
             config.downDown = True
             config.upDown = False
@@ -807,7 +820,6 @@ class MainWindow(QWidget):
         self.infobarlayout.itemAt(config.wordCountIndex).widget().setText(str(config.tabArr[config.currentActiveTextBox].wordCount))
         # add the correct specifier for the language (first convert from "py" to "python")
         if config.tabArr[config.currentActiveTextBox].language in config.keywords:
-            print(config.tabArr[config.currentActiveTextBox].language)
             self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText(config.keywords[config.tabArr[config.currentActiveTextBox].language])
         elif config.tabArr[config.currentActiveTextBox].language == "plaintext":
             self.infobarlayout.itemAt(config.languageSelectionIndex).widget().setCurrentText("plain text")
@@ -1023,8 +1035,6 @@ if __name__ == "__main__":
     app.setWindowIcon(QtGui.QIcon('logo.ico')) # sets the logo
     #app.setStyleSheet(stylesheet2)
     app.setCursorFlashTime(config.cursorFlashTime)
-    for m in get_monitors():
-        print(m) # prints the info of all monitors including which one is the primary one
     
     screen_resolution = app.desktop().screenGeometry()
     width, height = screen_resolution.width(), screen_resolution.height()
@@ -1035,11 +1045,8 @@ if __name__ == "__main__":
     else:
         startingLocation = config.res[key]
     mw = MainWindow()
-    #mw.show()
-    monitor = QDesktopWidget().screenGeometry(0)
-    mw.move(monitor.left(), monitor.top())
-    mw.showMaximized()
-    mw.layout.itemAt(0).widget().btn_max_clicked()
+    mw.show()
+    
     # make the textbox be automatically in focus on startup
     config.mainWin.layout.itemAt(config.textBoxIndex).itemAt(0).widget().setFocus()
 

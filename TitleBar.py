@@ -203,6 +203,10 @@ class MyBar(QWidget):
         if config.isMaximized == False:
             # moving the window
             if self.pressing and self.movingPosition:
+                config.rightDown = False
+                config.leftDown = False
+                config.downDown = False
+                config.upDown = False
                 self.end = self.mapToGlobal(event.pos())
                 self.movement = self.end-self.start
                 self.parent.setGeometry(self.mapToGlobal(self.movement).x() - 5,
