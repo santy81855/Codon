@@ -193,6 +193,9 @@ class MyBar(QWidget):
             self.start = self.mapToGlobal(event.pos())
 
     def mouseMoveEvent(self, event):
+        if config.isSnapWidget == True:
+            self.parent.snapWidget.hide()
+            config.isSnapWidget = False
         pos = event.pos()
         # top left
         if pos.x() <= 3 and pos.y() <= 3:

@@ -28,7 +28,7 @@ import subprocess
 from pathlib import Path
 import ctypes
 import re
-import config, ScrollBar, Find
+import config, ScrollBar, Find, snap, snapbutton
 
 class MainWindow(QWidget):
     def __init__(self):
@@ -155,6 +155,14 @@ class MainWindow(QWidget):
         # add the line/col button
         self.infobarlayout.addWidget(CurrentCursor.CurrentCursor(self))
         # add a stretch so we start the buttons on the right
+        self.infobarlayout.addStretch(1)
+        # create a button to go in the middle for snapping
+        self.snapButton = snapbutton.SnapButton(self)
+        # create a widget for the snapping options
+        self.snapWidget = snap.SnapBox(self)
+        #self.snapWidget.show()
+        self.infobarlayout.addWidget(self.snapButton)
+        # add a stretch
         self.infobarlayout.addStretch(1)
         # add the seleciton of languages combobox
         self.infobarlayout.addWidget(language.LanguageSelection(self))
