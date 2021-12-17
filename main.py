@@ -297,7 +297,7 @@ class MainWindow(QWidget):
         
         # start with this so that we can maximize and restore over and over with the up button
         self.showNormal()
-        isMaximized = False
+        config.isMaximized = False
         # get the current working resolution to account for things like the taskbar
         monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
         working_resolution = monitor_info.get("Work")
