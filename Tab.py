@@ -31,6 +31,10 @@ class Tab(QWidget):
     def __init__(self, fileName, filePath, contents):
         super(Tab, self).__init__()
         global usedNums
+        self.setStyleSheet("""
+        border:none;
+        border-radius:4px;
+        """)
         self.fileName = ""
         self.fileLocation = ""
         if fileName == "":
@@ -161,6 +165,9 @@ class Tab(QWidget):
     # when hovering over a tab it should be the little hand cursor
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.PointingHandCursor)
+        if config.isSnapWidget == True:
+            config.mainWin.snapWidget.hide()
+            config.isSnapWidget = False
 
     def tabClicked(self):
         # when we click the tab, we want to focus the tab by changing its color to be the same as

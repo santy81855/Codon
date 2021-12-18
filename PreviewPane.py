@@ -228,6 +228,9 @@ class TextPreview(QsciScintilla):
     
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)
+        if config.isSnapWidget == True:
+            self.parent.snapWidget.hide()
+            config.isSnapWidget = False
         # call the normal mousemoveevent function so that we don't lose functionality
         #QsciScintilla.mouseMoveEvent(self, event)
         # if they are pressing then we want to scroll a certain amount for every pixel that we move

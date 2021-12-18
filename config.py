@@ -26,12 +26,12 @@ isMaximized = False
 tabRowIndex = 1
 # variable to track the main textbox index in case I update the layout order
 textBoxIndex = 3
-# word count index
+# infobar index
 infoBarIndex = 4
 # word count index
-wordCountIndex = 3
+wordCountIndex = 5
 # language selection index
-languageSelectionIndex = 2
+languageSelectionIndex = 4
 # cursor position button index
 cursorPositionIndex = 0
 # variable to track the tabBar so I can access it quickly
@@ -64,6 +64,8 @@ leftDown = False
 upDown = False
 downDown = False
 rightDown = False
+# variablee to track if the snap widget is up
+isSnapWidget = False
 # list of special characters
 special_characters = "!@#$%^&*()-+?_=.:;,<>/\"'}{~`[]"
 # list of python keywords

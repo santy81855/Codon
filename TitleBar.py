@@ -111,6 +111,7 @@ class MyBar(QWidget):
 
         self.title.setStyleSheet("""
             background-color: #2E3440;
+            border:none;
             color: #8FBCBB;
             font: 14pt "Consolas";
             """)
@@ -193,6 +194,9 @@ class MyBar(QWidget):
             self.start = self.mapToGlobal(event.pos())
 
     def mouseMoveEvent(self, event):
+        if config.isSnapWidget == True:
+            self.parent.snapWidget.hide()
+            config.isSnapWidget = False
         pos = event.pos()
         # top left
         if pos.x() <= 3 and pos.y() <= 3:
@@ -209,8 +213,8 @@ class MyBar(QWidget):
                 config.upDown = False
                 self.end = self.mapToGlobal(event.pos())
                 self.movement = self.end-self.start
-                self.parent.setGeometry(self.mapToGlobal(self.movement).x() - 5,
-                                    self.mapToGlobal(self.movement).y() - 5,
+                self.parent.setGeometry(self.mapToGlobal(self.movement).x()-6,
+                                    self.mapToGlobal(self.movement).y()-6,
                                     self.parent.width(),
                                     self.parent.height())
                 self.start = self.end
@@ -222,20 +226,49 @@ class MyBar(QWidget):
             self.movingPosition = False
             # get the global positionn
             globalpos = QCursor()
+            # get the current working resolution to account for things like the taskbar
             monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
             working_resolution = monitor_info.get("Work")
             workingWidth = working_resolution[2]
             workingHeight = working_resolution[3]
+            # determine if the taskbar is present by comparing the normal height to the working height
+            isTaskbar = True
+            difference = 100000
+            for i in range(0, QDesktopWidget().screenCount()):
+                if workingHeight == QDesktopWidget().screenGeometry(i).height():
+                    isTaskbar = False
+                    break
+                # store the smallest difference to determine the correct difference due to the taskbar
+                elif abs(QDesktopWidget().screenGeometry(i).height() - workingHeight) < difference:
+                    difference = QDesktopWidget().screenGeometry(i).height() - workingHeight
+
+            # if the taskbar is present then use the working height
+            if isTaskbar == True:
+                workingWidth = QDesktopWidget().screenGeometry(self.parent).width()
+                workingHeight = QDesktopWidget().screenGeometry(self.parent).height() - difference
+            # if the taskbar is not present then just use the normal width and height
+            else:
+                workingWidth = QDesktopWidget().screenGeometry(self.parent).width()
+                workingHeight = QDesktopWidget().screenGeometry(self.parent).height()
+            
             leftLimit = workingWidth / 2
             rightLimit = workingWidth
+            print(leftLimit)
+            print(rightLimit)
+            x = globalpos.pos().x()
+            # if x is negative just reverse it
+            if x < 0:
+                x = workingWidth - abs(x)
             # if the mouse is in the left half then snap it left
-            if globalpos.pos().x() < leftLimit:
-                self.parent.setGeometry(0, 0, workingWidth/2, workingHeight)
-                config.leftDown = True
+            if x < leftLimit:
+                self.parent.snapWin("left")
+                #self.parent.setGeometry(0, 0, workingWidth/2, workingHeight)
+                #config.leftDown = True
             # otherwise snap it to the right
             else:
-                self.parent.setGeometry(workingWidth / 2, 0, workingWidth/2, workingHeight)                            
-                config.rightDown = True
+                self.parent.snapWin("right")
+                #self.parent.setGeometry(workingWidth / 2, 0, workingWidth/2, workingHeight)                            
+                #config.rightDown = True
         else:
             self.pressing = False
             self.movingPosition = False

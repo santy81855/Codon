@@ -44,6 +44,7 @@ class ReplaceBox(QPlainTextEdit):
         self.setTabChangesFocus(True)
         self.setStyleSheet("""
         border:none;
+        border-radius: 0px;
         background-color:"""+config.curLineColor+""";
         color:"""+config.textColor+""";
         selection-background-color:"""+config.selectionColor+""";
@@ -85,6 +86,7 @@ class FindBox(QPlainTextEdit):
         self.setPlaceholderText("Find")
         self.setStyleSheet("""
         border:none;
+        border-radius: 0px;
         background-color:"""+config.curLineColor+""";
         color:"""+config.textColor+""";
         selection-background-color:"""+config.selectionColor+""";
@@ -151,6 +153,7 @@ class ButtonFormat(QPushButton):
         {
             color:"""+config.textColor+""";
             border:none;
+            border-radius: 0px;
         }
         QPushButton::hover
         {
@@ -161,7 +164,7 @@ class ButtonFormat(QPushButton):
         self.setMouseTracking(True)
     
     def mouseMoveEvent(self, event):
-        QApplication.setOverrideCursor(Qt.PointingHandCursor )
+        QApplication.setOverrideCursor(Qt.PointingHandCursor)
 
 class FindWindow(QWidget):
     def __init__(self, parent):
@@ -195,6 +198,7 @@ class FindWindow(QWidget):
         {
             color:"""+config.textColor+""";
             border:none;
+            border-radius: 0px;
         }
         QPushButton::hover
         {
@@ -312,6 +316,7 @@ class FindWindow(QWidget):
                 background-color:"""+config.backgroundColor+""";
                 color:#8FBCBB;
                 border:none;
+                border-radius: 0px;
             }
             QPushButton::hover
             {
@@ -326,6 +331,7 @@ class FindWindow(QWidget):
             {
                 color:"""+config.textColor+""";
                 border:none;
+                border-radius: 0px;
             }
             QPushButton::hover
             {
@@ -343,6 +349,7 @@ class FindWindow(QWidget):
                 background-color:"""+config.backgroundColor+""";
                 color:#8FBCBB;
                 border:none;
+                border-radius: 0px;
             }
             QPushButton::hover
             {
@@ -357,6 +364,7 @@ class FindWindow(QWidget):
             {
                 color:"""+config.textColor+""";
                 border:none;
+                border-radius: 0px;
             }
             QPushButton::hover
             {
@@ -374,6 +382,7 @@ class FindWindow(QWidget):
                 background-color:"""+config.backgroundColor+""";
                 color:#8FBCBB;
                 border:none;
+                border-radius: 0px;
             }
             QPushButton::hover
             {
@@ -388,6 +397,7 @@ class FindWindow(QWidget):
             {
                 color:"""+config.textColor+""";
                 border:none;
+                border-radius: 0px;
             }
             QPushButton::hover
             {
@@ -438,18 +448,6 @@ class FindWindow(QWidget):
             self.setMaximumHeight(50)
             self.parent.isFind = False
             self.parent.showFind()
-            """
-            self.replace.hide()
-            self.replaceNext.hide()
-            self.replaceAll.hide()
-            self.button.setFixedSize(30,35)
-            self.prev.setFixedSize(30,35)
-            self.next.setFixedSize(30,35)
-            self.buttonvert.addStretch(1)
-            self.nextprevVert.addStretch(1)
-            self.isReplace = False 
-            self.find.setFocus()      
-            """
 
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)

@@ -270,6 +270,10 @@ class Editor(QsciScintilla):
             QApplication.setOverrideCursor(Qt.ArrowCursor)
         else:    
             QApplication.setOverrideCursor(Qt.IBeamCursor)
+        # disappear the snap widget if it is present
+        if config.isSnapWidget == True:
+            config.mainWin.snapWidget.hide()
+            config.isSnapWidget = False
         # call the normal mousemoveevent function so that we don't lose functionality
         QsciScintilla.mouseMoveEvent(self, event)
     
