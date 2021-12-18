@@ -31,6 +31,10 @@ class Tab(QWidget):
     def __init__(self, fileName, filePath, contents):
         super(Tab, self).__init__()
         global usedNums
+        self.setStyleSheet("""
+        border:none;
+        border-radius:4px;
+        """)
         self.fileName = ""
         self.fileLocation = ""
         if fileName == "":

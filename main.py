@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QHBoxLayout, QTextEdit, QPlainTextEdit, QShortcut, Q
 from PyQt5.QtWidgets import QLabel, QStackedWidget, QMessageBox
 from PyQt5.QtWidgets import QPushButton, QDesktopWidget
 from PyQt5.QtWidgets import QVBoxLayout, QScrollBar
-from PyQt5.QtWidgets import QWidget
+from PyQt5.QtWidgets import QWidget, QFrame
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
 from PyQt5.QtGui import QColor, QPainter, QTextFormat, QLinearGradient
@@ -30,7 +30,7 @@ import ctypes
 import re
 import config, ScrollBar, Find, snap, snapbutton
 
-class MainWindow(QWidget):
+class MainWindow(QFrame):
     def __init__(self):
         super(MainWindow, self).__init__()
         # store the main window widget
@@ -40,11 +40,18 @@ class MainWindow(QWidget):
         config.mainWin = self
         # set the opacity
         self.setWindowOpacity(1.0)
+        # get the current working resolution to account for things like the taskbar
+        monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
+        working_resolution = monitor_info.get("Work")
+        workingWidth = working_resolution[2]
+        workingHeight = working_resolution[3]
+        self.setGeometry(workingWidth/7, 0, workingWidth - (2 * workingWidth / 7), workingHeight)
         # vertical layout
         self.layout = QVBoxLayout()
         self.layout.setSpacing(0)
         # add the title bar
-        self.layout.addWidget(TitleBar.MyBar(self))
+        self.titlebarWidget = TitleBar.MyBar(self)
+        self.layout.addWidget(self.titlebarWidget)
         # create a horizontal layout to represent the tab bar
         self.tabLayout = QHBoxLayout()
 
@@ -174,16 +181,7 @@ class MainWindow(QWidget):
         self.setLayout(self.layout)
         # add the initial default tab that will open on launch
         self.newTabEmpty()
-        # make the default size be half the window on the right
-        # get the current working resolution to account for things like the taskbar
-        monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
-        working_resolution = monitor_info.get("Work")
-        workingWidth = working_resolution[2]
-        workingHeight = working_resolution[3]
-        self.setGeometry(workingWidth/7, 0, workingWidth - (2 * workingWidth / 7), workingHeight)
         #self.layout.setContentsMargins(MARGIN,0,MARGIN,MARGIN)
-        # right has no margin because that is where the other widget will be(preview pane)
-        self.layout.setContentsMargins(config.MARGIN,config.MARGIN,config.MARGIN,config.MARGIN)
         # the min height will be 600 x 600
         self.setMinimumSize(600, 600)
         self.setWindowFlags(Qt.FramelessWindowHint)
@@ -193,7 +191,12 @@ class MainWindow(QWidget):
         self.start = QPoint(0, 0)
         self.setStyleSheet("""
             background-color: #2E3440;
+            border-style: solid;
+            border-width: 1px;
+            border-color: #8FBCBB;
                           """)
+        # right has no margin because that is where the other widget will be(preview pane)
+        self.layout.setContentsMargins(config.MARGIN,config.MARGIN,config.MARGIN,config.MARGIN)
         # flags for starting location of resizing window
         self.left = False
         self.right = False
@@ -270,16 +273,124 @@ class MainWindow(QWidget):
         self.shortcut_snapBottom = QShortcut(QKeySequence('Ctrl+Alt+Down'), self)
         self.shortcut_snapBottom.activated.connect(lambda: self.snapWin("bottom"))
 
+        # shortcut to detect alt+up and alt+down
+        self.shortcut_movelineup = QShortcut(QKeySequence('Alt+Up'), self)
+        self.shortcut_movelineup.activated.connect(lambda: self.moveline("up"))
+        self.shortcut_movelinedown = QShortcut(QKeySequence('Alt+Down'), self)
+        self.shortcut_movelinedown.activated.connect(lambda: self.moveline("down"))
+
         # detect if there was a change in the active text edit, and if so change the corresponding
         # tab's isSaved to False
         #self.textbox.textChanged.connect(self.setSavedToFalse)
         # to help rounded corners work
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        #self.setAttribute(Qt.WA_TranslucentBackground)
         # shortcut to bring up the find menu
         self.shortcut_find = QShortcut(QKeySequence('Ctrl+f'), self)
         self.shortcut_find.activated.connect(self.showFind)
         # variable to track if the find box is up
         self.isFind = False
+    
+    def moveline(self, direction):
+        if direction == "up":
+            # get both the line we are on and the line above
+            cur = self.textbox.getCursorPosition()
+            currentLine = cur[0]
+            # we can only move a line up if it is greater than 0
+            if currentLine > 0:
+                currentLineLength = self.textbox.lineLength(currentLine)
+                # select the current line
+                self.textbox.setSelection(currentLine, 0, currentLine, currentLineLength)
+                currentText = self.textbox.selectedText()
+                currentLineEnd = self.textbox.getCursorPosition()[0]
+                if currentLine == currentLineEnd:
+                    currentLineNewLine = False
+                else:
+                    currentLineNewLine = True
+                
+                # now get the info of the line above
+                aboveLine = currentLine - 1
+                aboveLineLength = self.textbox.lineLength(aboveLine)
+                # select the line above
+                self.textbox.setSelection(aboveLine, 0, aboveLine, aboveLineLength)
+                aboveText = self.textbox.selectedText()
+                aboveLineEnd = self.textbox.getCursorPosition()[0]
+                if aboveLine == aboveLineEnd:
+                    aboveLineNewLine = False
+                else:
+                    aboveLineNewLine = True
+                
+                # delete the current line
+                self.textbox.setSelection(currentLine, 0, currentLine, currentLineLength)
+                self.textbox.removeSelectedText()
+                # now we know if each line has a new line or not at the end
+                # if both have a newline then we can just do a normal swap by removing the
+                # currentline and inserting it at the start of the aboveline
+                if currentLineNewLine == True and aboveLineNewLine == True:
+                    self.textbox.insertAt(currentText, aboveLine, 0)
+                # if the current line does not have a new line then we remove the one from the
+                # above line and add one to the current one. This means we have to remove the
+                # entire aboveline text and replace it without the newline
+                if currentLineNewLine == False and aboveLineNewLine == True:
+                    self.textbox.setSelection(aboveLine, 0, aboveLine, aboveLineLength)
+                    self.textbox.removeSelectedText()
+                    currentText = currentText + "\n"
+                    aboveText = aboveText[:-1]
+                    self.textbox.insertAt(currentText, aboveLine, 0)
+                    self.textbox.insertAt(aboveText, currentLine, 0)
+                
+                # place the cursor back where it needs to go
+                self.textbox.setCursorPosition(aboveLine, cur[1])
+        
+        # just pretend like we are doing the up function by moving the line down by 1
+        elif direction == "down":
+            # get both the line we are on and the line above
+            cur = self.textbox.getCursorPosition()
+            currentLine = cur[0] + 1
+            # we can only move a line up if it is greater than 0
+            if currentLine > 0:
+                currentLineLength = self.textbox.lineLength(currentLine)
+                # select the current line
+                self.textbox.setSelection(currentLine, 0, currentLine, currentLineLength)
+                currentText = self.textbox.selectedText()
+                currentLineEnd = self.textbox.getCursorPosition()[0]
+                if currentLine == currentLineEnd:
+                    currentLineNewLine = False
+                else:
+                    currentLineNewLine = True
+                
+                # now get the info of the line above
+                aboveLine = currentLine - 1
+                aboveLineLength = self.textbox.lineLength(aboveLine)
+                # select the line above
+                self.textbox.setSelection(aboveLine, 0, aboveLine, aboveLineLength)
+                aboveText = self.textbox.selectedText()
+                aboveLineEnd = self.textbox.getCursorPosition()[0]
+                if aboveLine == aboveLineEnd:
+                    aboveLineNewLine = False
+                else:
+                    aboveLineNewLine = True
+                
+                # delete the current line
+                self.textbox.setSelection(currentLine, 0, currentLine, currentLineLength)
+                self.textbox.removeSelectedText()
+                # now we know if each line has a new line or not at the end
+                # if both have a newline then we can just do a normal swap by removing the
+                # currentline and inserting it at the start of the aboveline
+                if currentLineNewLine == True and aboveLineNewLine == True:
+                    self.textbox.insertAt(currentText, aboveLine, 0)
+                # if the current line does not have a new line then we remove the one from the
+                # above line and add one to the current one. This means we have to remove the
+                # entire aboveline text and replace it without the newline
+                if currentLineNewLine == False and aboveLineNewLine == True:
+                    self.textbox.setSelection(aboveLine, 0, aboveLine, aboveLineLength)
+                    self.textbox.removeSelectedText()
+                    currentText = currentText + "\n"
+                    aboveText = aboveText[:-1]
+                    self.textbox.insertAt(currentText, aboveLine, 0)
+                    self.textbox.insertAt(aboveText, currentLine, 0)
+                
+                # place the cursor back where it needs to go
+                self.textbox.setCursorPosition(currentLine, cur[1])
 
     def showFind(self):
         if self.isFind == False:
@@ -486,14 +597,6 @@ class MainWindow(QWidget):
             config.upDown = False
             config.leftDown = False
             config.rightDown = False     
-    
-    def paintEvent(self, ev):
-        painter = QPainter(self)
-        painter.setBrush(QColor("#2E3440"))
-        # removes the black border around the window
-        painter.setPen(QColor(0,0,0,0))
-        rect = QRectF(ev.rect())
-        painter.drawRoundedRect(rect, 0, 0)   
     
     def tabJump(self, index):
         if len(config.tabArr) > index-1:

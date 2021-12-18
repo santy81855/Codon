@@ -47,12 +47,14 @@ class SnapButton(QPushButton):
             padding-bottom: 5px;
             }
                                 """)
-                                
         self.setMouseTracking(True)
 
     # when we hover over this widget should show but disappear when we unhover
     def mouseMoveEvent(self, event):
+        QApplication.setOverrideCursor(Qt.PointingHandCursor)
         if config.isSnapWidget == False:
+            mainPosition = self.parent.mapToGlobal(QPoint(0,self.parent.height()))
+            config.mainWin.snapWidget.setGeometry(mainPosition.x() + self.parent.width() / 2 - 315, mainPosition.y() - 380, 600, 300)
             self.parent.snapWidget.show()
             config.isSnapWidget = True
         
