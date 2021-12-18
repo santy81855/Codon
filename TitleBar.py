@@ -253,8 +253,6 @@ class MyBar(QWidget):
             
             leftLimit = workingWidth / 2
             rightLimit = workingWidth
-            print(leftLimit)
-            print(rightLimit)
             x = globalpos.pos().x()
             # if x is negative just reverse it
             if x < 0:
