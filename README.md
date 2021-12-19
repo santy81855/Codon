@@ -15,6 +15,7 @@
 * Reopen Closed Tabs (Ctrl + r)
 * Right click tab to close
 * Word count on bottom right
+* Current line and column display on bottom left
 * Preview Pane on the right side of the screen that doubles as scroll bar
 * Resize Window
 * Slight Transparency effect
