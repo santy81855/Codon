@@ -24,7 +24,7 @@ import ctypes
 import re
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
-import TitleBar, Tab, WordCount, PreviewPane, TextBox, main
+import TitleBar, Tab, WordCount, PreviewPane, TextBox
 import config
 
 class MyBar(QWidget):
@@ -43,7 +43,7 @@ class MyBar(QWidget):
         # add left margin to account for 3 corner buttons so the title is centered
         self.layout.setContentsMargins(btn_size*3,0,0,0)
         self.layout.setSpacing(0)
-        self.title = QLabel("notes app")
+        self.title = QLabel(config.appName)
         self.title.setMouseTracking(True)
 
         self.btn_close = QPushButton("x")
@@ -132,7 +132,7 @@ class MyBar(QWidget):
         # if there are more than 1 tab open
         if len(config.tabArr) > 1:
             msg = QMessageBox()
-            msg.setWindowTitle("Notes")
+            msg.setWindowTitle(config.appName)
             msg.setText("Do you want to close all of the tabs?")
             msg.setStandardButtons(QMessageBox.Yes | QMessageBox.Cancel)
             msg.setDefaultButton(QMessageBox.Yes)

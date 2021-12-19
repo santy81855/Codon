@@ -1,3 +1,4 @@
+appName = "Codon"
 # make the resolution global variables
 screen_resolution = 0
 width = 0
@@ -48,6 +49,7 @@ tabArr = []
 # variables to store the mainwindow and title bar
 mainWin = None
 titleBar = None
+tabBar = None
 # index of current active textbox
 currentActiveTextBox = 0
 # if tabs cycling should wrap around
@@ -66,6 +68,12 @@ downDown = False
 rightDown = False
 # variablee to track if the snap widget is up
 isSnapWidget = False
+# variable to track tab bar hor srcoll bar
+isHorizontalBar = False
+isNewTab = False
+# keep track of the tab length
+tabLength = 250
+tabHeight = 40
 # list of special characters
 special_characters = "!@#$%^&*()-+?_=.:;,<>/\"'}{~`[]"
 # list of python keywords

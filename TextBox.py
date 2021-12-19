@@ -25,7 +25,7 @@ import re
 # to get the working monitor size
 from win32api import GetMonitorInfo, MonitorFromPoint
 from PyQt5.Qsci import QsciScintilla, QsciLexerPython, QsciLexerCPP, QsciLexerCSharp, QsciLexerJava, QsciLexerJavaScript, QsciLexerJSON
-import TitleBar, Tab, WordCount, PreviewPane, TextBox, main
+import TitleBar, Tab, WordCount, PreviewPane, TextBox
 import config, ScrollBar
 
 class Editor(QsciScintilla):

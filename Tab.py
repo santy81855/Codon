@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import QWidget
 from PyQt5.QtCore import Qt, QRect, QSize, QRectF
 from PyQt5.QtWidgets import QWidget, QPlainTextEdit, QTextEdit
 from PyQt5.QtGui import QColor, QPainter, QTextFormat, QLinearGradient
-import TitleBar, Tab, WordCount, PreviewPane, TextBox, main
+import TitleBar, Tab, WordCount, PreviewPane, TextBox
 import textwrap
 from pynput import keyboard
 import string
@@ -77,7 +77,7 @@ class Tab(QWidget):
         self.tabButton = QPushButton(self.fileName)
         self.tabButton.setMouseTracking(True)
         self.tabButton.clicked.connect(self.tabClicked)
-        self.tabButton.setMinimumSize(200, 40)
+        self.tabButton.setMinimumSize(config.tabLength, config.tabHeight)
         self.tabButton.adjustSize()
         self.tabButton.setStyleSheet("""
             QPushButton
@@ -214,5 +214,5 @@ class Tab(QWidget):
             }-  
                                     """)
         # change the title of the window to be the tab name
-        config.mainWin.layout.itemAt(0).widget().title.setText(self.fileName + " - notepad")
+        config.mainWin.layout.itemAt(0).widget().title.setText(self.fileName + " - " + config.appName)
    
