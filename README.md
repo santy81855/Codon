@@ -1,6 +1,6 @@
-# NoteApp
+# Codon
 
-### My attempt at a modern looking text editor. Created with PyQt5.
+### My attempt at a modern looking text editor. (Created with PyQt5)
 ![Image](photos/prototype.png)
 
 ## Current Features List:
