@@ -28,4 +28,4 @@
 
 ## Future Features List:
 * Settings Tab to be able to edit all of the typical text edit features
-* Save indicator to show if a tab is currently saved or not
+* Implement a better undo/redo system
