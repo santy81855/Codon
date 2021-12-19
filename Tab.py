@@ -73,6 +73,7 @@ class Tab(QWidget):
             #mainWin.infobarlayout.itemAt(wordCountIndex).widget().setText(str(self.wordCount))
         # create a layout that can store the tab and its close button
         self.singleTabLayout = QHBoxLayout()
+        self.singleTabLayout.setSpacing(0)
         # create a button to represent the file
         self.tabButton = QPushButton(self.fileName)
         self.tabButton.setMouseTracking(True)
@@ -103,10 +104,10 @@ class Tab(QWidget):
         #------------------------------------------------------------------------------------------------
         # create a smaller button for closing the tab that is normally the same color as the tab
         # but will turn red if hovered
-        self.closeButton = QPushButton("")
+        self.closeButton = QPushButton("x")
         self.closeButton.setMouseTracking(True)
         #self.closeButton.clicked.connect(self.tabClose)
-        self.closeButton.setMinimumSize(20, 40)
+        self.closeButton.setFixedSize(20, 50)
         self.closeButton.adjustSize()
         self.closeButton.setStyleSheet("""
             QPushButton
