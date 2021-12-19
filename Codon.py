@@ -28,7 +28,7 @@ import subprocess
 from pathlib import Path
 import ctypes
 import re
-import config, ScrollBar, Find, snap, snapbutton, tabScrollBar
+import config, ScrollBar, Find, snap, snapbutton, tabScrollBar, shortcuts
 
 class TabWidget(QFrame):
     def __init__(self, parent):
@@ -72,6 +72,8 @@ class MainWindow(QFrame):
         # add the title bar
         self.titlebarWidget = TitleBar.MyBar(self)
         self.layout.addWidget(self.titlebarWidget)
+        # create the widget that will show all the possible shortcuts
+        self.shortcutWidget = shortcuts.ShortCuts(self)
         #-------------------------------------------------------------------------------------------------------------------------------#
         #-------------------------------------------------------------------------------------------------------------------------------#
         #-------------------------------------------------------------------------------------------------------------------------------#
@@ -314,6 +316,10 @@ class MainWindow(QFrame):
         self.shortcut_movelinedown = QShortcut(QKeySequence('Alt+Down'), self)
         self.shortcut_movelinedown.activated.connect(lambda: self.moveline("down"))
 
+        # shortcut for showing widgets
+        self.shortcut_showshortcuts = QShortcut(QKeySequence('ctrl+h'), self)
+        self.shortcut_showshortcuts.activated.connect(self.showShortcuts)
+
         # detect if there was a change in the active text edit, and if so change the corresponding
         # tab's isSaved to False
         #self.textbox.textChanged.connect(self.setSavedToFalse)
@@ -324,6 +330,11 @@ class MainWindow(QFrame):
         self.shortcut_find.activated.connect(self.showFind)
         # variable to track if the find box is up
         self.isFind = False
+    
+    def showShortcuts(self):
+        mainPosition = config.mainWin.mapToGlobal(QPoint(0,config.mainWin.height()))
+        config.mainWin.snapWidget.setGeometry(mainPosition.x() + config.mainWin.width() / 2 - 315, mainPosition.y() - 380, 600, 300)
+        config.mainWin.shortcutWidget.show()
     
     def moveline(self, direction):
         if direction == "up":

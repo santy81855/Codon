@@ -285,6 +285,7 @@ class Editor(QsciScintilla):
         elif event.key() == QtCore.Qt.Key_Escape:
             config.mainWin.isFind = False
             config.mainWin.findWin.hide()
+            config.mainWin.shortcutWidget.hide()
         
         # if we open a bracket
         elif event.text() == "{":
@@ -406,6 +407,7 @@ class Editor(QsciScintilla):
         # are no text differences to store
         if config.isShortCut:
             config.isShortCut = False
+
         # if it was not a shortcut then we store the text differences
         else:            
             config.tabArr[config.currentActiveTextBox].isSaved = False
