@@ -143,14 +143,17 @@ class MyBar(QWidget):
             ans = msg.exec_()
             # if yes
             if ans != 4194304:
+                self.parent.shortcutWidget.close()
                 self.parent.close()
                 
         # if there is 1 tab and it is not saved then just bring up the closeTab dialogue
         elif len(config.tabArr) == 1 and config.tabArr[0].isSaved == False:
+            self.parent.shortcutWidget.close()
             self.parent.closeTab(0, 0)
             
         # otherwise just close
         else:
+            self.parent.shortcutWidget.close()
             self.parent.close()
 
     def btn_max_clicked(self):
@@ -218,6 +221,8 @@ class MyBar(QWidget):
                                     self.parent.width(),
                                     self.parent.height())
                 self.start = self.end
+                mainPosition = config.mainWin.mapToGlobal(QPoint(0,config.mainWin.height()))
+                config.mainWin.shortcutWidget.setGeometry(mainPosition.x() + config.mainWin.width() / 2 - 400, mainPosition.y() - config.mainWin.height()/2 - 300, 800, 600)
 
     def mouseReleaseEvent(self, QMouseEvent):
         if QMouseEvent.button() == Qt.RightButton:

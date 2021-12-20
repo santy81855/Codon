@@ -333,8 +333,9 @@ class MainWindow(QFrame):
     
     def showShortcuts(self):
         mainPosition = config.mainWin.mapToGlobal(QPoint(0,config.mainWin.height()))
-        config.mainWin.snapWidget.setGeometry(mainPosition.x() + config.mainWin.width() / 2 - 315, mainPosition.y() - 380, 600, 300)
+        config.mainWin.shortcutWidget.setGeometry(mainPosition.x() + config.mainWin.width() / 2 - (config.mainWin.width() / 2), mainPosition.y() - config.mainWin.height()/2 - (config.mainWin.height() / 2), config.mainWin.width(), config.mainWin.height())
         config.mainWin.shortcutWidget.show()
+        self.setFocus()
     
     def moveline(self, direction):
         if direction == "up":
@@ -643,6 +644,9 @@ class MainWindow(QFrame):
             config.upDown = False
             config.leftDown = False
             config.rightDown = False     
+        
+        mainPosition = config.mainWin.mapToGlobal(QPoint(0,config.mainWin.height()))
+        config.mainWin.shortcutWidget.setGeometry(mainPosition.x() + config.mainWin.width() / 2 - 400, mainPosition.y() - config.mainWin.height()/2 - 300, 800, 600)
     
     def tabJump(self, index):
         if len(config.tabArr) > index-1:
@@ -1199,6 +1203,7 @@ stylesheet2 = """
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    config.application = app
     app.setWindowIcon(QtGui.QIcon('logo.ico')) # sets the logo
     #app.setStyleSheet(stylesheet2)
     app.setCursorFlashTime(config.cursorFlashTime)

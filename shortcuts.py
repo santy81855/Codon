@@ -33,19 +33,34 @@ class ShortCutFormat(QPushButton):
         self.parent = parent
         self.setText(name)
         # set the size of the widget
-        self.setFixedSize(180, 40)
+        width = config.mainWin.width() / 3
+        height = config.mainWin.height() / 4
+        self.setMaximumSize(width, height)
         self.setStyleSheet("""
         QPushButton
         {
-            font-size: 14px;
+            font-size: 20px;
             background-color: """+config.backgroundColor+""";
-            color: """+config.textColor+""";
-            border: none;
-            border-radius:0;
+            color: #8FBCBB;
+            border-style: solid;
+            border-width: 1px;
+            border-radius: 0px;
+            border-color: #8FBCBB;
         }
         """)
         self.setMouseTracking(True)
+        config.application.focusChanged.connect(self.on_focusChanged)
     
+    def on_focusChanged(self, old, new):
+        config.mainWin.textbox.setFocus()
+
+    # get rid of the find menu when pressing escape
+    def keyPressEvent(self, event):        
+        config.mainWin.shortcutWidget.hide()
+
+    def mousePressEvent(self, event):
+        self.parent.hide()
+
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)
 
@@ -66,8 +81,23 @@ class ShortCuts(QFrame):
         border-color: #8FBCBB;
         background-color:"""+config.curLineColor+""";
         """)
-        # create the main horizontal layout
+        # create the horizontal layout
         self.layout = QHBoxLayout()
+        self.layout.setSpacing(5)
+
+        # create the title
+        self.title = QLabel("s\nh\no\nr\nt\nc\nu\nt\ns")
+        # Set the default font
+        font = QFont()
+        font.setFamily('Consolas')
+        font.setWeight(QFont.Bold)
+        font.setFixedPitch(True)
+        font.setPointSize(config.fontSize+4)
+        self.title.setFont(font)
+        self.title.setStyleSheet("color:#8FBCBB;border:none;")
+        self.title.setMaximumWidth(30)
+        
+        self.layout.addWidget(self.title)
         
         # create the 3 vertical layouts
         self.leftVert = QVBoxLayout()
@@ -75,31 +105,33 @@ class ShortCuts(QFrame):
         self.rightVert = QVBoxLayout()
 
         # add shortcuts to left middle and right intermittently
-        self.newTab = ShortCutFormat(self, "New Tab: ctrl+t")
+        self.newTab = ShortCutFormat(self, "New Tab:\nctrl+t")
         self.leftVert.addWidget(self.newTab)
-        self.closeTab = ShortCutFormat(self, "Close Tab: ctrl+w")
+        self.closeTab = ShortCutFormat(self, "Close Tab:\nctrl+w")
         self.middleVert.addWidget(self.closeTab)
-        self.restoreTab = ShortCutFormat(self, "Restore Tab: ctrl+r")
+        self.restoreTab = ShortCutFormat(self, "Restore Tab:\nctrl+r")
         self.rightVert.addWidget(self.restoreTab)
-        self.openFile = ShortCutFormat(self, "Open File: ctrl+o")
+        self.openFile = ShortCutFormat(self, "Open File:\nctrl+o")
         self.leftVert.addWidget(self.openFile)
-        self.saveFile = ShortCutFormat(self, "Save File: ctrl+s")
+        self.saveFile = ShortCutFormat(self, "Save File:\nctrl+s")
         self.middleVert.addWidget(self.saveFile)
-        self.saveFileAs = ShortCutFormat(self, "Save File: ctrl+shift+s")
+        self.saveFileAs = ShortCutFormat(self, "Save File:\nctrl+shift+s")
         self.rightVert.addWidget(self.saveFileAs)
-        self.snapWin = ShortCutFormat(self, "Snap: ctrl+alt+arrow-key")
+        self.snapWin = ShortCutFormat(self, "Snap:\nctrl+alt+arrow-key")
         self.leftVert.addWidget(self.snapWin)
-        self.nextTab = ShortCutFormat(self, "Next Tab: ctrl+pgdn")
+        self.nextTab = ShortCutFormat(self, "Next Tab:\nctrl+pgdn")
         self.middleVert.addWidget(self.nextTab)
-        self.prevTab = ShortCutFormat(self, "Previous Tab: ctrl+pgup")
+        self.prevTab = ShortCutFormat(self, "Previous Tab:\nctrl+pgup")
         self.rightVert.addWidget(self.prevTab)
-        self.jumpTab = ShortCutFormat(self, "Jump to Tab: ctrl+(1 - 10)")
+        self.jumpTab = ShortCutFormat(self, "Jump to Tab:\nctrl+(1 - 10)")
         self.leftVert.addWidget(self.jumpTab)
-        self.find = ShortCutFormat(self, "Find Dialogue: ctrl+f")
+        self.find = ShortCutFormat(self, "Find Dialogue:\nctrl+f")
         self.middleVert.addWidget(self.find)
+        self.esc = ShortCutFormat(self, "Close Menu:\nesc")
+        self.rightVert.addWidget(self.esc)
         #self.leftVert.addStretch(1)
         #self.middleVert.addStretch(1)
-        self.rightVert.addStretch(1)
+        #self.rightVert.addStretch(1)
 
         # add the left to the horizontal layout
         self.layout.addLayout(self.leftVert)
@@ -107,12 +139,18 @@ class ShortCuts(QFrame):
         self.layout.addLayout(self.rightVert)
         
         self.setLayout(self.layout)
+        config.application.focusChanged.connect(self.on_focusChanged)
     
+    def on_focusChanged(self, old, new):
+        config.mainWin.textbox.setFocus()
+
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)
 
-            # get rid of the find menu when pressing escape
+    # get rid of the find menu when pressing escape
     def keyPressEvent(self, event):        
-        if event.key() == QtCore.Qt.Key_Escape:
-            config.mainWin.shortcutWidget.hide()
+        config.mainWin.shortcutWidget.hide()
+
+    def mousePressEvent(self, event):
+        self.hide()
         

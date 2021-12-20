@@ -47,6 +47,7 @@ tabCount = 0
 # arraf storing the tabs
 tabArr = []
 # variables to store the mainwindow and title bar
+application = None
 mainWin = None
 titleBar = None
 tabBar = None
