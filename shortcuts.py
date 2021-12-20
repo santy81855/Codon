@@ -33,8 +33,8 @@ class ShortCutFormat(QPushButton):
         self.parent = parent
         self.setText(name)
         # set the size of the widget
-        width = config.mainWin.width() / 3
-        height = config.mainWin.height() / 4
+        width = config.mainWin.width()
+        height = config.mainWin.height()
         self.setMaximumSize(width, height)
         self.setStyleSheet("""
         QPushButton
@@ -115,20 +115,20 @@ class ShortCuts(QFrame):
         self.leftVert.addWidget(self.openFile)
         self.saveFile = ShortCutFormat(self, "Save File:\nctrl+s")
         self.middleVert.addWidget(self.saveFile)
-        self.saveFileAs = ShortCutFormat(self, "Save File:\nctrl+shift+s")
+        self.saveFileAs = ShortCutFormat(self, "Save File As:\nctrl+shift+s")
         self.rightVert.addWidget(self.saveFileAs)
-        self.snapWin = ShortCutFormat(self, "Snap:\nctrl+alt+arrow-key")
-        self.leftVert.addWidget(self.snapWin)
+        self.jumpTab = ShortCutFormat(self, "Jump to Tab:\nctrl+number")
+        self.leftVert.addWidget(self.jumpTab)
         self.nextTab = ShortCutFormat(self, "Next Tab:\nctrl+pgdn")
         self.middleVert.addWidget(self.nextTab)
         self.prevTab = ShortCutFormat(self, "Previous Tab:\nctrl+pgup")
         self.rightVert.addWidget(self.prevTab)
-        self.jumpTab = ShortCutFormat(self, "Jump to Tab:\nctrl+(1 - 10)")
-        self.leftVert.addWidget(self.jumpTab)
+        self.snapWin = ShortCutFormat(self, "Snap:\nctrl+alt+arrow-key")
+        self.leftVert.addWidget(self.snapWin)
         self.find = ShortCutFormat(self, "Find Dialogue:\nctrl+f")
         self.middleVert.addWidget(self.find)
-        self.esc = ShortCutFormat(self, "Close Menu:\nesc")
-        self.rightVert.addWidget(self.esc)
+        self.shortcutMenu = ShortCutFormat(self, "Shortcut Menu:\nctrl+h")
+        self.rightVert.addWidget(self.shortcutMenu)
         #self.leftVert.addStretch(1)
         #self.middleVert.addStretch(1)
         #self.rightVert.addStretch(1)

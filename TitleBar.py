@@ -221,8 +221,6 @@ class MyBar(QWidget):
                                     self.parent.width(),
                                     self.parent.height())
                 self.start = self.end
-                mainPosition = config.mainWin.mapToGlobal(QPoint(0,config.mainWin.height()))
-                config.mainWin.shortcutWidget.setGeometry(mainPosition.x() + config.mainWin.width() / 2 - 400, mainPosition.y() - config.mainWin.height()/2 - 300, 800, 600)
 
     def mouseReleaseEvent(self, QMouseEvent):
         if QMouseEvent.button() == Qt.RightButton:
