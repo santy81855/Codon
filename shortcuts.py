@@ -129,9 +129,7 @@ class ShortCuts(QFrame):
         self.middleVert.addWidget(self.find)
         self.shortcutMenu = ShortCutFormat(self, "Shortcut Menu:\nctrl+h")
         self.rightVert.addWidget(self.shortcutMenu)
-        #self.leftVert.addStretch(1)
-        #self.middleVert.addStretch(1)
-        #self.rightVert.addStretch(1)
+        # if i ever dont have the right amount of buttons, just make some with the same background as the main widget so that they are there but are invisible
 
         # add the left to the horizontal layout
         self.layout.addLayout(self.leftVert)
