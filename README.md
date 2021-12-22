@@ -1,4 +1,5 @@
 # Codon
+[Download](https://github.com/santy81855/NoteApp/raw/main/installer.exe "Download")
 
 ### My attempt at a modern looking text editor. (Created with PyQt5)
 ![Image](photos/prototype.png)
