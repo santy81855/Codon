@@ -327,9 +327,10 @@ class MainWindow(QFrame):
         #self.setAttribute(Qt.WA_TranslucentBackground)
         # shortcut to bring up the find menu
         self.shortcut_find = QShortcut(QKeySequence('Ctrl+f'), self)
-        self.shortcut_find.activated.connect(self.showFind)
         # variable to track if the find box is up
         self.isFind = False
+        self.shortcut_find.activated.connect(self.showFind)
+
     
     def showShortcuts(self):
         mainPosition = config.mainWin.mapToGlobal(QPoint(0,config.mainWin.height()))
@@ -456,8 +457,10 @@ class MainWindow(QFrame):
             self.findWin.buttonvert.addStretch(1)
             self.findWin.nextprevVert.addStretch(1)
             self.findWin.isReplace = False 
-            self.findWin.find.setFocus()      
+            self.findWin.find.setFocus()    
             self.isFind = True
+        else:
+            self.findWin.find.setFocus()
     
     def snapWin(self, direction):
         global rightDown

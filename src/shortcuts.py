@@ -49,10 +49,7 @@ class ShortCutFormat(QPushButton):
         }
         """)
         self.setMouseTracking(True)
-        config.application.focusChanged.connect(self.on_focusChanged)
-    
-    def on_focusChanged(self, old, new):
-        config.mainWin.textbox.setFocus()
+        
 
     # get rid of the find menu when pressing escape
     def keyPressEvent(self, event):        
@@ -140,7 +137,9 @@ class ShortCuts(QFrame):
         config.application.focusChanged.connect(self.on_focusChanged)
     
     def on_focusChanged(self, old, new):
-        config.mainWin.textbox.setFocus()
+        if new != config.mainWin.findWin.find:
+            config.mainWin.textbox.setFocus()    
+        
 
     def mouseMoveEvent(self, event):
         QApplication.setOverrideCursor(Qt.ArrowCursor)
