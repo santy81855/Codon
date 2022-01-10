@@ -54,7 +54,7 @@ class SnapButton(QPushButton):
         QApplication.setOverrideCursor(Qt.PointingHandCursor)
         if config.isSnapWidget == False:
             mainPosition = self.parent.mapToGlobal(QPoint(0,self.parent.height()))
-            config.mainWin.snapWidget.setGeometry(mainPosition.x() + self.parent.width() / 2 - 315, mainPosition.y() - 380, 600, 300)
+            config.mainWin.snapWidget.setGeometry(mainPosition.x() + self.parent.width() / 2 - 315, mainPosition.y() - 370, 600, 300)
             self.parent.snapWidget.show()
             config.isSnapWidget = True
         
