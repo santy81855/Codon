@@ -1,4 +1,6 @@
 appName = "Codon"
+# minimum possible app size
+minSize = 500
 # make the resolution global variables
 screen_resolution = 0
 width = 0
