@@ -1,5 +1,5 @@
 # Codon
-## [Download](https://github.com/santy81855/NoteApp/raw/main/installer.exe "Download")
+## [Download](https://github.com/santy81855/Codon/raw/main/Codon_installer_v1.5.exe "Download")
 
 ### My attempt at a modern looking text editor. (Created with PyQt5)
 ![Image](photos/prototype.png)
