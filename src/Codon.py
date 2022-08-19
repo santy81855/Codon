@@ -188,7 +188,7 @@ class MainWindow(QFrame):
         self.dropShadow2.setFixedHeight(1)
         self.dropShadow2.setGraphicsEffect(self.shadow2)
         self.layout.addWidget(self.dropShadow2)
-        #------------------------------------------------------------------------#
+        #-----------------------------------------------------------------------#
         # add the infobar at the bottom
         self.infobarlayout = QHBoxLayout()
         # start the display from the right

@@ -138,7 +138,7 @@ class ShortCuts(QFrame):
     
     def on_focusChanged(self, old, new):
         # make sure to account for closing the app which would focus the close button
-        if new != config.mainWin.findWin.find and new != config.mainWin.titlebarWidget.btn_close:
+        if new != config.mainWin.findWin.find and new != config.mainWin.findWin.replace and new != config.mainWin.titlebarWidget.btn_close:
             config.mainWin.textbox.setFocus()    
         
 

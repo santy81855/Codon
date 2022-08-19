@@ -111,7 +111,7 @@ class FindBox(QPlainTextEdit):
                 config.mainWin.textbox.findNext()
                 self.isEnter = True
         
-        # if we press tab when on the find box we just move to the next
+        # if we press tab when on the find box we just move to the replace box
         elif event.text() == "\t":
             if self.parent.isReplace == False:
                 self.parent.buttonClicked()
@@ -442,7 +442,8 @@ class FindWindow(QWidget):
             self.prev.setFixedSize(30,80)
             self.next.setFixedSize(30,80)
             self.isReplace = True
-            self.replace.setFocus()
+            self.activateWindow()
+            self.replace.setFocus(True)
         else:
             self.hide()
             self.setMaximumHeight(50)
