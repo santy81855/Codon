@@ -201,12 +201,16 @@ class MyBar(QWidget):
             self.parent.snapWidget.hide()
             config.isSnapWidget = False
         pos = event.pos()
+        '''
         # top left
         if pos.x() <= 3 and pos.y() <= 3:
             QApplication.setOverrideCursor(Qt.SizeFDiagCursor)
         
         else:
             QApplication.setOverrideCursor(Qt.ArrowCursor)
+        '''
+        #
+        QApplication.setOverrideCursor(Qt.ArrowCursor)
         if config.isMaximized == False:
             # moving the window
             if self.pressing and self.movingPosition:
